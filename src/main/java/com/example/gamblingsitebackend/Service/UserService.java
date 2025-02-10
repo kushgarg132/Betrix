@@ -7,10 +7,12 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
+    private final WalletService walletService;
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
 
-    public UserService(UserRepository userRepository, JwtUtil jwtUtil) {
+    public UserService(WalletService walletService, UserRepository userRepository, JwtUtil jwtUtil) {
+        this.walletService = walletService;
         this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
     }
@@ -23,7 +25,11 @@ public class UserService {
         throw new RuntimeException("Invalid username or password.");
     }
 
-    public User registerUser(User user) {
+    public User registerUser(User user , double initialBalance) {
+        if (userRepository.findByUsername(user.getUsername()).stream().findFirst().isPresent()) {
+            throw new RuntimeException("Username already exists.");
+        }
+        walletService.createWallet(user.getUsername(), initialBalance);
         // TODO: Add password encryption (e.g., BCrypt)
         return userRepository.save(user);
     }

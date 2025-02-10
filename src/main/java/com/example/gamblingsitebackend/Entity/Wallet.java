@@ -1,18 +1,16 @@
 package com.example.gamblingsitebackend.Entity;
 
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import lombok.*;
 
-@Document(collection = "users")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class User {
+@Document(collection = "wallets")
+public class Wallet {
     @Id
     private String id;
-    private String name;
     private String username;
-    private String email;
-    private String password;
+    private double walletBalance;
 }
