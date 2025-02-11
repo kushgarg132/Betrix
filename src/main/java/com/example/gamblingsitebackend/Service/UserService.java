@@ -2,19 +2,19 @@ package com.example.gamblingsitebackend.Service;
 
 import com.example.gamblingsitebackend.Entity.User;
 import com.example.gamblingsitebackend.Repository.UserRepository;
-import com.example.gamblingsitebackend.Utility.JwtUtil;
+import com.example.gamblingsitebackend.Utility.JwtService;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
     private final WalletService walletService;
     private final UserRepository userRepository;
-    private final JwtUtil jwtUtil;
+    private final JwtService jwtService;
 
-    public UserService(WalletService walletService, UserRepository userRepository, JwtUtil jwtUtil) {
+    public UserService(WalletService walletService, UserRepository userRepository, JwtService jwtService) {
         this.walletService = walletService;
         this.userRepository = userRepository;
-        this.jwtUtil = jwtUtil;
+        this.jwtService = jwtService;
     }
 
     public User getProfile(String username) {
@@ -29,7 +29,7 @@ public class UserService {
     public String login(String username, String password) {
         User user = userRepository.findByUsername(username).stream().findFirst().orElse(null);
         if (user != null && user.getPassword().equals(password)) {
-            return jwtUtil.generateToken(username);
+            return jwtService.generateToken(username);
         }
         throw new RuntimeException("Invalid username or password.");
     }

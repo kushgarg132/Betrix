@@ -1,45 +1,54 @@
 package com.example.gamblingsitebackend.Auth;
 import com.example.gamblingsitebackend.Repository.UserRepository;
-import com.example.gamblingsitebackend.Utility.JwtUtil;
-import org.springframework.http.HttpStatus;
+import com.example.gamblingsitebackend.Service.WalletService;
+import com.example.gamblingsitebackend.Utility.JwtService;
 import org.springframework.web.bind.annotation.*;
 import com.example.gamblingsitebackend.Entity.User;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+import java.util.Map;
+
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
     private final UserRepository userRepository;
-    private final JwtUtil jwtUtil;
+    private final JwtService jwtService;
+    private final WalletService walletService;
 
-    public AuthController(UserRepository userRepository, JwtUtil jwtUtil) {
+    public AuthController(UserRepository userRepository, JwtService jwtService, WalletService walletService) {
         this.userRepository = userRepository;
-        this.jwtUtil = jwtUtil;
+        this.jwtService = jwtService;
+        this.walletService = walletService;
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody User user) {
+    public Map<String, String> register(@RequestBody User user) {
         if (userRepository.existsByUsername(user.getUsername())) {
-            return ResponseEntity.badRequest().body("Username already exists");
+            throw new RuntimeException("Username already exists");
         }
-        // Hash password (use BCrypt)
-        user.setPassword(new BCryptPasswordEncoder().encode(user.getPassword()));
+        user.setPassword(user.getPassword());
+        walletService.createWallet(user.getUsername(), 5000);
         userRepository.save(user);
-        return ResponseEntity.ok("User registered successfully");
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "User registered successfully");
+        return response;
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody User user) {
+    public Map<String, String> login(@RequestBody User user) {
         User existingUser = userRepository.findByUsername(user.getUsername()).stream().findFirst().orElse(null);
-        if (existingUser != null && new BCryptPasswordEncoder().matches(user.getPassword(), existingUser.getPassword())) {
-            return ResponseEntity.ok(jwtUtil.generateToken(user.getUsername()) );
+        if (existingUser != null && user.getPassword().matches(existingUser.getPassword())) {
+            String token = jwtService.generateToken(user.getUsername());
+            Map<String, String> response = new HashMap<>();
+            response.put("token", token);
+            return response;
         }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        else {
+            throw new RuntimeException("Invalid username or password");
+        }
     }
-
 }
-
