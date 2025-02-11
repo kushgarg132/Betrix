@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Random;
 
 @RestController
-@RequestMapping("/api/roulette")
+@RequestMapping("/api/games/roulette")
 public class RouletteController {
 
     private final WalletService walletService;

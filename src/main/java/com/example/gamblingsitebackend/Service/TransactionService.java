@@ -14,16 +14,15 @@ public class TransactionService {
         this.transactionRepository = transactionRepository;
     }
 
-    public void recordTransaction(String walletId, String username, String type, double amount, String description) {
+    public void recordTransaction(String username, String type, double amount, String description) {
         Transaction transaction = new Transaction(
                 null,
-                walletId,
                 username,
-                type,
                 amount,
-                description,
-                LocalDateTime.now()
-        );
+                LocalDateTime.now(),
+                type,
+                description
+                );
         transactionRepository.save(transaction);
     }
 

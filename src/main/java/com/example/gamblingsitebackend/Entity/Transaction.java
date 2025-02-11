@@ -12,10 +12,9 @@ import java.time.LocalDateTime;
 public class Transaction {
     @Id
     private String id;
-    private String walletId;
     private String username;
-    private String type;  // DEPOSIT, WITHDRAW, GAME
-    private double amount;
+    private Double amount;
+    private LocalDateTime timestamp = LocalDateTime.now();
+    private String type;  // Example: "DEPOSIT", "WITHDRAWAL", "BET"
     private String description;
-    private LocalDateTime timestamp;
 }

@@ -10,5 +10,7 @@ public interface UserRepository extends MongoRepository<User, String> {
     @Override
     Optional<User> findById(String s);
 
-    List<User> findByUsername(String username);
+    Optional<User> findByUsername(String username);
+
+    Boolean existsByUsername(String username);
 }

@@ -17,6 +17,15 @@ public class UserService {
         this.jwtUtil = jwtUtil;
     }
 
+    public User getProfile(String username) {
+        User user = userRepository.findByUsername(username).stream().findFirst().orElse(null);
+        if (user != null) {
+            return user;
+        }
+        throw new RuntimeException("Invalid username or password.");
+    }
+
+
     public String login(String username, String password) {
         User user = userRepository.findByUsername(username).stream().findFirst().orElse(null);
         if (user != null && user.getPassword().equals(password)) {

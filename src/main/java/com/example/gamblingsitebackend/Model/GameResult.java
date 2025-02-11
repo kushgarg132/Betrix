@@ -6,6 +6,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class GameResult {
+
     private String outcome;
     private double walletBalance;
 }

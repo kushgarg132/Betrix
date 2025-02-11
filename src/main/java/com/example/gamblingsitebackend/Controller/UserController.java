@@ -14,6 +14,11 @@ public class UserController {
         this.userService = userService;
     }
 
+    @GetMapping("/profile")
+    public User getProfile(@RequestParam String username) {
+        return userService.getProfile(username);
+    }
+
     @PostMapping("/register")
     public User registerUser(@RequestBody User user, @RequestParam double initialBalance) {
         return userService.registerUser(user, initialBalance);

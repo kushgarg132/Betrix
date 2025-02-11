@@ -9,8 +9,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @NoArgsConstructor
 @Document(collection = "wallets")
 public class Wallet {
+
     @Id
     private String id;
     private String username;
-    private double walletBalance;
+    private Double balance;
 }

@@ -12,8 +12,13 @@ public class WalletController {
         this.walletService = walletService;
     }
 
+    @PostMapping("/create")
+    public Double getWalletBalance(@RequestParam String username , @RequestParam double initialBalance) {
+        return walletService.createWallet(username, initialBalance).getBalance();
+    }
+
     @GetMapping("/balance")
-    public double getBalance(@RequestParam String username) {
+    public Double getWalletBalance(@RequestParam String username) {
         return walletService.getBalance(username);
     }
 
