@@ -5,4 +5,5 @@ import java.util.Optional;
 
 public interface PokerTableRepository extends MongoRepository<PokerTable, String> {
     Optional<PokerTable> findByTableId(String tableId);
+
 }
