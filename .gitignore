@@ -1,0 +1,7 @@
+# .gitignore
+/backend/target/
+/frontend/node_modules/
+.idea/
+/*.iml
+.DS_Store
+.env
