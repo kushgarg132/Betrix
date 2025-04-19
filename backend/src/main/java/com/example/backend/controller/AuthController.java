@@ -1,6 +1,6 @@
 package com.example.backend.controller;
 
-import com.example.backend.model.User;
+import com.example.backend.entity.User;
 import com.example.backend.security.JwtTokenProvider;
 import com.example.backend.service.UserService;
 import lombok.Data;

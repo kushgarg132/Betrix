@@ -1,6 +1,6 @@
 package com.example.backend.controller;
 
-import com.example.backend.model.Game;
+import com.example.backend.entity.Game;
 import com.example.backend.service.GameService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;

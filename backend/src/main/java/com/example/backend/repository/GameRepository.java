@@ -1,6 +1,6 @@
 package com.example.backend.repository;
 
-import com.example.backend.model.Game;
+import com.example.backend.entity.Game;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,49 +1,97 @@
-
 package com.example.backend.controller;
 
-import com.example.backend.model.Game;
+import com.example.backend.entity.Game;
 import com.example.backend.service.GameService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/game")
+@Validated
+@RequiredArgsConstructor
 public class GameController {
     
-    @Autowired
-    private GameService gameService;
+    private final GameService gameService;
     
-    @PostMapping("/create")
+    @PostMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Game> createGame() {
-        return ResponseEntity.ok(gameService.createGame());
+        Game game = gameService.createGame();
+        return ResponseEntity.ok(game);
     }
     
-    @PostMapping("/join")
-    public ResponseEntity<Game> joinGame(@RequestParam String gameId, @RequestParam String playerId) {
-        return ResponseEntity.ok(gameService.joinGame(gameId, playerId));
+    @GetMapping("/{gameId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Game> getGame(
+            @PathVariable @NotBlank(message = "Game ID is required") String gameId) {
+        Game game = gameService.getGame(gameId);
+        return ResponseEntity.ok(game);
     }
     
-    @PostMapping("/bet")
+    @PostMapping("/{gameId}/join")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Game> joinGame(
+            @PathVariable @NotBlank(message = "Game ID is required") String gameId,
+            @RequestParam @NotBlank(message = "Player ID is required") String playerId) {
+        Game game = gameService.joinGame(gameId, playerId);
+        return ResponseEntity.ok(game);
+    }
+    
+    @PostMapping("/{gameId}/start")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Game> startNewHand(
+            @PathVariable @NotBlank(message = "Game ID is required") String gameId) {
+        Game game = gameService.startNewHand(gameId);
+        return ResponseEntity.ok(game);
+    }
+    
+    @PostMapping("/{gameId}/bet")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Game> placeBet(
-            @RequestParam String gameId,
-            @RequestParam String playerId,
-            @RequestParam double amount) {
-        return ResponseEntity.ok(gameService.placeBet(gameId, playerId, amount));
+            @PathVariable @NotBlank(message = "Game ID is required") String gameId,
+            @RequestParam @NotBlank(message = "Player ID is required") String playerId,
+            @RequestParam @Min(value = 0, message = "Bet amount must be positive") double amount) {
+        Game game = gameService.placeBet(gameId, playerId, amount);
+        return ResponseEntity.ok(game);
     }
     
-    @PostMapping("/fold")
-    public ResponseEntity<Game> fold(@RequestParam String gameId, @RequestParam String playerId) {
-        return ResponseEntity.ok(gameService.fold(gameId, playerId));
+    @PostMapping("/{gameId}/check")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Game> check(
+            @PathVariable @NotBlank(message = "Game ID is required") String gameId,
+            @RequestParam @NotBlank(message = "Player ID is required") String playerId) {
+        Game game = gameService.placeBet(gameId, playerId, 0);
+        return ResponseEntity.ok(game);
     }
     
-    @PostMapping("/deal")
-    public ResponseEntity<Game> dealCards(@RequestParam String gameId) {
-        return ResponseEntity.ok(gameService.dealCards(gameId));
+    @PostMapping("/{gameId}/fold")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Game> fold(
+            @PathVariable @NotBlank(message = "Game ID is required") String gameId,
+            @RequestParam @NotBlank(message = "Player ID is required") String playerId) {
+        Game game = gameService.fold(gameId, playerId);
+        return ResponseEntity.ok(game);
     }
     
-    @PostMapping("/next-round")
-    public ResponseEntity<Game> nextRound(@RequestParam String gameId) {
-        return ResponseEntity.ok(gameService.nextRound(gameId));
+    @PostMapping("/{gameId}/leave")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Game> leaveGame(
+            @PathVariable @NotBlank(message = "Game ID is required") String gameId,
+            @RequestParam @NotBlank(message = "Player ID is required") String playerId) {
+        Game game = gameService.leaveGame(gameId, playerId);
+        return ResponseEntity.ok(game);
+    }
+    
+    @DeleteMapping("/{gameId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteGame(
+            @PathVariable @NotBlank(message = "Game ID is required") String gameId) {
+        gameService.deleteGame(gameId);
+        return ResponseEntity.ok().build();
     }
 }
