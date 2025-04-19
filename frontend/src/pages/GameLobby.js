@@ -1,22 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../api/axios';
 
 const GameLobby = () => {
   const [games, setGames] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Fetch available games from the backend
     axios
-      .get('/api/game')
+      .post('/game/getAll')
       .then((response) => setGames(response.data))
       .catch((error) => console.error('Error fetching games:', error));
   }, []);
 
   const createGame = () => {
-    axios
-      .post('/api/game')
+     axios
+      .post('/game')
       .then((response) => navigate(`/game/${response.data.id}`))
       .catch((error) => console.error('Error creating game:', error));
   };

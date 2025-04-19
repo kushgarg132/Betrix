@@ -22,7 +22,8 @@ public class GameServiceImpl implements GameService {
     private final HandEvaluator handEvaluator;
     private final BettingManager bettingManager;
     private final GameNotificationService notificationService;
-    
+
+
     @Autowired
     public GameServiceImpl(GameRepository gameRepository,
                          HandEvaluator handEvaluator,
@@ -33,7 +34,11 @@ public class GameServiceImpl implements GameService {
         this.bettingManager = bettingManager;
         this.notificationService = notificationService;
     }
-    
+    @Override
+    public List<Game> getAllGames() {
+        return gameRepository.findAll();
+    }
+
     @Override
     @Transactional
     public Game createGame() {

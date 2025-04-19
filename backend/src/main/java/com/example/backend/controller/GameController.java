@@ -10,6 +10,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/game")
 @Validated
@@ -22,6 +24,13 @@ public class GameController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Game> createGame() {
         Game game = gameService.createGame();
+        return ResponseEntity.ok(game);
+    }
+
+    @PostMapping("/getAll")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<Game>> getAllGames() {
+        List<Game> game = gameService.getAllGames();
         return ResponseEntity.ok(game);
     }
     

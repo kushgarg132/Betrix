@@ -2,7 +2,10 @@ package com.example.backend.service;
 
 import com.example.backend.entity.Game;
 
+import java.util.List;
+
 public interface GameService {
+    List<Game> getAllGames();
     Game createGame();
     Game getGame(String gameId);
     Game joinGame(String gameId, String playerId);

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import axios from './api/axios';
 import './PokerTable.css';
 
 const PokerTable = () => {
@@ -7,20 +8,16 @@ const PokerTable = () => {
   const [game, setGame] = useState(null);
 
   useEffect(() => {
-    fetch(`/api/game/${gameId}`)
-      .then((response) => response.json())
-      .then((data) => setGame(data))
+    axios
+      .get(`/game/${gameId}`)
+      .then((response) => setGame(response.data))
       .catch((error) => console.error('Error fetching game:', error));
   }, [gameId]);
 
   const placeBet = (amount) => {
-    fetch(`/api/game/${gameId}/bet`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ playerId: 'player1', amount }),
-    })
-      .then((response) => response.json())
-      .then((updatedGame) => setGame(updatedGame))
+    axios
+      .post(`/game/${gameId}/bet`, { amount })
+      .then((response) => setGame(response.data))
       .catch((error) => console.error('Error placing bet:', error));
   };
 
