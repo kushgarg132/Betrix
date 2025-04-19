@@ -16,10 +16,12 @@ import java.util.stream.Collectors;
 public class User implements UserDetails {
     @Id
     private String id;
+    private String name;
     private String username;
     private String password;
     private String email;
     private List<String> roles;
+    private String registrationDate;
     private boolean enabled = true;
 
     @Override

@@ -350,7 +350,6 @@ public class GameServiceImpl implements GameService {
         try {
             GameUpdate update = new GameUpdate();
             update.setGameId(gameId);
-            update.setType(GameUpdate.GameUpdateType.GAME_DELETED);
             notificationService.notifyGameUpdate(update);
         } catch (Exception e) {
             System.err.println("Failed to send game deletion notification: " + e.getMessage());
@@ -379,7 +378,6 @@ public class GameServiceImpl implements GameService {
     private void notifyGameUpdate(Game game) {
         GameUpdate update = new GameUpdate();
         update.setGameId(game.getId());
-        update.setType(GameUpdate.GameUpdateType.GAME_UPDATED);
         update.setPayload(Map.of("gameState", game));
         notificationService.notifyGameUpdate(update);
     }

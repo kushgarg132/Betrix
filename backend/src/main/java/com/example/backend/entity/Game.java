@@ -122,9 +122,6 @@ public class Game {
     }
     
     public void setupNextRound() {
-        if (currentBettingRound == null) {
-            currentBettingRound = new BettingRound();
-        }
         currentBettingRound = new BettingRound();
         currentBet = 0;
         
