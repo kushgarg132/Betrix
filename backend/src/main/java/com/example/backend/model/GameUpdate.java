@@ -9,7 +9,10 @@ public class GameUpdate {
     private Object payload;
 
     public enum GameUpdateType {
+        GAME_STARTED,
         PLAYER_JOINED,
+        PLAYER_LEFT,
+        PLAYER_TURN,
         PLAYER_BET,
         PLAYER_FOLDED,
         CARDS_DEALT,

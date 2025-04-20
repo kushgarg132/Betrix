@@ -33,7 +33,9 @@ public class BettingManager {
             case RIVER_BETTING:
                 game.setStatus(Game.GameStatus.SHOWDOWN);
                 break;
+
         }
+        notifyGameUpdate(game.getId(), GameUpdate.GameUpdateType.ROUND_STARTED , game.getStatus() );
     }
 
     private void setupPreFlopBetting(Game game) {
@@ -57,15 +59,15 @@ public class BettingManager {
         if (amount > player.getChips()) {
             amount = player.getChips(); // All-in
             game.getLastActions().put(player.getId(), Game.PlayerAction.ALL_IN);
+        } else if (amount == 0 && game.getCurrentBet() == 0) {
+            game.getLastActions().put(player.getId(), Game.PlayerAction.CHECK);
         } else if (amount == game.getCurrentBet()) {
             game.getLastActions().put(player.getId(), Game.PlayerAction.CALL);
         } else if (amount > game.getCurrentBet()) {
             game.getLastActions().put(player.getId(), Game.PlayerAction.RAISE);
-        } else if (amount == 0 && game.getCurrentBet() == 0) {
-            game.getLastActions().put(player.getId(), Game.PlayerAction.CHECK);
         }
 
-        player.setChips(player.getChips() - amount);
+        player.placeBet(amount);
         game.setPot(game.getPot() + amount);
         game.getCurrentBettingRound().getPlayerBets().put(player.getId(), amount);
 
@@ -126,6 +128,18 @@ public class BettingManager {
                 .orElseThrow(() -> new IllegalArgumentException("Player not found"));
     }
 
+    private void notifyGameUpdate(String gameId , GameUpdate.GameUpdateType updateType , Object payload ) {
+        GameUpdate update = new GameUpdate();
+        update.setGameId(gameId);
+        update.setType(updateType);
+        if(update.getType().equals(GameUpdate.GameUpdateType.PLAYER_JOINED)){
+            Player player = (Player) payload;
+            player.setId(null);
+        }
+        update.setPayload(payload);
+        notificationService.notifyGameUpdate(update);
+    }
+
     private void notifyBettingAction(Game game, Player player, double amount) {
         GameUpdate update = new GameUpdate();
         update.setGameId(game.getId());
@@ -138,11 +152,12 @@ public class BettingManager {
         notificationService.notifyGameUpdate(update);
     }
 
+
     private void notifyPlayerFolded(Game game, Player player) {
         GameUpdate update = new GameUpdate();
         update.setGameId(game.getId());
         update.setType(GameUpdate.GameUpdateType.PLAYER_FOLDED);
-        update.setPayload(Map.of("playerId", player.getId()));
+        update.setPayload(Map.of("playerId", player.getUsername()));
         notificationService.notifyGameUpdate(update);
     }
 

@@ -14,4 +14,8 @@ public class GameNotificationService {
     public void notifyGameUpdate(GameUpdate update) {
         messagingTemplate.convertAndSend("/topic/game/" + update.getGameId(), update);
     }
+
+    public void notifyPlayerUpdate(String gameId , String playerId , Object data) {
+        messagingTemplate.convertAndSend("/topic/game/" + gameId + "/" + playerId , data);
+    }
 }

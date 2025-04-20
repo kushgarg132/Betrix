@@ -85,16 +85,16 @@ public class GameServiceImpl implements GameService {
         Player player = new Player(user.getName(), user.getUsername(), user.getBalance());
         game.getPlayers().add(player);
         game.setUpdatedAt(LocalDateTime.now());
+        gameRepository.save(game);
 
-        Game savedGame = gameRepository.save(game);
-        notifyGameUpdate(savedGame); // PLayer Added
+        notifyGameUpdate(gameId , GameUpdate.GameUpdateType.PLAYER_JOINED , player ); // PLayer Added
 
         return getGameForPlayer(gameId , player.getId());
     }
-    
+
     @Override
     @Transactional
-    public Game startNewHand(String gameId) {
+    public void startNewHand(String gameId) {
         Game game = getGame(gameId);
         
         if (game.getPlayers().size() < 2) {
@@ -114,7 +114,7 @@ public class GameServiceImpl implements GameService {
         // Reset game state for a new hand
         game.resetForNewHand();
         game.setStatus(Game.GameStatus.STARTING);
-        
+
         // Deal cards to players
         for (Player player : game.getPlayers()) {
             if (player.isActive()) {
@@ -122,24 +122,23 @@ public class GameServiceImpl implements GameService {
                 player.addCard(game.getDeck().drawCard());
             }
         }
-        
-        // Start betting round
-        bettingManager.startNewBettingRound(game);
-        
-        Game savedGame = gameRepository.save(game);
-        
+
+        gameRepository.save(game);
+
         try {
-            notifyGameUpdate(savedGame);
+            notifyGameUpdate(gameId , GameUpdate.GameUpdateType.GAME_STARTED , null);
+            notifyPlayersHand(game); // GAME STARTED
         } catch (Exception e) {
             System.err.println("Failed to send game update notification: " + e.getMessage());
         }
-        
-        return savedGame;
+
+        // Start betting round
+        bettingManager.startNewBettingRound(game);
     }
     
     @Override
     @Transactional
-    public Game placeBet(String gameId, String playerId, double amount) {
+    public void placeBet(String gameId, String playerId, double amount) {
         if (amount < 0) {
             throw new IllegalArgumentException("Bet amount cannot be negative");
         }
@@ -158,47 +157,30 @@ public class GameServiceImpl implements GameService {
         if (player.isHasFolded()) {
             throw new RuntimeException("Player has folded");
         }
-        
-        // Validate bet amount
-        double currentBet = game.getCurrentBet();
-        double minRaise = currentBet - player.getCurrentBet();
-        
-        // Check if it's a valid amount (at least the current bet or all-in)
-        if (amount < minRaise && amount < player.getChips()) {
-            throw new RuntimeException("Bet must be at least " + minRaise + " or all-in");
-        }
-        
-        // Cap the bet at player's available chips
-        double actualBet = Math.min(amount, player.getChips());
-        
+
         try {
             // Place the bet
-            bettingManager.placeBet(game, player, actualBet);
+            bettingManager.placeBet(game, player, amount);
             
             // Advance to next player
             game.moveToNextPlayer();
-            
+            notifyGameUpdate(gameId , GameUpdate.GameUpdateType.PLAYER_TURN , game.getCurrentPlayerIndex());
+
             // Check if betting round is complete
             if (bettingManager.isBettingRoundComplete(game)) {
-                if (getActivePlayerCount(game) <= 1) {
+                if (getActivePlayerCount(game) <= 1 || game.getStatus() == Game.GameStatus.RIVER_BETTING) {
+                    // END GAME
                     evaluateHandAndAwardPot(game);
                     game.resetForNewHand();
                     game.setStatus(Game.GameStatus.WAITING);
+                    notifyGameUpdate(gameId , GameUpdate.GameUpdateType.GAME_ENDED , game);
                 } else {
                     bettingManager.startNewBettingRound(game);
                 }
             }
             
             game.setUpdatedAt(LocalDateTime.now());
-            Game savedGame = gameRepository.save(game);
-            
-            try {
-                notifyGameUpdate(savedGame);
-            } catch (Exception e) {
-                System.err.println("Failed to send game update notification: " + e.getMessage());
-            }
-            
-            return savedGame;
+            gameRepository.save(game);
         } catch (IllegalArgumentException e) {
             throw new RuntimeException(e.getMessage());
         }
@@ -206,7 +188,7 @@ public class GameServiceImpl implements GameService {
     
     @Override
     @Transactional
-    public Game check(String gameId, String playerId) {
+    public void check(String gameId, String playerId) {
         Game game = getGame(gameId);
         Player player = findPlayer(game, playerId);
         
@@ -226,39 +208,32 @@ public class GameServiceImpl implements GameService {
         if (game.getCurrentBet() > player.getCurrentBet()) {
             throw new RuntimeException("Cannot check when there's an active bet");
         }
-        
-        // Record the check action
-        game.getLastActions().put(player.getId(), Game.PlayerAction.CHECK);
-        
+
+        // Place the bet
+        bettingManager.placeBet(game, player, 0);
+
         // Advance to next player
         game.moveToNextPlayer();
-        
+        notifyGameUpdate(gameId , GameUpdate.GameUpdateType.PLAYER_TURN , game.getCurrentPlayerIndex());
         // Check if betting round is complete
         if (bettingManager.isBettingRoundComplete(game)) {
-            if (getActivePlayerCount(game) <= 1) {
+            if (getActivePlayerCount(game) <= 1 || game.getStatus() == Game.GameStatus.RIVER_BETTING) {
                 evaluateHandAndAwardPot(game);
                 game.resetForNewHand();
                 game.setStatus(Game.GameStatus.WAITING);
+                notifyGameUpdate(gameId , GameUpdate.GameUpdateType.GAME_ENDED , game);
             } else {
                 bettingManager.startNewBettingRound(game);
             }
         }
         
         game.setUpdatedAt(LocalDateTime.now());
-        Game savedGame = gameRepository.save(game);
-        
-        try {
-            notifyGameUpdate(savedGame);
-        } catch (Exception e) {
-            System.err.println("Failed to send game update notification: " + e.getMessage());
-        }
-        
-        return savedGame;
+        gameRepository.save(game);
     }
     
     @Override
     @Transactional
-    public Game fold(String gameId, String playerId) {
+    public void fold(String gameId, String playerId) {
         Game game = getGame(gameId);
         Player player = findPlayer(game, playerId);
         
@@ -292,23 +267,22 @@ public class GameServiceImpl implements GameService {
         } else {
             // Advance to next player
             game.moveToNextPlayer();
-            
+            notifyGameUpdate(gameId , GameUpdate.GameUpdateType.PLAYER_TURN , game.getCurrentPlayerIndex());
             // Check if betting round is complete
             if (bettingManager.isBettingRoundComplete(game)) {
-                bettingManager.startNewBettingRound(game);
+                if (game.getStatus() == Game.GameStatus.RIVER_BETTING) {
+                    evaluateHandAndAwardPot(game);
+                    game.resetForNewHand();
+                    game.setStatus(Game.GameStatus.WAITING);
+                    notifyGameUpdate(gameId , GameUpdate.GameUpdateType.GAME_ENDED , game);
+                } else {
+                    bettingManager.startNewBettingRound(game);
+                }
             }
         }
         
         game.setUpdatedAt(LocalDateTime.now());
-        Game savedGame = gameRepository.save(game);
-        
-        try {
-            notifyGameUpdate(savedGame);
-        } catch (Exception e) {
-            System.err.println("Failed to send game update notification: " + e.getMessage());
-        }
-        
-        return savedGame;
+        gameRepository.save(game);
     }
     
     @Override
@@ -317,26 +291,23 @@ public class GameServiceImpl implements GameService {
         Game game = getGame(gameId);
         game.getPlayers().removeIf(p -> p.getId().equals(playerId));
 
-//        // Mark player as inactive
-//        player.setActive(false);
-//
-//        // If game is in progress and it's the player's turn, auto-fold
-//        if ((game.getStatus() != Game.GameStatus.WAITING && game.getStatus() != Game.GameStatus.FINISHED)
-//            && game.isPlayersTurn(playerId)) {
-//            fold(gameId, playerId);
-//        }
-//
-//        // If not enough active players, end the game
-//        long activePlayers = game.getPlayers().stream().filter(Player::isActive).count();
-//        if (activePlayers < 2) {
-//            game.setStatus(Game.GameStatus.FINISHED);
-//        }
+        // If game is in progress and it's the player's turn, auto-fold
+        if ((game.getStatus() != Game.GameStatus.WAITING && game.getStatus() != Game.GameStatus.FINISHED)
+            && game.isPlayersTurn(playerId)) {
+            fold(gameId, playerId);
+        }
+
+        // If not enough active players, end the game
+        long activePlayers = game.getPlayers().stream().filter(Player::isActive).count();
+        if (activePlayers < 2) {
+            game.setStatus(Game.GameStatus.FINISHED);
+        }
 
         game.setUpdatedAt(LocalDateTime.now());
-        Game savedGame = gameRepository.save(game);
+        gameRepository.save(game);
         
         try {
-            notifyGameUpdate(savedGame);
+            notifyGameUpdate(gameId , GameUpdate.GameUpdateType.PLAYER_LEFT , playerId);
         } catch (Exception e) {
             System.err.println("Failed to send game update notification: " + e.getMessage());
         }
@@ -350,9 +321,9 @@ public class GameServiceImpl implements GameService {
         gameRepository.delete(game);
         
         try {
-            GameUpdate update = new GameUpdate();
-            update.setGameId(gameId);
-            notificationService.notifyGameUpdate(update);
+//            GameUpdate update = new GameUpdate();
+//            update.setGameId(gameId);
+//            notificationService.notifyGameUpdate(update);
         } catch (Exception e) {
             System.err.println("Failed to send game deletion notification: " + e.getMessage());
         }
@@ -376,13 +347,26 @@ public class GameServiceImpl implements GameService {
                 .filter(p -> p.isActive() && !p.isHasFolded())
                 .count();
     }
-    
-    private void notifyGameUpdate(Game game) {
+
+    private void notifyPlayersHand(Game game) {
+        game.getPlayers().forEach(player -> {
+            notificationService.notifyPlayerUpdate(game.getId(),player.getId(),player.getHand());
+        });
+    }
+
+    private void notifyGameUpdate(String gameId , GameUpdate.GameUpdateType updateType , Object payload ) {
         GameUpdate update = new GameUpdate();
-        update.setGameId(game.getId());
-        update.setPayload(Map.of("gameState", game));
+        update.setGameId(gameId);
+        update.setType(updateType);
+        if(update.getType().equals(GameUpdate.GameUpdateType.PLAYER_JOINED)){
+            Player player = (Player) payload;
+            player.setId(null);
+        }
+        update.setPayload(payload);
         notificationService.notifyGameUpdate(update);
     }
+
+
     
     private void evaluateHandAndAwardPot(Game game) {
         // Only evaluate if there are multiple players still in the hand

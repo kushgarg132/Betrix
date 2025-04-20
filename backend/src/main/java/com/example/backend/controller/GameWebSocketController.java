@@ -1,6 +1,8 @@
 package com.example.backend.controller;
 
 import com.example.backend.entity.Game;
+import com.example.backend.model.ActionPayload;
+import com.example.backend.model.GameUpdate;
 import com.example.backend.service.GameService;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -21,34 +23,44 @@ public class GameWebSocketController {
     @Autowired
     private GameService gameService;
 
-    @MessageMapping("/game/{gameId}/check")
-    @SendTo("/topic/game/{gameId}")
-    public Game processCheck(String gameId, @RequestBody ActionPayload actionPayload) {
-        return gameService.check(gameId, actionPayload.playerId);
+//    @MessageMapping("/game/{gameId}/player-game")
+//    public void getPlayerCards(String gameId, @RequestBody ActionPayload actionPayload) {
+//        return getPlayerGame(gameId, actionPayload);
+//    }
+
+    @MessageMapping("/game/{gameId}/action")
+    public void processAction(String gameId, @RequestBody ActionPayload actionPayload) {
+        if(actionPayload.getActionType() == ActionPayload.ActionType.CHECK) {
+            processCheck(gameId, actionPayload);
+        }else if(actionPayload.getActionType() == ActionPayload.ActionType.BET) {
+            processBet(gameId, actionPayload);
+        }else if(actionPayload.getActionType() == ActionPayload.ActionType.FOLD) {
+            processFold(gameId, actionPayload);
+        }else if(actionPayload.getActionType() == ActionPayload.ActionType.LEAVE) {
+            leaveGame(gameId, actionPayload);
+        }else{
+            throw new IllegalArgumentException("Invalid action type");
+        }
     }
 
-    @MessageMapping("/game/{gameId}/bet")
-    @SendTo("/topic/game/{gameId}")
-    public Game processBet(String gameId, @RequestBody ActionPayload actionPayload) {
-        return gameService.placeBet(gameId, actionPayload.playerId, actionPayload.amount);
+    public void processCheck(String gameId, @RequestBody ActionPayload actionPayload) {
+        gameService.check(gameId, actionPayload.getPlayerId());
     }
 
-    @MessageMapping("/game/{gameId}/fold")
-    @SendTo("/topic/game/{gameId}")
-    public Game processFold(String gameId, @RequestBody ActionPayload actionPayload) {
-        return gameService.fold(gameId, actionPayload.playerId);
+    public void processBet(String gameId, @RequestBody ActionPayload actionPayload) {
+        gameService.placeBet(gameId, actionPayload.getPlayerId(), actionPayload.getAmount());
     }
 
-    @MessageMapping("/game/{gameId}/leave")
-    @SendTo("/topic/game/{gameId}")
-    public ResponseEntity.BodyBuilder leaveGame(String gameId, @RequestBody ActionPayload actionPayload) {
-        gameService.leaveGame(gameId, actionPayload.playerId);
-        return ResponseEntity.ok();
+    public void processFold(String gameId, @RequestBody ActionPayload actionPayload) {
+        gameService.fold(gameId, actionPayload.getPlayerId());
     }
 
-    @Data
-    public class ActionPayload {
-        private String playerId;
-        private double amount;
+    public void leaveGame(String gameId, @RequestBody ActionPayload actionPayload) {
+        gameService.leaveGame(gameId, actionPayload.getPlayerId());
     }
+
+//    public ResponseEntity<Game> getPlayerGame(String gameId, @RequestBody ActionPayload actionPayload) {
+//        Game game = gameService.getGameForPlayer(gameId, actionPayload.getPlayerId());
+//        return ResponseEntity.ok(game);
+//    }
 }
