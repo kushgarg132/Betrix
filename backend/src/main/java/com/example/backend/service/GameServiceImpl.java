@@ -8,7 +8,6 @@ import com.example.backend.model.Player;
 import com.example.backend.repository.GameRepository;
 import com.example.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,7 +46,18 @@ public class GameServiceImpl implements GameService {
         return gameRepository.findById(gameId)
             .orElseThrow(() -> new RuntimeException("Game not found: " + gameId));
     }
-    
+
+    @Override
+    public Game getGameForPlayer(String gameId, String playerId) {
+        Game game = getGame(gameId);
+        game.getPlayers().forEach(player -> {
+            if (!player.getId().equals(playerId)) {
+            player.setId(null); // Hide other players' IDs'
+            player.setHand(new ArrayList<>()); // Hide other players' hands
+        }});
+        return game;
+    }
+
     @Override
     @Transactional
     public Game joinGame(String gameId, String username) {
@@ -79,7 +89,7 @@ public class GameServiceImpl implements GameService {
         Game savedGame = gameRepository.save(game);
         notifyGameUpdate(savedGame); // PLayer Added
 
-        return getGameForPlayer(game , player.getId());
+        return getGameForPlayer(gameId , player.getId());
     }
     
     @Override
@@ -303,25 +313,25 @@ public class GameServiceImpl implements GameService {
     
     @Override
     @Transactional
-    public Game leaveGame(String gameId, String playerId) {
+    public void leaveGame(String gameId, String playerId) {
         Game game = getGame(gameId);
-        Player player = findPlayer(game, playerId);
-        
-        // Mark player as inactive
-        player.setActive(false);
-        
-        // If game is in progress and it's the player's turn, auto-fold
-        if ((game.getStatus() != Game.GameStatus.WAITING && game.getStatus() != Game.GameStatus.FINISHED) 
-            && game.isPlayersTurn(playerId)) {
-            return fold(gameId, playerId);
-        }
-        
-        // If not enough active players, end the game
-        long activePlayers = game.getPlayers().stream().filter(Player::isActive).count();
-        if (activePlayers < 2) {
-            game.setStatus(Game.GameStatus.FINISHED);
-        }
-        
+        game.getPlayers().removeIf(p -> p.getId().equals(playerId));
+
+//        // Mark player as inactive
+//        player.setActive(false);
+//
+//        // If game is in progress and it's the player's turn, auto-fold
+//        if ((game.getStatus() != Game.GameStatus.WAITING && game.getStatus() != Game.GameStatus.FINISHED)
+//            && game.isPlayersTurn(playerId)) {
+//            fold(gameId, playerId);
+//        }
+//
+//        // If not enough active players, end the game
+//        long activePlayers = game.getPlayers().stream().filter(Player::isActive).count();
+//        if (activePlayers < 2) {
+//            game.setStatus(Game.GameStatus.FINISHED);
+//        }
+
         game.setUpdatedAt(LocalDateTime.now());
         Game savedGame = gameRepository.save(game);
         
@@ -330,8 +340,6 @@ public class GameServiceImpl implements GameService {
         } catch (Exception e) {
             System.err.println("Failed to send game update notification: " + e.getMessage());
         }
-        
-        return savedGame;
     }
     
     @Override
@@ -350,18 +358,6 @@ public class GameServiceImpl implements GameService {
         }
         
         return true;
-    }
-    
-    @Override
-    public Game getGameForPlayer(Game game, String playerId) {
-        for (Player player : game.getPlayers()) {
-            if (!player.getId().equals(playerId)) {
-                player.setId(null); // Hide other players' IDs'
-                player.setHand(new ArrayList<>()); // Hide other players' hands
-            }
-        }
-
-        return game;
     }
     
     private Player findPlayer(Game game, String playerId) {

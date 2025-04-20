@@ -26,10 +26,15 @@ const getSuitSymbol = (suit) => {
 const PokerTable = () => {
   const { gameId } = useParams();
   const [game, setGame] = useState(null);
+  const [updateAction, setUpdateActions] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [stompClient, setStompClient] = useState(null);
   const { user } = useContext(AuthContext);
+
+  useEffect(() => {
+    console.log('Update action:', updateAction);
+    },[updateAction]);
 
   useEffect(() => {
     axios
@@ -44,7 +49,7 @@ const PokerTable = () => {
         setLoading(false);
       });
 
-    const socket = new SockJS('http://localhost:8080/ws');
+    const socket = new SockJS('http://192.168.29.195:8080/ws');
     const client = new Client({
       webSocketFactory: () => socket,
       debug: (str) => console.log(str),
@@ -52,7 +57,7 @@ const PokerTable = () => {
         console.log('Connected to WebSocket');
         client.subscribe(`/topic/game/${gameId}`, (message) => {
           const updatedGame = JSON.parse(message.body);
-          setGame(updatedGame);
+          setUpdateActions(updatedGame);
         });
       },
       onStompError: (frame) => {
@@ -66,6 +71,12 @@ const PokerTable = () => {
 
     return () => {
       if (client) {
+        if (stompClient && stompClient.connected) {
+          stompClient.publish({
+            destination: `/app/game/${gameId}/leave`,
+            // body: JSON.stringify({ playerId , amount }),
+          });
+        }
         client.deactivate();
       }
     };
@@ -93,6 +104,7 @@ const PokerTable = () => {
     axios
       .post(`/game/${gameId}/join`)
       .then((response) => {
+        console.log('Joined game:', response.data);
         setGame(response.data);
       })
       .catch((error) => {
@@ -103,7 +115,11 @@ const PokerTable = () => {
   if (loading) return <div>Loading...</div>;
   if (error) return <div className="error">{error}</div>;
 
-  const currentPlayer = game.players[game.currentPlayerIndex];
+  // Ensure the game object and its properties are defined before rendering
+  if (!game || !game.communityCards || !game.players) {
+    console.error('Game data is incomplete:', game);
+    return <div>No game data available.</div>;
+  }
 
   return (
     <div className="poker-table">
@@ -130,7 +146,7 @@ const PokerTable = () => {
           </div>
         </div>
         <div className="pot-info">
-          <h3>Pot: ${game.pot.toFixed(2)}</h3>
+          <h3>Pot: ${game.pot?.toFixed(2)}</h3>
         </div>
         <div className="players">
           {game.players.map((player, index) => (
@@ -139,9 +155,9 @@ const PokerTable = () => {
               className={`player ${index === game.currentPlayerIndex ? 'current-player' : ''}`}
             >
               <h3>{player.username}</h3>
-              <p>Chips: ${player.chips.toFixed(2)}</p>
-              <p>Last Action: {game.lastActions[player._id] || 'None'}</p>
-              <p>Bet: ${game.currentBettingRound.playerBets[player._id] || 0}</p>
+              <p>Chips: ${player.chips?.toFixed(2)}</p>
+              <p>Last Action: {game.lastActions?.[player._id] || 'None'}</p>
+              <p>Bet: ${game.currentBettingRound?.playerBets?.[player._id] || 0}</p>
               <div className="player-cards">
                 {player.hand.map((card, idx) => (
                   <div key={idx} className={`card ${card.suit.toLowerCase()}`}>

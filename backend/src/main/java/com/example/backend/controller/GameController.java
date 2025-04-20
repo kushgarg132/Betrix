@@ -1,7 +1,6 @@
 package com.example.backend.controller;
 
 import com.example.backend.entity.Game;
-import com.example.backend.entity.User;
 import com.example.backend.repository.UserRepository;
 import com.example.backend.service.GameService;
 import jakarta.validation.constraints.Min;
@@ -70,43 +69,8 @@ public class GameController {
         Game game = gameService.startNewHand(gameId);
         return ResponseEntity.ok(game);
     }
-    
-    @PostMapping("/{gameId}/bet")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Game> placeBet(
-            @PathVariable @NotBlank(message = "Game ID is required") String gameId,
-            @RequestParam @NotBlank(message = "Player ID is required") String playerId,
-            @RequestParam @Min(value = 0, message = "Bet amount must be positive") double amount) {
-        Game game = gameService.placeBet(gameId, playerId, amount);
-        return ResponseEntity.ok(game);
-    }
-    
-    @PostMapping("/{gameId}/check")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Game> check(
-            @PathVariable @NotBlank(message = "Game ID is required") String gameId,
-            @RequestParam @NotBlank(message = "Player ID is required") String playerId) {
-        Game game = gameService.placeBet(gameId, playerId, 0);
-        return ResponseEntity.ok(game);
-    }
-    
-    @PostMapping("/{gameId}/fold")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Game> fold(
-            @PathVariable @NotBlank(message = "Game ID is required") String gameId,
-            @RequestParam @NotBlank(message = "Player ID is required") String playerId) {
-        Game game = gameService.fold(gameId, playerId);
-        return ResponseEntity.ok(game);
-    }
-    
-    @PostMapping("/{gameId}/leave")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Game> leaveGame(
-            @PathVariable @NotBlank(message = "Game ID is required") String gameId,
-            @RequestParam @NotBlank(message = "Player ID is required") String playerId) {
-        Game game = gameService.leaveGame(gameId, playerId);
-        return ResponseEntity.ok(game);
-    }
+
+
     
     @DeleteMapping("/{gameId}")
     @PreAuthorize("hasRole('ADMIN')")
