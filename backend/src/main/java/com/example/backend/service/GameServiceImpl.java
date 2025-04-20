@@ -1,10 +1,13 @@
 package com.example.backend.service;
 
+import com.example.backend.entity.User;
 import com.example.backend.model.Card;
 import com.example.backend.entity.Game;
 import com.example.backend.model.GameUpdate;
 import com.example.backend.model.Player;
 import com.example.backend.repository.GameRepository;
+import com.example.backend.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,24 +19,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class GameServiceImpl implements GameService {
-    
+    private final UserRepository userRepository;
     private final GameRepository gameRepository;
     private final HandEvaluator handEvaluator;
     private final BettingManager bettingManager;
     private final GameNotificationService notificationService;
 
-
-    @Autowired
-    public GameServiceImpl(GameRepository gameRepository,
-                         HandEvaluator handEvaluator,
-                         BettingManager bettingManager,
-                         GameNotificationService notificationService) {
-        this.gameRepository = gameRepository;
-        this.handEvaluator = handEvaluator;
-        this.bettingManager = bettingManager;
-        this.notificationService = notificationService;
-    }
     @Override
     public List<Game> getAllGames() {
         return gameRepository.findAll();
@@ -57,40 +50,36 @@ public class GameServiceImpl implements GameService {
     
     @Override
     @Transactional
-    public Game joinGame(String gameId, String playerId) {
-        if (playerId == null || playerId.trim().isEmpty()) {
-            throw new IllegalArgumentException("Player ID cannot be null or empty");
-        }
-
+    public Game joinGame(String gameId, String username) {
+        User user = userRepository.findByUsername(username).get();
         Game game = getGame(gameId);
-        
-        if (game.isGameFull()) {
-            throw new RuntimeException("Game is full");
-        }
-        
-        if (game.hasPlayer(playerId)) {
-            throw new RuntimeException("Player already in game");
-        }
-        
-        if (game.getStatus() != Game.GameStatus.WAITING) {
-            throw new RuntimeException("Cannot join a game in progress");
-        }
-        
-        // Add player to game with 1000 chips
-        Player player = new Player(playerId, "Player " + (game.getPlayers().size() + 1), 1000.0);
-        game.getPlayers().add(player);
-        game.setUpdatedAt(LocalDateTime.now());
-        
-        Game savedGame = gameRepository.save(game);
-        
         try {
-            notifyGameUpdate(savedGame);
+            if (user == null) {
+                throw new IllegalArgumentException("User cannot be null or empty");
+            }
+            if (game.isGameFull()) {
+                throw new RuntimeException("Game is full");
+            }
+            if (game.hasPlayer(user.getId())) {
+                throw new RuntimeException("Player already in game");
+            }
+            if (game.getStatus() != Game.GameStatus.WAITING) {
+                throw new RuntimeException("Cannot join a game in progress");
+            }
         } catch (Exception e) {
             // Log the exception but don't fail the operation
             System.err.println("Failed to send game update notification: " + e.getMessage());
         }
-        
-        return savedGame;
+
+        // Add player to game with 1000 chips
+        Player player = new Player(user.getName(), user.getUsername(), user.getBalance());
+        game.getPlayers().add(player);
+        game.setUpdatedAt(LocalDateTime.now());
+
+        Game savedGame = gameRepository.save(game);
+        notifyGameUpdate(savedGame); // PLayer Added
+
+        return getGameForPlayer(game , player.getId());
     }
     
     @Override
@@ -361,6 +350,18 @@ public class GameServiceImpl implements GameService {
         }
         
         return true;
+    }
+    
+    @Override
+    public Game getGameForPlayer(Game game, String playerId) {
+        for (Player player : game.getPlayers()) {
+            if (!player.getId().equals(playerId)) {
+                player.setId(null); // Hide other players' IDs'
+                player.setHand(new ArrayList<>()); // Hide other players' hands
+            }
+        }
+
+        return game;
     }
     
     private Player findPlayer(Game game, String playerId) {

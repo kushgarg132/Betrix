@@ -46,6 +46,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest) {
         User user = userService.createUser(
+            registerRequest.getName(),
             registerRequest.getUsername(),
             registerRequest.getPassword(),
             registerRequest.getEmail()
@@ -62,6 +63,7 @@ public class AuthController {
 
     @Data
     public static class RegisterRequest {
+        private String name;
         private String username;
         private String password;
         private String email;

@@ -1,0 +1,182 @@
+.poker-table {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #2e7d32;
+  color: white;
+  height: 100vh;
+  padding: 20px;
+  font-family: 'Arial', sans-serif;
+}
+
+.table-title {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  color: #ffeb3b;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.table-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 900px;
+  background-color: #1b5e20;
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+  position: relative;
+}
+
+.community-cards {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.cards {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.card {
+  width: 80px;
+  height: 120px;
+  background-color: white;
+  border: 2px solid black;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 5px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  position: relative;
+  font-family: 'Arial', sans-serif;
+}
+
+.card.hearts,
+.card.diamonds {
+  color: red;
+}
+
+.card.clubs,
+.card.spades {
+  color: black;
+}
+
+.card-top,
+.card-bottom {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.card-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  flex-grow: 1;
+}
+
+.card-center span {
+  transform: scale(1.5);
+}
+
+.players {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 20px;
+  width: 100%;
+}
+
+.player {
+  text-align: center;
+  background-color: #388e3c;
+  padding: 15px;
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  width: 150px;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.current-player {
+  border: 3px solid #ffeb3b;
+}
+
+.placeholder {
+  text-align: center;
+  background-color: #4caf50;
+  padding: 15px;
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  color: white;
+  font-style: italic;
+  width: 150px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.placeholder:hover {
+  background-color: #388e3c;
+  transform: scale(1.05);
+}
+
+.betting-controls {
+  margin-top: 20px;
+  display: flex;
+  gap: 15px;
+}
+
+.bet-button,
+.check-button,
+.fold-button {
+  padding: 10px 25px;
+  font-size: 1.2rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.bet-button {
+  background-color: #1976d2;
+  color: white;
+}
+
+.bet-button:hover {
+  background-color: #1565c0;
+  transform: scale(1.1);
+}
+
+.check-button {
+  background-color: #0288d1;
+  color: white;
+}
+
+.check-button:hover {
+  background-color: #0277bd;
+  transform: scale(1.1);
+}
+
+.fold-button {
+  background-color: #d32f2f;
+  color: white;
+}
+
+.fold-button:hover {
+  background-color: #c62828;
+  transform: scale(1.1);
+}

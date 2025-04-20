@@ -7,7 +7,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,8 +22,9 @@ public class User implements UserDetails {
     private String username;
     private String password;
     private String email;
+    private int balance;
     private List<String> roles;
-    private String registrationDate;
+    private Date registrationDate = new Date(LocalDateTime.now().toInstant(java.time.ZoneOffset.UTC).toEpochMilli());
     private boolean enabled = true;
 
     @Override

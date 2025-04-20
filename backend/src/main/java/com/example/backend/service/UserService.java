@@ -26,17 +26,24 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
-    public User createUser(String username, String password, String email) {
+    public User createUser(String name,String username, String password, String email) {
         if (userRepository.findByUsername(username).isPresent()) {
             throw new IllegalArgumentException("Username already exists");
         }
 
         User user = new User();
+        user.setName(name);
         user.setUsername(username);
         user.setPassword(passwordEncoder.encode(password));
         user.setEmail(email);
+        user.setBalance(0);
         user.setRoles(Collections.singletonList("USER"));
 
+        return userRepository.save(user);
+    }
+    public User addBalance(String username, int amount) {
+        User user = userRepository.findByUsername(username).get();
+        user.setBalance(user.getBalance() + amount);
         return userRepository.save(user);
     }
 }

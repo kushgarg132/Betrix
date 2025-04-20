@@ -2,13 +2,17 @@ package com.example.backend.model;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 public class Player {
     private String id;
+    private String name;
     private String username;
     private List<Card> hand;
     private double chips;
@@ -16,8 +20,9 @@ public class Player {
     private double currentBet;
     private boolean hasFolded;
     
-    public Player(String id, String username, double initialChips) {
-        this.id = id;
+    public Player(String name, String username, double initialChips) {
+        this.id = UUID.randomUUID().toString();
+        this.name = name;
         this.username = username;
         this.chips = initialChips;
         this.hand = new ArrayList<>();

@@ -1,12 +1,15 @@
 package com.example.backend.controller;
 
 import com.example.backend.entity.Game;
+import com.example.backend.entity.User;
+import com.example.backend.repository.UserRepository;
 import com.example.backend.service.GameService;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +22,7 @@ import java.util.List;
 public class GameController {
     
     private final GameService gameService;
+    private final UserRepository userRepository;
     
     @PostMapping
     @PreAuthorize("isAuthenticated()")
@@ -27,7 +31,7 @@ public class GameController {
         return ResponseEntity.ok(game);
     }
 
-    @PostMapping("/getAll")
+    @GetMapping("/all")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<Game>> getAllGames() {
         List<Game> game = gameService.getAllGames();
@@ -42,13 +46,21 @@ public class GameController {
         return ResponseEntity.ok(game);
     }
     
+//    @GetMapping("/{gameId}/player/{playerId}")
+//    @PreAuthorize("isAuthenticated()")
+//    public ResponseEntity<Game> getGameForPlayer(
+//            @PathVariable String gameId,
+//            @PathVariable String playerId) {
+////        Game game = gameService.getGameForPlayer(gameId, playerId);
+////        return ResponseEntity.ok(game);
+//    }
+    
     @PostMapping("/{gameId}/join")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Game> joinGame(
-            @PathVariable @NotBlank(message = "Game ID is required") String gameId,
-            @RequestParam @NotBlank(message = "Player ID is required") String playerId) {
-        Game game = gameService.joinGame(gameId, playerId);
-        return ResponseEntity.ok(game);
+    public ResponseEntity<Game> joinGame(Authentication authentication,
+            @PathVariable @NotBlank(message = "Game ID is required") String gameId) {
+        String username = authentication.getName();
+        Game userGame = gameService.joinGame(gameId, username);
+        return ResponseEntity.ok(userGame);
     }
     
     @PostMapping("/{gameId}/start")
