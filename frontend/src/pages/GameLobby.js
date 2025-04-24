@@ -14,6 +14,7 @@ const GameLobby = () => {
       .then((response) => {
         setGames(response.data);
         setLoading(false);
+        console.log('Games:', response.data);
       })
       .catch((error) => {
         console.error('Error fetching games:', error);
@@ -23,8 +24,8 @@ const GameLobby = () => {
 
   const createGame = () => {
     axios
-      .post('/game')
-      .then((response) => navigate(`/game/${response.data.id}`))
+      .post('/game/create-new')
+      .then((response) => navigate(`/game/${response.data.id}`)) // Redirect to the game page with player ID
       .catch((error) => console.error('Error creating game:', error));
   };
 
@@ -47,6 +48,8 @@ const GameLobby = () => {
               <div className="game-details">
                 <p><strong>Game ID:</strong> {game.id}</p>
                 <p><strong>Status:</strong> {game.status}</p>
+                <p><strong>Players:</strong> {game.players.length}/{game.max_PLAYERS}</p>
+                <p><strong>Blinds:</strong> Small - ${game.smallBlindAmount}, Big - ${game.bigBlindAmount}</p>
               </div>
               <button
                 className="join-game-button"

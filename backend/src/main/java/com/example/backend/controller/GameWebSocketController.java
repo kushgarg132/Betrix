@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -29,18 +30,27 @@ public class GameWebSocketController {
 //    }
 
     @MessageMapping("/game/{gameId}/action")
-    public void processAction(String gameId, @RequestBody ActionPayload actionPayload) {
-        if(actionPayload.getActionType() == ActionPayload.ActionType.CHECK) {
+    public void processAction(@Header("simpDestination") String destination, @RequestBody ActionPayload actionPayload) {
+        // Extract gameId from the destination
+        String gameId = extractGameIdFromDestination(destination);
+
+        if (actionPayload.getActionType() == ActionPayload.ActionType.CHECK) {
             processCheck(gameId, actionPayload);
-        }else if(actionPayload.getActionType() == ActionPayload.ActionType.BET) {
+        } else if (actionPayload.getActionType() == ActionPayload.ActionType.BET) {
             processBet(gameId, actionPayload);
-        }else if(actionPayload.getActionType() == ActionPayload.ActionType.FOLD) {
+        } else if (actionPayload.getActionType() == ActionPayload.ActionType.FOLD) {
             processFold(gameId, actionPayload);
-        }else if(actionPayload.getActionType() == ActionPayload.ActionType.LEAVE) {
+        } else if (actionPayload.getActionType() == ActionPayload.ActionType.LEAVE) {
             leaveGame(gameId, actionPayload);
-        }else{
+        } else {
             throw new IllegalArgumentException("Invalid action type");
         }
+    }
+
+    private String extractGameIdFromDestination(String destination) {
+        // Extract the gameId from the destination path (e.g., "/app/game/{gameId}/action")
+        String[] parts = destination.split("/");
+        return parts[parts.length - 2]; // Assuming the gameId is the third-to-last segment
     }
 
     public void processCheck(String gameId, @RequestBody ActionPayload actionPayload) {

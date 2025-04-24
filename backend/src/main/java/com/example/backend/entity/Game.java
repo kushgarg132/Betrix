@@ -18,7 +18,7 @@ import java.util.UUID;
 @Data
 @Document(collection = "games")
 public class Game {
-    public static final int MAX_PLAYERS = 6;
+    private int MAX_PLAYERS = 6;
     
     @Id
     private String id;
@@ -82,8 +82,12 @@ public class Game {
         return players.size() >= MAX_PLAYERS;
     }
     
-    public boolean hasPlayer(String playerId) {
-        return players.stream().anyMatch(p -> p.getId().equals(playerId));
+    public boolean hasPlayer(String username) {
+        return players.stream().anyMatch(p -> p.getUsername().equals(username));
+    }
+
+    public Player getPlayerByUsername(String userId) {
+        return players.stream().filter(p -> p.getUsername().equals(userId)).findFirst().orElse(null);
     }
     
     public void moveToNextPlayer() {

@@ -36,7 +36,7 @@ public class UserService implements UserDetailsService {
         user.setUsername(username);
         user.setPassword(passwordEncoder.encode(password));
         user.setEmail(email);
-        user.setBalance(0);
+        user.setBalance(1000);
         user.setRoles(Collections.singletonList("USER"));
 
         return userRepository.save(user);

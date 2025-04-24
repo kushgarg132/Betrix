@@ -16,6 +16,6 @@ public class GameNotificationService {
     }
 
     public void notifyPlayerUpdate(String gameId , String playerId , Object data) {
-        messagingTemplate.convertAndSend("/topic/game/" + gameId + "/" + playerId , data);
+        messagingTemplate.convertAndSend(("/topic/game/" + gameId + "/" + playerId) , data);
     }
 }

@@ -33,9 +33,8 @@ public class BettingManager {
             case RIVER_BETTING:
                 game.setStatus(Game.GameStatus.SHOWDOWN);
                 break;
-
         }
-        notifyGameUpdate(game.getId(), GameUpdate.GameUpdateType.ROUND_STARTED , game.getStatus() );
+        notifyGameUpdate(game.getId(), GameUpdate.GameUpdateType.ROUND_STARTED , game);
     }
 
     private void setupPreFlopBetting(Game game) {
@@ -58,18 +57,18 @@ public class BettingManager {
     public void placeBet(Game game, Player player, double amount) {
         if (amount > player.getChips()) {
             amount = player.getChips(); // All-in
-            game.getLastActions().put(player.getId(), Game.PlayerAction.ALL_IN);
+            game.getLastActions().put(player.getUsername(), Game.PlayerAction.ALL_IN);
         } else if (amount == 0 && game.getCurrentBet() == 0) {
-            game.getLastActions().put(player.getId(), Game.PlayerAction.CHECK);
+            game.getLastActions().put(player.getUsername(), Game.PlayerAction.CHECK);
         } else if (amount == game.getCurrentBet()) {
-            game.getLastActions().put(player.getId(), Game.PlayerAction.CALL);
+            game.getLastActions().put(player.getUsername(), Game.PlayerAction.CALL);
         } else if (amount > game.getCurrentBet()) {
-            game.getLastActions().put(player.getId(), Game.PlayerAction.RAISE);
+            game.getLastActions().put(player.getUsername(), Game.PlayerAction.RAISE);
         }
 
         player.placeBet(amount);
         game.setPot(game.getPot() + amount);
-        game.getCurrentBettingRound().getPlayerBets().put(player.getId(), amount);
+        game.getCurrentBettingRound().getPlayerBets().put(player.getUsername(), amount);
 
         if (amount > game.getCurrentBet()) {
             game.setCurrentBet(amount);
@@ -98,7 +97,7 @@ public class BettingManager {
         for (Player player : game.getPlayers()) {
             if (!player.isActive()) continue;
 
-            Double playerBet = game.getCurrentBettingRound().getPlayerBets().getOrDefault(player.getId(), 0.0);
+            Double playerBet = game.getCurrentBettingRound().getPlayerBets().getOrDefault(player.getUsername() , 0.0);
             Game.PlayerAction lastAction = game.getLastActions().get(player.getId());
 
             if (lastAction == Game.PlayerAction.NONE ||
@@ -132,10 +131,6 @@ public class BettingManager {
         GameUpdate update = new GameUpdate();
         update.setGameId(gameId);
         update.setType(updateType);
-        if(update.getType().equals(GameUpdate.GameUpdateType.PLAYER_JOINED)){
-            Player player = (Player) payload;
-            player.setId(null);
-        }
         update.setPayload(payload);
         notificationService.notifyGameUpdate(update);
     }
@@ -145,9 +140,9 @@ public class BettingManager {
         update.setGameId(game.getId());
         update.setType(GameUpdate.GameUpdateType.PLAYER_BET);
         update.setPayload(Map.of(
-            "playerId", player.getId(),
+            "username", player.getUsername(),
             "amount", amount,
-            "action", game.getLastActions().get(player.getId())
+            "action", game.getLastActions().get(player.getUsername())
         ));
         notificationService.notifyGameUpdate(update);
     }

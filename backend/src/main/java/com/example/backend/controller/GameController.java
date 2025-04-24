@@ -1,7 +1,6 @@
 package com.example.backend.controller;
 
 import com.example.backend.entity.Game;
-import com.example.backend.repository.UserRepository;
 import com.example.backend.service.GameService;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +20,7 @@ public class GameController {
     
     private final GameService gameService;
     
-    @PostMapping
+    @PostMapping("/create-new")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Game> createGame() {
         Game game = gameService.createGame();
@@ -33,8 +32,8 @@ public class GameController {
     public ResponseEntity<Game> joinGame(Authentication authentication,
                                          @PathVariable @NotBlank(message = "Game ID is required") String gameId) {
         String username = authentication.getName();
-        Game userGame = gameService.joinGame(gameId, username);
-        return ResponseEntity.ok(userGame);
+        Game game = gameService.joinGame(gameId, username);
+        return ResponseEntity.ok(game);
     }
 
     @PostMapping("/{gameId}/start")
