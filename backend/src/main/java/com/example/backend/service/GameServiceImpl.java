@@ -8,9 +8,10 @@ import com.example.backend.model.Player;
 import com.example.backend.repository.GameRepository;
 import com.example.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.SerializationUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,6 +22,8 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class GameServiceImpl implements GameService {
+    private static final Logger logger = LoggerFactory.getLogger(GameServiceImpl.class);
+
     private final UserRepository userRepository;
     private final GameRepository gameRepository;
     private final HandEvaluator handEvaluator;
@@ -29,34 +32,45 @@ public class GameServiceImpl implements GameService {
 
     @Override
     public List<Game> getAllGames() {
+        logger.info("Fetching all games");
         List<Game> games = gameRepository.findAll();
         games.forEach(game ->
                 game.getPlayers().forEach(player -> {
-                            player.setId(null);
-                            player.setHand(null);
-                        }
-                ));
+                    player.setId(null);
+                    player.setHand(null);
+                }
+        ));
+        logger.debug("Fetched games: {}", games);
         return games;
     }
 
     @Override
     @Transactional
     public Game createGame() {
+        logger.info("Creating a new game");
         Game game = new Game();
-        return gameRepository.save(game);
+        Game savedGame = gameRepository.save(game);
+        logger.debug("Created game: {}", savedGame);
+        return savedGame;
     }
 
     @Override
     public Game getGame(String gameId) {
+        logger.info("Fetching game with ID: {}", gameId);
         if (gameId == null || gameId.trim().isEmpty()) {
+            logger.error("Game ID cannot be null or empty");
             throw new IllegalArgumentException("Game ID cannot be null or empty");
         }
         return gameRepository.findById(gameId)
-                .orElseThrow(() -> new RuntimeException("Game not found: " + gameId));
+                .orElseThrow(() -> {
+                    logger.error("Game not found with ID: {}", gameId);
+                    return new RuntimeException("Game not found: " + gameId);
+                });
     }
 
     @Override
     public Game getGameForPlayer(String gameId, String playerId) {
+        logger.info("Fetching game for player with ID: {}", playerId);
         Game game = getGame(gameId);
         game.getPlayers().forEach(player -> {
             if (!player.getId().equals(playerId)) {
@@ -64,27 +78,34 @@ public class GameServiceImpl implements GameService {
                 player.setHand(new ArrayList<>()); // Hide other players' hands
             }
         });
+        logger.debug("Fetched game for player: {}", game);
         return game;
     }
 
     @Override
     @Transactional
     public Game joinGame(String gameId, String username) {
-        User user = userRepository.findByUsername(username).get();
+        logger.info("User '{}' is attempting to join game with ID: {}", username, gameId);
+        User user = userRepository.findByUsername(username).orElseThrow(() -> {
+            logger.error("User not found: {}", username);
+            return new RuntimeException("User not found: " + username);
+        });
         Game game = getGame(gameId);
         try {
             if (game.isGameFull()) {
+                logger.error("Game is full");
                 throw new RuntimeException("Game is full");
             }
             if (game.hasPlayer(username)) {
+                logger.info("User '{}' is already in the game", username);
                 return getGameForPlayer(gameId, game.getPlayerByUsername(username).getId());
             }
             if (game.getStatus() != Game.GameStatus.WAITING) {
+                logger.error("Cannot join a game in progress");
                 throw new RuntimeException("Cannot join a game in progress");
             }
         } catch (Exception e) {
-            // Log the exception but don't fail the operation
-            System.err.println("Failed to send game update notification: " + e.getMessage());
+            logger.error("Failed to send game update notification: {}", e.getMessage());
         }
 
         // Add player to game with 1000 chips
@@ -93,27 +114,32 @@ public class GameServiceImpl implements GameService {
         game.setUpdatedAt(LocalDateTime.now());
         gameRepository.save(game);
 
-        notifyGameUpdate(gameId, GameUpdate.GameUpdateType.PLAYER_JOINED, player); // PLayer Added
+        notifyGameUpdate(gameId, GameUpdate.GameUpdateType.PLAYER_JOINED, new Player(player)); // Player Added
 
+        logger.debug("User '{}' joined game: {}", username, game);
         return getGameForPlayer(gameId, player.getId());
     }
 
     @Override
     @Transactional
     public void startNewHand(String gameId) {
+        logger.info("Starting a new hand for game with ID: {}", gameId);
         Game game = getGame(gameId);
 
         if (game.getPlayers().size() < 2) {
+            logger.error("Need at least 2 players to start a game");
             throw new RuntimeException("Need at least 2 players to start a game");
         }
 
         if (game.getStatus() == Game.GameStatus.PLAYING) {
+            logger.error("Game already in progress");
             throw new RuntimeException("Game already in progress");
         }
 
         // Get active players count
         long activePlayers = game.getPlayers().stream().filter(Player::isActive).count();
         if (activePlayers < 2) {
+            logger.error("Need at least 2 active players to start a hand");
             throw new RuntimeException("Need at least 2 active players to start a hand");
         }
 
@@ -130,10 +156,10 @@ public class GameServiceImpl implements GameService {
         }
 
         try {
-            notifyGameUpdate(gameId, GameUpdate.GameUpdateType.GAME_STARTED, game.toString());
+            notifyGameUpdate(gameId, GameUpdate.GameUpdateType.GAME_STARTED, new Game(game));
             notifyPlayersHand(game); // GAME STARTED
         } catch (Exception e) {
-            System.err.println("Failed to send game update notification: " + e.getMessage());
+            logger.error("Failed to send game update notification: {}", e.getMessage());
         }
 
         // Start betting round
@@ -141,12 +167,16 @@ public class GameServiceImpl implements GameService {
 
         game.setUpdatedAt(LocalDateTime.now());
         gameRepository.save(game);
+
+        logger.debug("New hand started for game: {}", game);
     }
 
     @Override
     @Transactional
     public void placeBet(String gameId, String playerId, double amount) {
+        logger.info("Player '{}' is placing a bet of {} in game with ID: {}", playerId, amount, gameId);
         if (amount < 0) {
+            logger.error("Bet amount cannot be negative");
             throw new IllegalArgumentException("Bet amount cannot be negative");
         }
 
@@ -154,14 +184,17 @@ public class GameServiceImpl implements GameService {
         Player player = findPlayer(game, playerId);
 
         if (game.getStatus() == Game.GameStatus.WAITING || game.getStatus() == Game.GameStatus.FINISHED) {
+            logger.error("Game not in progress");
             throw new RuntimeException("Game not in progress");
         }
 
         if (!game.isPlayersTurn(playerId)) {
+            logger.error("Not player's turn");
             throw new RuntimeException("Not player's turn");
         }
 
         if (player.isHasFolded()) {
+            logger.error("Player has folded");
             throw new RuntimeException("Player has folded");
         }
 
@@ -188,7 +221,10 @@ public class GameServiceImpl implements GameService {
 
             game.setUpdatedAt(LocalDateTime.now());
             gameRepository.save(game);
+
+            logger.debug("Bet placed. Updated game state: {}", game);
         } catch (IllegalArgumentException e) {
+            logger.error("Error placing bet: {}", e.getMessage());
             throw new RuntimeException(e.getMessage());
         }
     }
@@ -196,23 +232,28 @@ public class GameServiceImpl implements GameService {
     @Override
     @Transactional
     public void check(String gameId, String playerId) {
+        logger.info("Player '{}' is checking in game with ID: {}", playerId, gameId);
         Game game = getGame(gameId);
         Player player = findPlayer(game, playerId);
 
         if (game.getStatus() == Game.GameStatus.WAITING || game.getStatus() == Game.GameStatus.FINISHED) {
+            logger.error("Game not in progress");
             throw new RuntimeException("Game not in progress");
         }
 
         if (!game.isPlayersTurn(playerId)) {
+            logger.error("Not player's turn");
             throw new RuntimeException("Not player's turn");
         }
 
         if (player.isHasFolded()) {
+            logger.error("Player has folded");
             throw new RuntimeException("Player has folded");
         }
 
         // Can only check if current bet equals player's bet
         if (game.getCurrentBet() > player.getCurrentBet()) {
+            logger.error("Cannot check when there's an active bet");
             throw new RuntimeException("Cannot check when there's an active bet");
         }
 
@@ -236,19 +277,24 @@ public class GameServiceImpl implements GameService {
 
         game.setUpdatedAt(LocalDateTime.now());
         gameRepository.save(game);
+
+        logger.debug("Check action completed. Updated game state: {}", game);
     }
 
     @Override
     @Transactional
     public void fold(String gameId, String playerId) {
+        logger.info("Player '{}' is folding in game with ID: {}", playerId, gameId);
         Game game = getGame(gameId);
         Player player = findPlayer(game, playerId);
 
         if (game.getStatus() == Game.GameStatus.WAITING || game.getStatus() == Game.GameStatus.FINISHED) {
+            logger.error("Game not in progress");
             throw new RuntimeException("Game not in progress");
         }
 
         if (!game.isPlayersTurn(playerId)) {
+            logger.error("Not player's turn");
             throw new RuntimeException("Not player's turn");
         }
 
@@ -290,11 +336,14 @@ public class GameServiceImpl implements GameService {
 
         game.setUpdatedAt(LocalDateTime.now());
         gameRepository.save(game);
+
+        logger.debug("Fold action completed. Updated game state: {}", game);
     }
 
     @Override
     @Transactional
     public void leaveGame(String gameId, String playerId) {
+        logger.info("Player '{}' is leaving game with ID: {}", playerId, gameId);
         Game game = getGame(gameId);
         game.getPlayers().removeIf(p -> p.getId().equals(playerId));
 
@@ -316,13 +365,16 @@ public class GameServiceImpl implements GameService {
         try {
             notifyGameUpdate(gameId, GameUpdate.GameUpdateType.PLAYER_LEFT, playerId);
         } catch (Exception e) {
-            System.err.println("Failed to send game update notification: " + e.getMessage());
+            logger.error("Failed to send game update notification: {}", e.getMessage());
         }
+
+        logger.debug("Player '{}' left the game. Updated game state: {}", playerId, game);
     }
 
     @Override
     @Transactional
     public boolean deleteGame(String gameId) {
+        logger.info("Deleting game with ID: {}", gameId);
         Game game = getGame(gameId);
 
         gameRepository.delete(game);
@@ -332,21 +384,26 @@ public class GameServiceImpl implements GameService {
 //            update.setGameId(gameId);
 //            notificationService.notifyGameUpdate(update);
         } catch (Exception e) {
-            System.err.println("Failed to send game deletion notification: " + e.getMessage());
+            logger.error("Failed to send game deletion notification: {}", e.getMessage());
         }
 
+        logger.debug("Game with ID '{}' deleted", gameId);
         return true;
     }
 
     private Player findPlayer(Game game, String playerId) {
         if (playerId == null || playerId.isEmpty()) {
+            logger.error("Player ID cannot be null or empty");
             throw new IllegalArgumentException("Player ID cannot be null or empty");
         }
 
         return game.getPlayers().stream()
                 .filter(p -> p.getId().equals(playerId))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("Player not found in game: " + playerId));
+                .orElseThrow(() -> {
+                    logger.error("Player not found in game: {}", playerId);
+                    return new RuntimeException("Player not found in game: " + playerId);
+                });
     }
 
     private int getActivePlayerCount(Game game) {
@@ -365,36 +422,34 @@ public class GameServiceImpl implements GameService {
         GameUpdate update = new GameUpdate();
         update.setGameId(gameId);
         update.setType(updateType);
-        update.setPayload(payload);
-        if (update.getType().equals(GameUpdate.GameUpdateType.GAME_STARTED)) {
-            Game game = (Game) payload;
-            game.getPlayers().forEach(player -> {
-                player.setId(null);
-                player.setHand(new ArrayList<>());
-            });
-        } else if (update.getType().equals(GameUpdate.GameUpdateType.PLAYER_JOINED)) {
-            Player player = (Player) payload;
-            player.setId(null);
+
+        if (update.getType().equals(GameUpdate.GameUpdateType.PLAYER_JOINED)) {
+            Player player = new Player((Player) payload); // Create a copy of the player
+            player.setId(null); // Hide sensitive information
+            update.setPayload(player);
+        } else {
+            update.setPayload(payload);
         }
 
         notificationService.notifyGameUpdate(update);
     }
 
-
     private void evaluateHandAndAwardPot(Game game) {
+        logger.info("Evaluating hands and awarding pot for game with ID: {}", game.getId());
         // Only evaluate if there are multiple players still in the hand
         List<Player> activePlayers = game.getPlayers().stream()
                 .filter(p -> p.isActive() && !p.isHasFolded())
                 .toList();
 
         if (activePlayers.isEmpty()) {
-            // No active players, unusual case
+            logger.warn("No active players, unusual case");
             return;
         }
 
         if (activePlayers.size() == 1) {
             // Single player gets the pot
             activePlayers.get(0).awardPot(game.getPot());
+            logger.debug("Single player awarded pot: {}", activePlayers.get(0));
             return;
         }
 
@@ -431,6 +486,8 @@ public class GameServiceImpl implements GameService {
             for (Player winner : winners) {
                 winner.awardPot(winAmount);
             }
+
+            logger.debug("Pot split among winners: {}", winners);
         } catch (Exception e) {
             // If there's any error in hand evaluation, split the pot equally
             double splitAmount = game.getPot() / activePlayers.size();
@@ -438,7 +495,7 @@ public class GameServiceImpl implements GameService {
                 player.awardPot(splitAmount);
             }
 
-            System.err.println("Error during hand evaluation: " + e.getMessage());
+            logger.error("Error during hand evaluation: {}", e.getMessage());
         }
     }
 

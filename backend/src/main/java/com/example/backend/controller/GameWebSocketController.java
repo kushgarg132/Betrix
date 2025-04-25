@@ -24,11 +24,6 @@ public class GameWebSocketController {
     @Autowired
     private GameService gameService;
 
-//    @MessageMapping("/game/{gameId}/player-game")
-//    public void getPlayerCards(String gameId, @RequestBody ActionPayload actionPayload) {
-//        return getPlayerGame(gameId, actionPayload);
-//    }
-
     @MessageMapping("/game/{gameId}/action")
     public void processAction(@Header("simpDestination") String destination, @RequestBody ActionPayload actionPayload) {
         // Extract gameId from the destination
@@ -68,9 +63,4 @@ public class GameWebSocketController {
     public void leaveGame(String gameId, @RequestBody ActionPayload actionPayload) {
         gameService.leaveGame(gameId, actionPayload.getPlayerId());
     }
-
-//    public ResponseEntity<Game> getPlayerGame(String gameId, @RequestBody ActionPayload actionPayload) {
-//        Game game = gameService.getGameForPlayer(gameId, actionPayload.getPlayerId());
-//        return ResponseEntity.ok(game);
-//    }
 }

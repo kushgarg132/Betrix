@@ -30,7 +30,18 @@ public class Player {
         this.currentBet = 0;
         this.hasFolded = false;
     }
-    
+
+    public Player(Player player) {
+        this.id = player.getId() != null ? player.getId() : UUID.randomUUID().toString();
+        this.name = player.getName();
+        this.username = player.getUsername();
+        this.chips = player.getChips();
+        this.hand = player.getHand() != null ? new ArrayList<>(player.getHand()) : new ArrayList<>();
+        this.isActive = player.isActive();
+        this.currentBet = player.getCurrentBet();
+        this.hasFolded = player.isHasFolded();;
+    }
+
     public void reset() {
         this.hand.clear();
         this.currentBet = 0;

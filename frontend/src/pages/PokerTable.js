@@ -5,6 +5,7 @@ import SockJS from 'sockjs-client';
 import axios from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
 import './PokerTable.css';
+import PlayerCard from '../components/PlayerCard';
 
 const MAX_PLAYERS = 6;
 
@@ -75,36 +76,42 @@ const PokerTable = () => {
   };
 
   useEffect(() => {
-    axios
-      .post(`/game/${gameId}/join`)
-      .then((response) => {
-        setGame(response.data);
-        setLoading(false);
-        console.log("User", user);
-        const playerIndex = response.data.players.findIndex((p) => p.username === user.username);
-        setPlayerIdx(playerIndex);
+    if (gameId) {
+      setLoading(true); // Ensure loading state is set before API call
+      axios
+        .post(`/game/${gameId}/join`)
+        .then((response) => {
+          setGame(response.data);
+          setLoading(false);
+          console.log("Game Joined", response.data);
+          const playerIndex = response.data.players.findIndex((p) => p?.username === user.username);
+          setPlayerIdx(playerIndex);
 
-        const player = response.data.players[playerIndex];
-        
-        const client = initializeSocketConnection(gameId, player.id, setUpdateActions, setCards, setError);
-        setStompClient(client);
-      })
-      .catch((error) => {
-        console.error('Error fetching game:', error);
-        setError('Failed to load game data.');
-        setLoading(false);
-      });
-
-    return () => {
-      if (stompClient && stompClient.connected) {
-        stompClient.publish({
-          destination: `/app/game/${gameId}/leave`,
-          body: JSON.stringify({ playerId: game.players[playerIdx]?.id }), // Use correct player ID
+          const player = response.data.players[playerIndex];
+          const client = initializeSocketConnection(gameId, player.id, setUpdateActions, setCards, setError);
+          setStompClient(client);
+        })
+        .catch((error) => {
+          console.error('Error fetching game:', error);
+          setError('Failed to load game data.');
+          setLoading(false);
         });
-        stompClient.deactivate();
-      }
-    };
+
+      return () => {
+        if (stompClient && stompClient.connected) {
+          stompClient.publish({
+            destination: `/app/game/${gameId}/leave`,
+            body: JSON.stringify({ playerId: game?.players[playerIdx]?.id }),
+          });
+          stompClient.deactivate();
+        }
+      };
+    }
   }, [gameId]);
+
+  useEffect(() => {
+    console.log('Game state updated:', game);
+  }, [game]);
 
   useEffect(() => {
     if (updateAction) {
@@ -154,7 +161,7 @@ const PokerTable = () => {
               ...prevGame.currentBettingRound,
               playerBets: {
                 ...prevGame.currentBettingRound.playerBets,
-                [updateAction.payload.playerId]: updateAction.payload.amount,
+                [updateAction.payload.username]: updateAction.payload.amount,
               },
             },
           }));
@@ -216,7 +223,6 @@ const PokerTable = () => {
           console.warn('Unhandled update action:', updateAction);
       }
       setUpdateActions(null); // Reset updateAction after handling
-      console.log('Game state updated:', game);
     }
   }, [updateAction]);
 
@@ -239,7 +245,7 @@ const PokerTable = () => {
       stompClient.publish({
         destination: `/app/game/${gameId}/action`,
         body: JSON.stringify({
-          playerId: user._id,
+          playerId: game.players[playerIdx]?.id,
           amount,
           actionType: 'BET',
         }),
@@ -318,35 +324,22 @@ const PokerTable = () => {
         <div className="pot-info">
           <h3>Pot: ${game.pot?.toFixed(2)}</h3>
         </div>
-        <div className="players">
-          {game.players.map((player, index) => (
-            <div
-              key={index}
-              className={`player ${index === game.currentPlayerIndex ? 'current-player' : ''}`}
-            >
-              <h3>{player.username}</h3>
-              <p>Chips: ${player.chips?.toFixed(2)}</p>
-              <p>Last Action: {game.lastActions?.[player.username] || 'None'}</p>
-              <p>Bet: ${game.currentBettingRound?.playerBets?.[player.username] || 0}</p>
-              <div className="player-cards">
-                {player.hand.map((card, idx) => (
-                  <div key={idx} className={`card ${card.suit.toLowerCase()}`}>
-                    <div className="card-top">
-                      <span>{card.rank}</span>
-                      <span>{getSuitSymbol(card.suit)}</span>
-                    </div>
-                    <div className="card-center">
-                      <span>{getSuitSymbol(card.suit)}</span>
-                    </div>
-                    <div className="card-bottom">
-                      <span>{card.rank}</span>
-                      <span>{getSuitSymbol(card.suit)}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
+        <div className="players circular-table">
+          {game.players.map((player, index) => {
+            const isCurrentUser = player.username === user.username;
+            const positionClass = isCurrentUser ? 'player-bottom' : `player-position-${index}`;
+            const isCurrentTurn = index === game.currentPlayerIndex;
+            return (
+              <PlayerCard
+                key={index}
+                player={player}
+                isCurrentUser={isCurrentUser}
+                isCurrentTurn={isCurrentTurn}
+                positionClass={positionClass}
+                getSuitSymbol={getSuitSymbol}
+              />
+            );
+          })}
           {Array.from({ length: MAX_PLAYERS - game.players.length }).map((_, index) => (
             <div
               key={`placeholder-${index}`}

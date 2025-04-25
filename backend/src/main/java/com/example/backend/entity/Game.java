@@ -70,7 +70,31 @@ public class Game {
         this.smallBlindAmount = 0.5;
         this.bigBlindAmount = 1.0;
     }
-    
+
+    public Game(Game game) {
+        this.id = game.getId() != null ? game.getId() : UUID.randomUUID().toString();
+        this.players = new ArrayList<>();
+        game.getPlayers().forEach(p -> this.players.add(new Player(p)));
+        this.deck = new Deck();
+        this.communityCards = game.getCommunityCards() != null ? new ArrayList<>(game.getCommunityCards()) : new ArrayList<>();
+        this.pot = game.getPot();
+        this.status = game.getStatus() != null ? game.getStatus() : GameStatus.WAITING;
+        this.currentBettingRound = game.getCurrentBettingRound();
+        this.dealerPosition = game.getDealerPosition();
+        this.currentPlayerIndex = game.getCurrentPlayerIndex() != -1 ? game.getCurrentPlayerIndex() : 0;
+        this.minimumBet = game.getMinimumBet() != -1 ? game.getMinimumBet() : 1.0;
+        this.createdAt = game.getCreatedAt() != null ? game.getCreatedAt() : LocalDateTime.now();
+        this.updatedAt = game.getUpdatedAt() != null ? game.getUpdatedAt() : LocalDateTime.now();
+        this.currentBet = game.getCurrentBet() != -1 ? game.getCurrentBet() : 0.0;
+        this.lastActions = game.getLastActions() != null ? new HashMap<>(game.getLastActions()) : new HashMap<>();
+        this.smallBlindAmount = game.getSmallBlindAmount();
+        this.bigBlindAmount = game.getBigBlindAmount();
+        this.players.forEach(p -> {p.setId(null);p.setHand(null);});
+        this.MAX_PLAYERS = game.getMAX_PLAYERS();
+        this.smallBlindId = game.getSmallBlindId();
+        this.bigBlindId = game.getBigBlindId();
+    }
+
     public boolean isPlayersTurn(String playerId) {
         if (currentPlayerIndex < 0 || currentPlayerIndex >= players.size()) {
             return false;
@@ -132,7 +156,7 @@ public class Game {
         // Reset player actions for the new round
         for (Player player : players) {
             if (player.isActive()) {
-                lastActions.put(player.getId(), PlayerAction.NONE);
+                lastActions.put(player.getUsername(), PlayerAction.NONE);
             }
         }
         
