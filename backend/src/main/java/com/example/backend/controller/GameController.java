@@ -53,21 +53,6 @@ public class GameController {
         }
     }
 
-    @PostMapping("/{gameId}/start")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> startNewHand(
-            @PathVariable @NotBlank(message = "Game ID is required") String gameId) {
-        logger.info("Request received to start a new hand for game with ID: {}", gameId);
-        try {
-            gameService.startNewHand(gameId);
-            logger.debug("New hand started for game with ID: {}", gameId);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            logger.error("Error starting new hand: {}", e.getMessage());
-            return ResponseEntity.status(500).build();
-        }
-    }
-
     @GetMapping("/all")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<Game>> getAllGames() {

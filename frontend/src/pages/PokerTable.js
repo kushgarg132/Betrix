@@ -6,8 +6,6 @@ import axios from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
 import './PokerTable.css';
 import PlayerCard from '../components/PlayerCard';
-import ReactSlider from 'react-slider';
-const MAX_PLAYERS = 6;
 
 const getSuitSymbol = (suit) => {
   switch (suit.toLowerCase()) {
@@ -25,7 +23,7 @@ const getSuitSymbol = (suit) => {
 };
 
 const initializeSocketConnection = (gameId, playerId, setUpdateActions, setCurrentPlayer, setError) => {
-  const socket = new SockJS('http://192.168.29.195:8080/ws');
+  const socket = new SockJS('http://172.20.10.5:8080/ws');
   const client = new Client({
     webSocketFactory: () => socket,
     debug: (str) => console.log(str),
@@ -59,8 +57,22 @@ const PokerTable = () => {
   const [loading, setLoading] = useState(true);
   const [stompClient, setStompClient] = useState(null);
   const { user } = useContext(AuthContext);
-  const [currentPlayer, setCurrentPlayer] = useState({ id: null, username: null, cards: [], index: null });
+  const [currentPlayer, setCurrentPlayer] = useState({ id: null, username: null, hand: [], index: null });
   const [raiseAmount, setRaiseAmount] = useState(10); // Default raise amount
+  const [showRaiseSlider, setShowRaiseSlider] = useState(false); // State for slider visibility
+
+  const toggleRaiseSlider = () => {
+    setShowRaiseSlider((prev) => !prev); // Toggle slider visibility
+  };
+
+  const cancelRaise = () => {
+    setShowRaiseSlider(false); // Close the slider
+    setRaiseAmount(Math.max(game.currentBet + 1, 1)); // Reset raise amount to minimum valid value
+  };
+
+  const handleRaiseChange = (value) => {
+    setRaiseAmount(Math.round(value)); // Update raiseAmount with rounded value
+  };
 
   const gameStatus = {
     GAME_STARTED: 'GAME_STARTED',
@@ -90,7 +102,7 @@ const PokerTable = () => {
           setCurrentPlayer({
             id: player.id,
             username: player.username,
-            cards: player.cards || [],
+            hand: player.hand || [],
             index: playerIndex
           });
           const client = initializeSocketConnection(gameId, player.id, setUpdateActions, setCurrentPlayer, setError);
@@ -211,17 +223,6 @@ const PokerTable = () => {
     }
   }, [updateAction]);
 
-  const startGame = () => {
-    axios
-      .post(`/game/${gameId}/start`)
-      .then(() => {
-        console.log('Game started');
-      })
-      .catch((error) => {
-        console.error('Error starting game:', error);
-      });
-  };
-
   const placeBet = (amount) => {
     if (stompClient && stompClient.connected) {
       stompClient.publish({
@@ -241,7 +242,7 @@ const PokerTable = () => {
         destination: `/app/game/${gameId}/action`,
         body: JSON.stringify({
           playerId: currentPlayer.id,
-          action: 'FOLD'
+          actionType: 'FOLD'
         }),
       });
     }
@@ -253,13 +254,23 @@ const PokerTable = () => {
         destination: `/app/game/${gameId}/action`,
         body: JSON.stringify({
           playerId: currentPlayer.id,
-          action: 'CHECK',
+          actionType: 'CHECK',
         }),
       });
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  // Function to render hidden cards for opponents
+  const renderOpponentCards = () => {
+    return (
+      <div className="opponent-cards">
+        <div className="card hidden"></div>
+        <div className="card hidden"></div>
+      </div>
+    );
+  };
+
+  if (loading) return <div className="loading-spinner"></div>;
   if (error) return <div className="error">{error}</div>;
 
   if (!game || !game.communityCards || !game.players) {
@@ -295,11 +306,12 @@ const PokerTable = () => {
             data-position={index}
             style={{
               opacity: player.hasFolded ? 0.5 : 1,
-              border: game.currentPlayerIndex === index ? '2px solid yellow' : 'none',
+              border: game.currentPlayerIndex === index ? '2px solid #f1c40f' : 'none',
             }}
           >
             <div className="player-name">{player.username}</div>
-            {player.username === currentPlayer.username && (
+            
+            {player.username === currentPlayer.username ? (
               <div className="player-cards">
                 {currentPlayer.hand?.map((card, idx) => (
                   <div key={idx} className={`card ${card.suit.toLowerCase()}`}>
@@ -315,9 +327,15 @@ const PokerTable = () => {
                   </div>
                 ))}
               </div>
+            ) : (
+              // Show hidden cards for opponents unless they've folded
+              !player.hasFolded && renderOpponentCards()
             )}
-            <div className="chips">Chips: {player.chips}</div>
-            <div className="player-bet">Bet: {game.currentBettingRound?.playerBets[player.username] || 0}</div>
+            
+            <div className="player-info-container">
+              <div className="chips">${player.chips}</div>
+              <div className="player-bet">Bet: ${game.currentBettingRound?.playerBets[player.username] || 0}</div>
+            </div>
           </div>
         ))}
       </div>
@@ -327,24 +345,85 @@ const PokerTable = () => {
         <p><strong>Pot:</strong> ${game.pot}</p>
         <p><strong>Current Player:</strong> {game.players[game.currentPlayerIndex]?.username || 'N/A'}</p>
       </div>
-
-      <button className="start-game-button" onClick={startGame}>Start Game</button>
-
       {isPlayerTurn && (
-        <div className="betting-controls">
-          <button className="bet-button" onClick={() => placeBet(0.5)}>Bet</button>
-          <button className="check-button" onClick={check}>Check</button>
-          <button className="fold-button" onClick={fold}>Fold</button>
-          <ReactSlider
-            className="raise-slider"
-            thumbClassName="raise-slider-thumb"
-            trackClassName="raise-slider-track"
-            min={10}
-            max={user?.chips ?? 100}
-            value={raiseAmount}
-            onChange={(value) => setRaiseAmount(value)}
-            renderThumb={(props, state) => <div {...props}>{state.valueNow}</div>}
-          />
+        <div className="betting-controls-wrapper">
+          <div className="game-status">
+            <div className="pot-info">
+              <span>Current Pot: ${game.pot}</span>
+              <span>Current Bet: ${game.currentBet}</span>
+            </div>
+            <div className="player-info">
+              <span>Your Chips: ${currentPlayer.chips}</span>
+              <span>Your Bet: ${game.currentBettingRound?.playerBets[currentPlayer.username] || 0}</span>
+            </div>
+          </div>
+          
+          <div className="betting-controls">
+            {game.currentBet === (game.currentBettingRound?.playerBets[currentPlayer.username] || 0) && (
+              <button className="check-button" onClick={check}>
+                <span className="action-text">Check</span>
+                <span className="action-amount">$0</span>
+              </button>
+            )}
+            
+            {game.currentBet > (game.currentBettingRound?.playerBets[currentPlayer.username] || 0) && (
+              <button 
+                className="call-button" 
+                onClick={() => placeBet(game.currentBet - (game.currentBettingRound?.playerBets[currentPlayer.username] || 0))}
+              >
+                <span className="action-text">Call</span>
+                <span className="action-amount">
+                  ${game.currentBet - (game.currentBettingRound?.playerBets[currentPlayer.username] || 0)}
+                </span>
+              </button>
+            )}
+
+            {!showRaiseSlider ? (
+              <button 
+                className="raise-button" 
+                onClick={toggleRaiseSlider}
+              >
+                <span className="action-text">Raise</span>
+                <span className="action-amount">Min ${Math.max(game.currentBet + 1, 1)}</span>
+              </button>
+            ) : (
+              <div className="raise-controls">
+                <div className="raise-dial-container">
+                  <div className="raise-header">
+                    <span>Raise Amount</span>
+                    <button className="close-button" onClick={toggleRaiseSlider}>×</button>
+                  </div>
+                  <input
+                    type="range"
+                    className="raise-slider"
+                    min={Math.max(game.currentBet + 1, 1)}
+                    max={Math.min(currentPlayer.chips, 1000)}
+                    value={raiseAmount}
+                    onChange={(e) => handleRaiseChange(parseInt(e.target.value))}
+                  />
+                  <div className="raise-info">
+                    <span>Min: ${Math.max(game.currentBet + 1, 1)}</span>
+                    <span className="raise-amount">${raiseAmount}</span>
+                    <span>Max: ${Math.min(currentPlayer.chips, 1000)}</span>
+                  </div>
+                  <button 
+                    className="confirm-raise-button" 
+                    onClick={() => {
+                      placeBet(raiseAmount);
+                      setShowRaiseSlider(false);
+                    }}
+                  >
+                    <span className="action-text">Raise to</span>
+                    <span className="action-amount">${raiseAmount}</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <button className="fold-button" onClick={fold}>
+              <span className="action-text">Fold</span>
+            </button>
+          </div>
         </div>
       )}
     </div>

@@ -1,3 +1,6 @@
+/* Import Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
 /* Poker table layout */
 .poker-table {
   display: flex;
@@ -5,11 +8,11 @@
   align-items: center;
   position: relative;
   width: 100%;
-  height: 100vh;
-  background-color: #2e7d32; /* Solid green background */
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1b25 0%, #2c3e50 100%);
   overflow: hidden;
-  border: 5px solid #1b5e20; /* Add a border to enhance the table */
-  border-radius: 20px; /* Rounded corners for the table */
+  font-family: 'Poppins', sans-serif;
+  padding-bottom: 150px; /* Increased padding to prevent overlap with controls */
 }
 
 .table-title {
@@ -23,203 +26,636 @@
 .circular-table {
   position: relative;
   width: 90%;
-  max-width: 700px;
-  height: 90%;
-  max-height: 700px;
-  border-radius: 50%;
-  background-color: #388e3c; /* Solid green for the table */
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7); /* Enhance shadow for depth */
+  max-width: 900px; /* Increased max-width for bigger table */
+  height: 450px; /* Increased height for bigger table */
+  border-radius: 50% / 35%; /* Elliptical shape to create perspective */
+  background: linear-gradient(145deg, #243447, #1e2b3b); /* Rich navy gradient */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.1);
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px; /* Add padding for spacing */
+  padding: 20px;
+  margin-top: -10px; /* Adjusted for better spacing */
+  margin-bottom: 40px; /* Reduced bottom margin */
 }
 
 .community-cards {
   position: absolute;
-  top: 50%;
+  top: 50%; /* Centered vertically */
   left: 50%;
   transform: translate(-50%, -50%);
   display: flex;
-  gap: 10px;
+  gap: 12px; /* Increased gap between cards */
+  z-index: 6; /* Higher z-index than player components */
 }
 
 .card {
-  width: 60px; /* Adjust card size for responsiveness */
+  width: 60px; /* Increased card size */
   height: 90px;
-  background-color: white;
-  border: 2px solid black;
-  border-radius: 10px;
+  background-color: #ffffff;
+  border: none;
+  border-radius: 8px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 5px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  padding: 6px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   position: relative;
-  font-family: 'Arial', sans-serif;
-  transition: transform 0.2s, box-shadow 0.2s;
+  font-family: 'Poppins', sans-serif;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Styling for card backs (hidden cards) */
+.card.hidden {
+  background: linear-gradient(145deg, #2980b9, #3498db);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.card.hidden::before {
+  content: "";
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  right: 5px;
+  bottom: 5px;
+  background: repeating-linear-gradient(
+    45deg,
+    #2c3e50,
+    #2c3e50 10px,
+    #34495e 10px,
+    #34495e 20px
+  );
+  border-radius: 4px;
+  opacity: 0.8;
+}
+
+.card.hidden::after {
+  content: "?";
+  font-size: 30px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: bold;
+  position: relative;
+  z-index: 1;
 }
 
 .card:hover {
-  transform: scale(1.1); /* Add hover effect */
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
+  transform: scale(1.1);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
 }
 
 .card.hearts,
 .card.diamonds {
-  color: red;
+  color: #e74c3c; /* Refined red for hearts/diamonds */
 }
 
 .card.clubs,
 .card.spades {
-  color: black;
+  color: #2c3e50; /* Deep blue-gray for clubs/spades */
 }
 
 .card-top,
 .card-bottom {
   display: flex;
   justify-content: space-between;
-  font-size: 0.8rem;
-  font-weight: bold;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 
 .card-center {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 1.2rem;
-  font-weight: bold;
+  font-size: 1.5rem;
+  font-weight: 600;
 }
 
 .player {
   position: absolute;
-  text-align: center;
-  width: 120px; /* Adjust player area size for responsiveness */
-  height: 150px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row; /* Changed to row for horizontal layout */
   align-items: center;
-  justify-content: space-between;
-  background-color: rgba(0, 0, 0, 0.6); /* Add background for player area */
+  justify-content: flex-start; /* Align to the start for horizontal layout */
+  width: auto; /* Auto width to fit contents */
+  min-width: 110px;
+  height: auto; /* Auto height to fit contents */
+  min-height: 90px;
+  background: rgba(36, 52, 71, 0.95); /* Semi-transparent navy */
   border-radius: 10px;
-  color: white;
-  font-weight: bold;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  color: #ffffff;
+  font-weight: 400;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 10px;
+  backdrop-filter: blur(5px);
+  z-index: 7; /* Increased to ensure visibility */
 }
 
-.player[data-position="0"] {
-  top: 5%;
+.player-name {
+  font-size: 1rem;
+  color: #ecf0f1;
+  font-weight: 600;
+  margin-bottom: 3px;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  width: 100%;
+}
+
+.player-info-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  margin-left: 10px; /* Space between cards and info */
+}
+
+/* Adjust player positions for front view perspective */
+/* Position 3 is the current player (at the bottom) */
+.player[data-position="3"] {
+  bottom: -50px; /* Moved closer to the table */
   left: 50%;
   transform: translateX(-50%);
+  flex-direction: column; /* Vertical for current player */
+  align-items: center;
+  min-width: 150px;
+  min-height: 150px;
+}
+
+.player[data-position="3"] .player-info-container {
+  margin-left: 0;
+  margin-top: 10px;
+  align-items: center;
+}
+
+/* Position other players around the table in a front-view perspective */
+.player[data-position="0"] {
+  top: -70px; /* Position at the top, outside the table */
+  left: 50%;
+  transform: translateX(-50%);
+  flex-direction: column; /* Vertical for opponent across */
+  align-items: center;
+  min-width: 150px;
+}
+
+.player[data-position="0"] .player-info-container {
+  margin-left: 0;
+  margin-top: 10px;
+  align-items: center;
 }
 
 .player[data-position="1"] {
   top: 20%;
-  right: 10%;
+  right: -120px; /* Moved further outside the table */
 }
 
 .player[data-position="2"] {
-  bottom: 20%;
-  right: 10%;
-}
-
-.player[data-position="3"] {
-  bottom: 5%;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 60%;
+  right: -120px; /* Moved further outside the table */
 }
 
 .player[data-position="4"] {
-  bottom: 20%;
-  left: 10%;
+  top: 60%;
+  left: -120px; /* Moved further outside the table */
 }
 
 .player[data-position="5"] {
   top: 20%;
-  left: 10%;
+  left: -120px; /* Moved further outside the table */
 }
 
 .player-cards {
   display: flex;
-  gap: 5px;
+  gap: 6px; /* Increased gap between player cards */
+  transform: scale(0.95); /* Slightly larger cards in player hand */
+  position: relative; /* Ensure proper stacking context */
+  z-index: 2; /* Lower z-index than community cards */
+}
+
+/* Opponent cards */
+.opponent-cards {
+  display: flex;
+  gap: 6px;
+  transform: scale(0.95);
+  position: relative;
+  z-index: 2;
 }
 
 .chips {
-  margin-top: 5px;
-  font-size: 0.9rem; /* Adjust font size for responsiveness */
-  color: #ffd700;
+  color: #f1c40f; /* Bright gold for chips */
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  position: relative; /* Ensure proper stacking context */
+  z-index: 1;
+  text-align: left;
 }
 
-.betting-controls {
-  margin-top: 20px;
+.player-bet {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #2ecc71; /* Changed to green for better contrast with blue chip amounts */
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+  margin-top: 3px;
+  position: relative; /* Ensure proper stacking context */
+  z-index: 1;
+  text-align: left;
+}
+
+/* Betting controls wrapper */
+.betting-controls-wrapper {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 15px;
+  background: rgba(26, 27, 37, 0.95);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 1000;
+  height: auto; /* Allow height to adjust based on content */
+  max-height: 120px; /* Limit maximum height */
+}
+
+.game-status {
   display: flex;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  color: #ecf0f1;
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.pot-info, .player-info {
+  display: flex;
+  gap: 20px;
+}
+
+.pot-info span, .player-info span {
+  background: rgba(52, 152, 219, 0.2);
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(52, 152, 219, 0.3);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+/* Betting controls */
+.betting-controls {
+  display: flex;
   gap: 10px;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
-.bet-button,
+/* Button base styles */
 .check-button,
-.fold-button {
-  padding: 8px 20px;
-  font-size: 1rem;
+.call-button,
+.raise-button,
+.fold-button,
+.confirm-raise-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+  padding: 10px 20px;
   border: none;
   border-radius: 8px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
   cursor: pointer;
-  font-weight: bold;
-  transition: transform 0.2s, background-color 0.2s;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-.bet-button {
-  background-color: #1976d2;
-  color: white;
+/* Improve action button text */
+.action-text {
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
 }
 
-.bet-button:hover {
-  background-color: #1565c0;
-  transform: scale(1.1);
+.action-amount {
+  font-size: 0.95rem;
+  opacity: 0.9;
+  margin-top: 4px;
+  font-weight: 500;
 }
 
+/* Button specific styles */
 .check-button {
-  background-color: #0288d1;
+  background: linear-gradient(135deg, #2ecc71, #27ae60);
   color: white;
 }
 
 .check-button:hover {
-  background-color: #0277bd;
-  transform: scale(1.1);
+  background: linear-gradient(135deg, #27ae60, #219a52);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+}
+
+.call-button {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+}
+
+.call-button:hover {
+  background: linear-gradient(135deg, #2980b9, #2471a3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.raise-button {
+  background: linear-gradient(135deg, #f1c40f, #f39c12);
+  color: white;
+}
+
+.raise-button:hover {
+  background: linear-gradient(135deg, #f39c12, #d68910);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(241, 196, 15, 0.3);
 }
 
 .fold-button {
-  background-color: #d32f2f;
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
   color: white;
 }
 
 .fold-button:hover {
-  background-color: #c62828;
-  transform: scale(1.1);
+  background: linear-gradient(135deg, #c0392b, #a93226);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
 }
 
+/* Raise controls */
+.raise-controls {
+  position: fixed;
+  bottom: 130px; /* Position above betting controls */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 400px;
+  z-index: 1001;
+}
+
+.raise-dial-container {
+  background: rgba(26, 27, 37, 0.98);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.raise-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  color: #ecf0f1;
+  font-weight: 600;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: #ecf0f1;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0 8px;
+  transition: color 0.2s ease;
+}
+
+.close-button:hover {
+  color: #e74c3c;
+}
+
+/* Slider styles */
+.raise-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(to right, #3498db, #f1c40f);
+  outline: none;
+  margin: 20px 0;
+}
+
+.raise-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #f1c40f;
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.raise-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(241, 196, 15, 0.4);
+}
+
+.raise-info {
+  display: flex;
+  justify-content: space-between;
+  color: #ecf0f1;
+  font-size: 0.9rem;
+  margin: 15px 0;
+}
+
+.raise-amount {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #f1c40f;
+}
+
+.confirm-raise-button {
+  background: linear-gradient(135deg, #f1c40f, #f39c12);
+  color: white;
+  width: 100%;
+  margin-top: 15px;
+}
+
+.confirm-raise-button:hover {
+  background: linear-gradient(135deg, #f39c12, #d68910);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(241, 196, 15, 0.3);
+}
+
+/* Responsive styles */
 @media (max-width: 768px) {
   .circular-table {
-    width: 100%;
-    height: 100%;
+    width: 95%;
+    height: 320px; /* Bigger table for mobile */
+    margin-top: 30px; /* More space at top on mobile */
+    margin-bottom: 60px; /* More space at bottom on mobile */
   }
 
   .card {
-    width: 50px;
-    height: 75px;
+    width: 45px;
+    height: 70px;
   }
-
+  
+  .card-center {
+    font-size: 1.1rem;
+  }
+  
+  .card-top,
+  .card-bottom {
+    font-size: 0.8rem;
+  }
+  
   .player {
-    width: 100px;
-    height: 130px;
+    min-width: 100px;
+    min-height: 80px;
+    padding: 8px;
+  }
+  
+  .player-name {
+    font-size: 0.9rem;
+  }
+  
+  .chips, .player-bet {
+    font-size: 0.85rem;
   }
 
-  .bet-button,
-  .check-button,
-  .fold-button {
-    font-size: 0.9rem;
-    padding: 6px 15px;
+  /* Adjust player positions for mobile */
+  .player[data-position="3"] {
+    bottom: -40px;
+    min-width: 130px;
+    min-height: 130px;
   }
+
+  .player[data-position="0"] {
+    top: -50px;
+    min-width: 130px;
+  }
+
+  .player[data-position="1"] {
+    top: 20%;
+    right: -100px;
+  }
+
+  .player[data-position="2"] {
+    top: 60%;
+    right: -100px;
+  }
+
+  .player[data-position="4"] {
+    top: 60%;
+    left: -100px;
+  }
+
+  .player[data-position="5"] {
+    top: 20%;
+    left: -100px;
+  }
+
+  /* Further mobile optimizations */
+  .betting-controls-wrapper {
+    padding: 10px 5px;
+  }
+
+  .game-info {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+}
+
+/* Dark mode optimization */
+@media (prefers-color-scheme: dark) {
+  .poker-table {
+    background: linear-gradient(135deg, #0f1012 0%, #1a1b25 100%);
+  }
+}
+
+/* Styles for the range input slider */
+.raise-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 15px;
+  border-radius: 10px;
+  background: #1976d2;
+  outline: none;
+  margin: 20px 0;
+}
+
+.raise-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: #ffffff;
+  cursor: pointer;
+  border: 2px solid #1976d2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.raise-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.raise-slider::-moz-range-thumb {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: #ffffff;
+  cursor: pointer;
+  border: 2px solid #1976d2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.raise-slider::-moz-range-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Game info styles */
+.game-info {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(36, 52, 71, 0.95);
+  padding: 10px 15px;
+  border-radius: 10px;
+  color: #ecf0f1;
+  font-family: 'Poppins', sans-serif;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  z-index: 10; /* Ensure it's above other elements */
+}
+
+.game-info h3 {
+  color: #3498db;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.game-info p {
+  margin: 5px 0;
+  font-size: 0.9rem;
+}
+
+.game-info strong {
+  color: #f1c40f;
 }

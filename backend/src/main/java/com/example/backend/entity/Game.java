@@ -49,7 +49,7 @@ public class Game {
     }
     
     public enum PlayerAction {
-        NONE, FOLD, CHECK, CALL, RAISE, ALL_IN
+        NONE, FOLD, CHECK, SMALL_BLIND , BIG_BLIND , CALL, RAISE, ALL_IN
     }
     
     public Game() {
@@ -61,7 +61,7 @@ public class Game {
         this.status = GameStatus.WAITING;
         this.currentBettingRound = new BettingRound();
         this.dealerPosition = 0;
-        this.currentPlayerIndex = 0;
+        this.currentPlayerIndex = -1;
         this.minimumBet = 1.0;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();

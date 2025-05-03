@@ -28,7 +28,7 @@ public class GameWebSocketController {
     public void processAction(@Header("simpDestination") String destination, @RequestBody ActionPayload actionPayload) {
         // Extract gameId from the destination
         String gameId = extractGameIdFromDestination(destination);
-
+        
         if (actionPayload.getActionType() == ActionPayload.ActionType.CHECK) {
             processCheck(gameId, actionPayload);
         } else if (actionPayload.getActionType() == ActionPayload.ActionType.BET) {
@@ -38,7 +38,7 @@ public class GameWebSocketController {
         } else if (actionPayload.getActionType() == ActionPayload.ActionType.LEAVE) {
             leaveGame(gameId, actionPayload);
         } else {
-            throw new IllegalArgumentException("Invalid action type");
+            throw new IllegalArgumentException("Invalid action type " + actionPayload.getActionType());
         }
     }
 

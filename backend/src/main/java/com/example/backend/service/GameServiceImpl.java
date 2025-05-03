@@ -170,11 +170,7 @@ public class GameServiceImpl implements GameService {
             }
 
             // Get active players count
-            long activePlayers = game.getPlayers().stream().filter(Player::isActive).count();
-            if (activePlayers < 2) {
-                logger.error("Need at least 2 active players to start a hand");
-                throw new RuntimeException("Need at least 2 active players to start a hand");
-            }
+            game.getPlayers().forEach(player -> player.setActive(true));
 
             // Reset game state for a new hand
             game.resetForNewHand();
@@ -197,7 +193,6 @@ public class GameServiceImpl implements GameService {
             // Notify all players about the game start and their cards
             notifyGameUpdate(gameId, GameUpdate.GameUpdateType.GAME_STARTED, new Game(game));
             notifyPlayersHand(game);
-//            notifyGameUpdate(gameId, GameUpdate.GameUpdateType.PLAYER_TURN, game.getCurrentPlayerIndex());
 
             logger.debug("New hand started for game: {}", game);
         } catch (Exception e) {
@@ -235,10 +230,11 @@ public class GameServiceImpl implements GameService {
             }
 
             // Place the bet
-            bettingManager.placeBet(game, player, amount);
+            bettingManager.placeBet(game, player, amount , null );
 
             // Advance to next player
             game.moveToNextPlayer();
+
 
             // Check if betting round is complete
             if (bettingManager.isBettingRoundComplete(game)) {
@@ -298,7 +294,7 @@ public class GameServiceImpl implements GameService {
             }
 
             // Place the bet
-            bettingManager.placeBet(game, player, 0);
+            bettingManager.placeBet(game, player, 0 , null);
 
             // Advance to next player
             game.moveToNextPlayer();
@@ -345,8 +341,6 @@ public class GameServiceImpl implements GameService {
                 throw new RuntimeException("Not player's turn");
             }
 
-            // Mark player as folded and record action
-            player.setHasFolded(true);
             bettingManager.fold(game, player);
 
             // Notify about the fold
@@ -367,11 +361,11 @@ public class GameServiceImpl implements GameService {
                 // Reset for new hand
                 game.resetForNewHand();
                 game.setStatus(Game.GameStatus.WAITING);
-                notifyGameUpdate(gameId, GameUpdate.GameUpdateType.GAME_ENDED, game);
+                notifyGameUpdate(gameId, GameUpdate.GameUpdateType.GAME_ENDED, new Game(game));
             } else {
                 // Advance to next player
                 game.moveToNextPlayer();
-                notifyGameUpdate(gameId, GameUpdate.GameUpdateType.PLAYER_TURN, game.getCurrentPlayerIndex());
+//                notifyGameUpdate(gameId, GameUpdate.GameUpdateType.PLAYER_TURN, game.getCurrentPlayerIndex());
 
                 // Check if betting round is complete
                 if (bettingManager.isBettingRoundComplete(game)) {
@@ -421,7 +415,7 @@ public class GameServiceImpl implements GameService {
             gameRepository.save(game);
 
             try {
-                notifyGameUpdate(gameId, GameUpdate.GameUpdateType.PLAYER_LEFT, playerId);
+                notifyGameUpdate(gameId, GameUpdate.GameUpdateType.PLAYER_LEFT, new Game(game));
             } catch (Exception e) {
                 logger.error("Failed to send game update notification: {}", e.getMessage());
             }

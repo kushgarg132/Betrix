@@ -61,7 +61,7 @@ public class Player {
     }
     
     public void placeBet(double amount) {
-        if (amount <= 0) {
+        if (amount < 0) {
             throw new IllegalArgumentException("Bet amount must be positive");
         }
         if (amount > chips) {

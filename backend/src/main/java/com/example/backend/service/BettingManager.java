@@ -4,14 +4,17 @@ import com.example.backend.entity.Game;
 import com.example.backend.model.Card;
 import com.example.backend.model.Player;
 import com.example.backend.model.GameUpdate;
+import lombok.Builder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 public class BettingManager {
@@ -19,6 +22,7 @@ public class BettingManager {
 
     @Autowired
     private GameNotificationService notificationService;
+    private List<Game.PlayerAction> notALlowedStatus = List.of(Game.PlayerAction.NONE, Game.PlayerAction.SMALL_BLIND, Game.PlayerAction.BIG_BLIND);
 
     public void startNewBettingRound(Game game) {
         logger.info("Starting a new betting round for game with ID: {}", game.getId());
@@ -41,19 +45,18 @@ public class BettingManager {
                 game.setStatus(Game.GameStatus.SHOWDOWN);
                 break;
         }
-
-        notifyRoundStart(game.getId(), new Game(game));
+//        notifyRoundStart(game.getId(), new Game(game));
         logger.debug("Betting round started. Updated game state: {}", game);
     }
 
     private void setupPreFlopBetting(Game game) {
         // Post small blind
         Player smallBlind = findPlayerByUsername(game, game.getSmallBlindUserId());
-        placeBet(game, smallBlind, game.getSmallBlindAmount());
+        placeBet(game, smallBlind, game.getSmallBlindAmount(), Game.PlayerAction.SMALL_BLIND);
 
         // Post big blind
         Player bigBlind = findPlayerByUsername(game, game.getBigBlindUserId());
-        placeBet(game, bigBlind, game.getBigBlindAmount());
+        placeBet(game, bigBlind, game.getBigBlindAmount() , Game.PlayerAction.BIG_BLIND);
 
         game.setCurrentBet(game.getBigBlindAmount());
         game.setStatus(Game.GameStatus.PRE_FLOP_BETTING);
@@ -94,14 +97,22 @@ public class BettingManager {
         game.setCommunityCards(communityCards);
     }
 
-    public void placeBet(Game game, Player player, double amount) {
+    public void placeBet(Game game, Player player, double amount ,Game.PlayerAction lastAction ) {
         logger.info("Player '{}' is placing a bet of {} in game with ID: {}", player.getUsername(), amount, game.getId());
         double betPlacedAmount = game.getCurrentBettingRound().getPlayerBets().getOrDefault(player.getUsername() , 0.0);
+
+
         double betPlacedTotal = betPlacedAmount + amount;
-        if (amount > player.getChips()) {
+
+        // Check for Blinds
+        if(Objects.nonNull(lastAction)) {
+            game.getLastActions().put(player.getUsername(), lastAction);
+            game.setCurrentBet(betPlacedTotal);
+        }else if (amount > player.getChips()) {
             amount = player.getChips(); // All-in
+            betPlacedTotal = betPlacedAmount + amount;
             game.getLastActions().put(player.getUsername(), Game.PlayerAction.ALL_IN);
-        } else if (amount == 0) {
+        }else if (amount == 0) {
             game.getLastActions().put(player.getUsername(), Game.PlayerAction.CHECK);
         } else if (betPlacedTotal == game.getCurrentBet()) {
             game.getLastActions().put(player.getUsername(), Game.PlayerAction.CALL);
@@ -120,14 +131,16 @@ public class BettingManager {
 
     public void fold(Game game, Player player) {
         logger.info("Player '{}' is folding in game with ID: {}", player.getUsername(), game.getId());
-        player.setActive(false);
-        game.getLastActions().put(player.getId(), Game.PlayerAction.FOLD);
-        notifyPlayerFolded(game, player);
 
-        // Check if only one player remains
-        if (getActivePlayerCount(game) == 1) {
-            endBettingRound(game);
-        }
+        // Mark player as folded and record action
+        player.setHasFolded(true);
+        player.setActive(false);
+        game.getLastActions().put(player.getUsername(), Game.PlayerAction.FOLD);
+
+//        // Check if only one player remains
+//        if (getActivePlayerCount(game) == 1) {
+//            endBettingRound(game);
+//        }
         logger.debug("Player '{}' folded. Updated game state: {}", player.getUsername(), game);
     }
 
@@ -147,7 +160,7 @@ public class BettingManager {
             Double playerBet = game.getCurrentBettingRound().getPlayerBets().getOrDefault(player.getUsername() , 0.0);
             Game.PlayerAction lastAction = game.getLastActions().get(player.getUsername());
 
-            if (lastAction == Game.PlayerAction.NONE ||
+            if (notALlowedStatus.contains(lastAction) ||
                 (playerBet < targetBet && lastAction != Game.PlayerAction.ALL_IN)) {
                 logger.debug("Betting round complete status: false");
                 return false;
