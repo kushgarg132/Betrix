@@ -35,8 +35,8 @@ public class Game {
     private LocalDateTime updatedAt;
     
     // Additional fields required by BettingManager
-    private String smallBlindId;
-    private String bigBlindId;
+    private String smallBlindUserId;
+    private String bigBlindUserId;
     private double smallBlindAmount;
     private double bigBlindAmount;
     private double currentBet;
@@ -74,7 +74,7 @@ public class Game {
     public Game(Game game) {
         this.id = game.getId() != null ? game.getId() : UUID.randomUUID().toString();
         this.players = new ArrayList<>();
-        game.getPlayers().forEach(p -> this.players.add(new Player(p)));
+        game.getPlayers().forEach(p -> {this.players.add(new Player(p)); this.players.forEach(Player::hideDetails);});
         this.deck = new Deck();
         this.communityCards = game.getCommunityCards() != null ? new ArrayList<>(game.getCommunityCards()) : new ArrayList<>();
         this.pot = game.getPot();
@@ -91,8 +91,8 @@ public class Game {
         this.bigBlindAmount = game.getBigBlindAmount();
         this.players.forEach(p -> {p.setId(null);p.setHand(null);});
         this.MAX_PLAYERS = game.getMAX_PLAYERS();
-        this.smallBlindId = game.getSmallBlindId();
-        this.bigBlindId = game.getBigBlindId();
+        this.smallBlindUserId = game.getSmallBlindUserId();
+        this.bigBlindUserId = game.getBigBlindUserId();
     }
 
     public boolean isPlayersTurn(String playerId) {
@@ -136,8 +136,8 @@ public class Game {
         int smallBlindPosition = (dealerPosition + 1) % players.size();
         int bigBlindPosition = (dealerPosition + 2) % players.size();
         
-        smallBlindId = players.get(smallBlindPosition).getId();
-        bigBlindId = players.get(bigBlindPosition).getId();
+        smallBlindUserId = players.get(smallBlindPosition).getUsername();
+        bigBlindUserId = players.get(bigBlindPosition).getUsername();
         
         currentPlayerIndex = (dealerPosition + 1) % players.size();
         

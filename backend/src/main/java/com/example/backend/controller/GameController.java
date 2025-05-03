@@ -27,9 +27,14 @@ public class GameController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Game> createGame() {
         logger.info("Request received to create a new game");
-        Game game = gameService.createGame();
-        logger.debug("New game created: {}", game);
-        return ResponseEntity.ok(game);
+        try {
+            Game game = gameService.createGame();
+            logger.debug("New game created: {}", game);
+            return ResponseEntity.ok(game);
+        } catch (Exception e) {
+            logger.error("Error creating game: {}", e.getMessage());
+            return ResponseEntity.status(500).body(null);
+        }
     }
 
     @PostMapping("/{gameId}/join")
@@ -38,9 +43,14 @@ public class GameController {
                                          @PathVariable @NotBlank(message = "Game ID is required") String gameId) {
         String username = authentication.getName();
         logger.info("User '{}' is attempting to join game with ID: {}", username, gameId);
-        Game game = gameService.joinGame(gameId, username);
-        logger.debug("User '{}' joined game: {}", username, game);
-        return ResponseEntity.ok(game);
+        try {
+            Game game = gameService.joinGame(gameId, username);
+            logger.debug("User '{}' joined game: {}", username, game);
+            return ResponseEntity.ok(game);
+        } catch (Exception e) {
+            logger.error("Error joining game: {}", e.getMessage());
+            return ResponseEntity.status(500).body(null);
+        }
     }
 
     @PostMapping("/{gameId}/start")
@@ -48,18 +58,28 @@ public class GameController {
     public ResponseEntity<Void> startNewHand(
             @PathVariable @NotBlank(message = "Game ID is required") String gameId) {
         logger.info("Request received to start a new hand for game with ID: {}", gameId);
-        gameService.startNewHand(gameId);
-        logger.debug("New hand started for game with ID: {}", gameId);
-        return ResponseEntity.ok().build();
+        try {
+            gameService.startNewHand(gameId);
+            logger.debug("New hand started for game with ID: {}", gameId);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            logger.error("Error starting new hand: {}", e.getMessage());
+            return ResponseEntity.status(500).build();
+        }
     }
 
     @GetMapping("/all")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<Game>> getAllGames() {
         logger.info("Request received to fetch all games");
-        List<Game> games = gameService.getAllGames();
-        logger.debug("Fetched games: {}", games);
-        return ResponseEntity.ok(games);
+        try {
+            List<Game> games = gameService.getAllGames();
+            logger.debug("Fetched games: {}", games);
+            return ResponseEntity.ok(games);
+        } catch (Exception e) {
+            logger.error("Error fetching games: {}", e.getMessage());
+            return ResponseEntity.status(500).body(null);
+        }
     }
 
     @GetMapping("/{gameId}")
@@ -67,9 +87,14 @@ public class GameController {
     public ResponseEntity<Game> getGame(
             @PathVariable @NotBlank(message = "Game ID is required") String gameId) {
         logger.info("Request received to fetch game with ID: {}", gameId);
-        Game game = gameService.getGameForPlayer(gameId, null);
-        logger.debug("Fetched game: {}", game);
-        return ResponseEntity.ok(game);
+        try {
+            Game game = gameService.getGameForPlayer(gameId, null);
+            logger.debug("Fetched game: {}", game);
+            return ResponseEntity.ok(game);
+        } catch (Exception e) {
+            logger.error("Error fetching game: {}", e.getMessage());
+            return ResponseEntity.status(500).body(null);
+        }
     }
 
     @GetMapping("/{gameId}/player/{playerId}")
@@ -77,8 +102,13 @@ public class GameController {
     public ResponseEntity<Game> getGameForPlayer(
             @PathVariable String gameId,
             @PathVariable String playerId) {
-        Game game = gameService.getGameForPlayer(gameId, playerId);
-        return ResponseEntity.ok(game);
+        try {
+            Game game = gameService.getGameForPlayer(gameId, playerId);
+            return ResponseEntity.ok(game);
+        } catch (Exception e) {
+            logger.error("Error fetching game for player: {}", e.getMessage());
+            return ResponseEntity.status(500).body(null);
+        }
     }
 
     @DeleteMapping("/{gameId}")
@@ -86,8 +116,13 @@ public class GameController {
     public ResponseEntity<Void> deleteGame(
             @PathVariable @NotBlank(message = "Game ID is required") String gameId) {
         logger.info("Request received to delete game with ID: {}", gameId);
-        gameService.deleteGame(gameId);
-        logger.debug("Game with ID '{}' deleted", gameId);
-        return ResponseEntity.ok().build();
+        try {
+            gameService.deleteGame(gameId);
+            logger.debug("Game with ID '{}' deleted", gameId);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            logger.error("Error deleting game: {}", e.getMessage());
+            return ResponseEntity.status(500).build();
+        }
     }
 }

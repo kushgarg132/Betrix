@@ -16,5 +16,6 @@ public interface GameService {
     void fold(String gameId, String playerId);
     void leaveGame(String gameId, String playerId);
     Game getGameForPlayer(String gameId, String playerId);
+    Game getGameForPlayer(Game game, String playerId);
     boolean deleteGame(String gameId);
 }

@@ -6,7 +6,7 @@ import axios from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
 import './PokerTable.css';
 import PlayerCard from '../components/PlayerCard';
-
+import ReactSlider from 'react-slider';
 const MAX_PLAYERS = 6;
 
 const getSuitSymbol = (suit) => {
@@ -24,7 +24,7 @@ const getSuitSymbol = (suit) => {
   }
 };
 
-const initializeSocketConnection = (gameId, playerId, setUpdateActions, setCards, setError) => {
+const initializeSocketConnection = (gameId, playerId, setUpdateActions, setCurrentPlayer, setError) => {
   const socket = new SockJS('http://192.168.29.195:8080/ws');
   const client = new Client({
     webSocketFactory: () => socket,
@@ -37,7 +37,7 @@ const initializeSocketConnection = (gameId, playerId, setUpdateActions, setCards
       });
       client.subscribe(`/topic/game/${gameId}/${playerId}`, (message) => {
         const cards = JSON.parse(message.body);
-        setCards(cards);
+        setCurrentPlayer((prevPlayer) => ({ ...prevPlayer, hand: cards }));
         console.log('Received cards:', cards);
       });
     },
@@ -59,9 +59,9 @@ const PokerTable = () => {
   const [loading, setLoading] = useState(true);
   const [stompClient, setStompClient] = useState(null);
   const { user } = useContext(AuthContext);
-  const [cards, setCards] = useState([]);
-  const [playerIdx, setPlayerIdx] = useState();
-  
+  const [currentPlayer, setCurrentPlayer] = useState({ id: null, username: null, cards: [], index: null });
+  const [raiseAmount, setRaiseAmount] = useState(10); // Default raise amount
+
   const gameStatus = {
     GAME_STARTED: 'GAME_STARTED',
     PLAYER_JOINED: 'PLAYER_JOINED',
@@ -83,12 +83,17 @@ const PokerTable = () => {
         .then((response) => {
           setGame(response.data);
           setLoading(false);
-          console.log("Game Joined", response.data);
+          console.log('Game Joined', response.data);
           const playerIndex = response.data.players.findIndex((p) => p?.username === user.username);
-          setPlayerIdx(playerIndex);
 
           const player = response.data.players[playerIndex];
-          const client = initializeSocketConnection(gameId, player.id, setUpdateActions, setCards, setError);
+          setCurrentPlayer({
+            id: player.id,
+            username: player.username,
+            cards: player.cards || [],
+            index: playerIndex
+          });
+          const client = initializeSocketConnection(gameId, player.id, setUpdateActions, setCurrentPlayer, setError);
           setStompClient(client);
         })
         .catch((error) => {
@@ -101,7 +106,7 @@ const PokerTable = () => {
         if (stompClient && stompClient.connected) {
           stompClient.publish({
             destination: `/app/game/${gameId}/leave`,
-            body: JSON.stringify({ playerId: game?.players[playerIdx]?.id }),
+            body: JSON.stringify({ playerId: currentPlayer.id }),
           });
           stompClient.deactivate();
         }
@@ -118,7 +123,6 @@ const PokerTable = () => {
       console.log('Update action:', updateAction);
       switch (updateAction.type) {
         case gameStatus.GAME_STARTED:
-          // console.log('Game started:', updateAction.payload);
           setGame((prevGame) => ({
             ...prevGame,
             ...updateAction.payload,
@@ -127,7 +131,6 @@ const PokerTable = () => {
           break;
 
         case gameStatus.PLAYER_JOINED:
-          // console.log('Player joined:', updateAction.payload);
           setGame((prevGame) => ({
             ...prevGame,
             players: [...prevGame.players, updateAction.payload],
@@ -135,7 +138,6 @@ const PokerTable = () => {
           break;
 
         case gameStatus.PLAYER_LEFT:
-          // console.log('Player left:', updateAction.payload);
           setGame((prevGame) => ({
             ...prevGame,
             players: prevGame.players.filter(
@@ -145,7 +147,6 @@ const PokerTable = () => {
           break;
 
         case gameStatus.PLAYER_TURN:
-          // console.log(`It's player ${updateAction.payload}'s turn`);
           setGame((prevGame) => ({
             ...prevGame,
             currentPlayerIndex: updateAction.payload,
@@ -153,34 +154,21 @@ const PokerTable = () => {
           break;
 
         case gameStatus.PLAYER_BET:
-          // console.log('Player bet:', updateAction.payload);
-          setGame((prevGame) => ({
-            ...prevGame,
-            pot: prevGame.pot + updateAction.payload.amount,
-            currentBettingRound: {
-              ...prevGame.currentBettingRound,
-              playerBets: {
-                ...prevGame.currentBettingRound.playerBets,
-                [updateAction.payload.username]: updateAction.payload.amount,
-              },
-            },
-          }));
+          setGame(updateAction.payload);
           break;
 
         case gameStatus.PLAYER_FOLDED:
-          // console.log('Player folded:', updateAction.payload);
           setGame((prevGame) => ({
             ...prevGame,
             players: prevGame.players.map((player) =>
               player._id === updateAction.payload
-                ? { ...player, folded: true }
+                ? { ...player, hasFolded: true }
                 : player
             ),
           }));
           break;
 
         case gameStatus.CARDS_DEALT:
-          // console.log('Cards dealt:', updateAction.payload);
           setGame((prevGame) => ({
             ...prevGame,
             communityCards: updateAction.payload.communityCards,
@@ -192,7 +180,6 @@ const PokerTable = () => {
           break;
 
         case gameStatus.ROUND_STARTED:
-          // console.log('Round started:', updateAction.payload);
           setGame((prevGame) => ({
             ...prevGame,
             ...updateAction.payload,
@@ -201,7 +188,6 @@ const PokerTable = () => {
           break;
 
         case gameStatus.ROUND_COMPLETE:
-          // console.log('Round complete:', updateAction.payload);
           setGame((prevGame) => ({
             ...prevGame,
             pot: updateAction.payload.pot,
@@ -210,7 +196,6 @@ const PokerTable = () => {
           break;
 
         case gameStatus.GAME_ENDED:
-          // console.log('Game ended:', updateAction.payload);
           alert('Game has ended!');
           setGame((prevGame) => ({
             ...prevGame,
@@ -226,17 +211,14 @@ const PokerTable = () => {
     }
   }, [updateAction]);
 
-
-
-  const joinTable = () => {
+  const startGame = () => {
     axios
-      .post(`/game/${gameId}/join`)
-      .then((response) => {
-        console.log('Joined game:', response.data);
-        setGame(response.data);
+      .post(`/game/${gameId}/start`)
+      .then(() => {
+        console.log('Game started');
       })
       .catch((error) => {
-        console.error('Error joining game:', error);
+        console.error('Error starting game:', error);
       });
   };
 
@@ -245,7 +227,7 @@ const PokerTable = () => {
       stompClient.publish({
         destination: `/app/game/${gameId}/action`,
         body: JSON.stringify({
-          playerId: game.players[playerIdx]?.id,
+          playerId: currentPlayer.id,
           amount,
           actionType: 'BET',
         }),
@@ -258,7 +240,7 @@ const PokerTable = () => {
       stompClient.publish({
         destination: `/app/game/${gameId}/action`,
         body: JSON.stringify({
-          playerId: user._id,
+          playerId: currentPlayer.id,
           action: 'FOLD'
         }),
       });
@@ -270,125 +252,101 @@ const PokerTable = () => {
       stompClient.publish({
         destination: `/app/game/${gameId}/action`,
         body: JSON.stringify({
-          playerId: user._id,
+          playerId: currentPlayer.id,
           action: 'CHECK',
         }),
       });
     }
   };
 
-  const startGame = () => {
-    axios
-      .post(`/game/${gameId}/start`)
-      .then(() => {
-        console.log('Game started');
-      })
-      .catch((error) => {
-        console.error('Error starting game:', error);
-      });
-  };
-
   if (loading) return <div>Loading...</div>;
   if (error) return <div className="error">{error}</div>;
 
-  // Ensure the game object and its properties are defined before rendering
   if (!game || !game.communityCards || !game.players) {
     console.error('Game data is incomplete:', game);
     return <div>No game data available.</div>;
   }
 
+  const isPlayerTurn = game?.currentPlayerIndex === currentPlayer.index;
+
   return (
     <div className="poker-table">
-      <h1 className="table-title">Poker Table - Game ID: {game.id}</h1>
-      <div className="table-area">
+      <div className="circular-table">
         <div className="community-cards">
-          <h2>Community Cards</h2>
-          <div className="cards">
-            {game.communityCards.map((card, index) => (
-              <div key={index} className={`card ${card.suit.toLowerCase()}`}>
-                <div className="card-top">
-                  <span>{card.rank}</span>
-                  <span>{getSuitSymbol(card.suit)}</span>
-                </div>
-                <div className="card-center">
-                  <span>{getSuitSymbol(card.suit)}</span>
-                </div>
-                <div className="card-bottom">
-                  <span>{card.rank}</span>
-                  <span>{getSuitSymbol(card.suit)}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="pot-info">
-          <h3>Pot: ${game.pot?.toFixed(2)}</h3>
-        </div>
-        <div className="players circular-table">
-          {game.players.map((player, index) => {
-            const isCurrentUser = player.username === user.username;
-            const positionClass = isCurrentUser ? 'player-bottom' : `player-position-${index}`;
-            const isCurrentTurn = index === game.currentPlayerIndex;
-            return (
-              <PlayerCard
-                key={index}
-                player={player}
-                isCurrentUser={isCurrentUser}
-                isCurrentTurn={isCurrentTurn}
-                positionClass={positionClass}
-                getSuitSymbol={getSuitSymbol}
-              />
-            );
-          })}
-          {Array.from({ length: MAX_PLAYERS - game.players.length }).map((_, index) => (
-            <div
-              key={`placeholder-${index}`}
-              className="player placeholder"
-              onClick={joinTable}
-            >
-              <h3>Waiting for Player...</h3>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="player-cards-section">
-        <h2>Your Cards</h2>
-        <div className="cards">
-          {cards.map((card, index) => (
+          {game.communityCards.map((card, index) => (
             <div key={index} className={`card ${card.suit.toLowerCase()}`}>
               <div className="card-top">
                 <span>{card.rank}</span>
                 <span>{getSuitSymbol(card.suit)}</span>
               </div>
-              <div className="card-center">
-                <span>{getSuitSymbol(card.suit)}</span>
-              </div>
+              <div className="card-center">{getSuitSymbol(card.suit)}</div>
               <div className="card-bottom">
-                <span>{card.rank}</span>
                 <span>{getSuitSymbol(card.suit)}</span>
+                <span>{card.rank}</span>
               </div>
             </div>
           ))}
         </div>
+
+        {game.players.map((player, index) => (
+          <div
+            key={player._id}
+            className="player"
+            data-position={index}
+            style={{
+              opacity: player.hasFolded ? 0.5 : 1,
+              border: game.currentPlayerIndex === index ? '2px solid yellow' : 'none',
+            }}
+          >
+            <div className="player-name">{player.username}</div>
+            {player.username === currentPlayer.username && (
+              <div className="player-cards">
+                {currentPlayer.hand?.map((card, idx) => (
+                  <div key={idx} className={`card ${card.suit.toLowerCase()}`}>
+                    <div className="card-top">
+                      <span>{card.rank}</span>
+                      <span>{getSuitSymbol(card.suit)}</span>
+                    </div>
+                    <div className="card-center">{getSuitSymbol(card.suit)}</div>
+                    <div className="card-bottom">
+                      <span>{getSuitSymbol(card.suit)}</span>
+                      <span>{card.rank}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="chips">Chips: {player.chips}</div>
+            <div className="player-bet">Bet: {game.currentBettingRound?.playerBets[player.username] || 0}</div>
+          </div>
+        ))}
       </div>
-      <div className="betting-controls">
-        <button onClick={() => placeBet(10)} className="bet-button">
-          Bet 10
-        </button>
-        <button onClick={check} className="check-button">
-          Check
-        </button>
-        <button onClick={fold} className="fold-button">
-          Fold
-        </button>
+
+      <div className="game-info">
+        <h3>Game Information</h3>
+        <p><strong>Pot:</strong> ${game.pot}</p>
+        <p><strong>Current Player:</strong> {game.players[game.currentPlayerIndex]?.username || 'N/A'}</p>
       </div>
-      <div className="game-controls">
-        {game.status === 'WAITING' && (
-          <button onClick={startGame} className="start-game-button">
-            Start Game
-          </button>
-        )}
-      </div>
+
+      <button className="start-game-button" onClick={startGame}>Start Game</button>
+
+      {isPlayerTurn && (
+        <div className="betting-controls">
+          <button className="bet-button" onClick={() => placeBet(0.5)}>Bet</button>
+          <button className="check-button" onClick={check}>Check</button>
+          <button className="fold-button" onClick={fold}>Fold</button>
+          <ReactSlider
+            className="raise-slider"
+            thumbClassName="raise-slider-thumb"
+            trackClassName="raise-slider-track"
+            min={10}
+            max={user?.chips ?? 100}
+            value={raiseAmount}
+            onChange={(value) => setRaiseAmount(value)}
+            renderThumb={(props, state) => <div {...props}>{state.valueNow}</div>}
+          />
+        </div>
+      )}
     </div>
   );
 };

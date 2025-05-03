@@ -42,6 +42,11 @@ public class Player {
         this.hasFolded = player.isHasFolded();;
     }
 
+    public void hideDetails(){
+        this.hand = new ArrayList<>();
+        this.id = null;
+    }
+
     public void reset() {
         this.hand.clear();
         this.currentBet = 0;
