@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: betrix-backend
+    env: java
+    buildCommand: ./gradlew build
+    startCommand: java -jar build/libs/YOUR_JAR_NAME.jar
+    buildFilter:
+      paths:
+        - backend/**
+
+    envVars:
+      - key: JAVA_VERSION
+        value: 17
+
+    rootDir: backend
