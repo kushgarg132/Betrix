@@ -205,6 +205,11 @@ const PokerTable = () => {
   const [lastAction, setLastAction] = useState(null); // Store the last action for animation
   const chipRefs = useRef([]); // Refs for chip animations
   const [isMyTurn, setIsMyTurn] = useState(false); // Track if it's the user's turn
+  const [sidebarVisible, setSidebarVisible] = useState(true); // State for sidebar visibility
+
+  const toggleSidebar = () => {
+    setSidebarVisible(prev => !prev);
+  };
 
   const toggleRaiseSlider = () => {
     setShowRaiseSlider((prev) => !prev); // Toggle slider visibility
@@ -633,7 +638,14 @@ const PokerTable = () => {
       </div>
 
       {/* Game info panel with 3D effects */}
-      <div className="game-info">
+      <div className={`game-info-sidebar ${sidebarVisible ? 'expanded' : 'collapsed'}`}>
+        <div className="sidebar-toggle" onClick={toggleSidebar}>
+          <div className="hamburger-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
         <div className="info-content">
           <h3>Game Information</h3>
           <div className="info-item">
@@ -680,7 +692,6 @@ const PokerTable = () => {
             {game.currentBet === (game.currentBettingRound?.playerBets[currentPlayer.username] || 0) && (
               <button className="check-button" onClick={check}>
                 <span className="action-text">Check</span>
-                <span className="action-amount">$0</span>
               </button>
             )}
             

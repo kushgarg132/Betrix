@@ -2144,3 +2144,195 @@ tr:nth-child(10) .mini-card-container::before {
   text-align: center;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
+
+/* Game info sidebar */
+.game-info-sidebar {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  height: auto;
+  width: 240px;
+  background: rgba(15, 23, 42, 0.9);
+  border-radius: 12px;
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.5),
+    0 0 15px rgba(0, 229, 255, 0.2),
+    inset 0 0 20px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  font-family: 'Poppins', sans-serif;
+  transform-style: preserve-3d;
+  transform: perspective(800px) rotateY(-5deg);
+}
+
+.game-info-sidebar.collapsed {
+  transform: perspective(800px) translateX(calc(100% - 40px)) rotateY(-15deg);
+}
+
+.sidebar-toggle {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 229, 255, 0.2);
+  border-radius: 5px;
+  cursor: pointer;
+  z-index: 1001;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+  border: 1px solid rgba(0, 229, 255, 0.4);
+}
+
+.sidebar-toggle:hover {
+  background: rgba(0, 229, 255, 0.3);
+  transform: scale(1.05);
+}
+
+.hamburger-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.hamburger-icon span {
+  width: 100%;
+  height: 3px;
+  background: #00e5ff;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 5px rgba(0, 229, 255, 0.5);
+}
+
+.collapsed .hamburger-icon span:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
+}
+
+.collapsed .hamburger-icon span:nth-child(2) {
+  opacity: 0;
+}
+
+.collapsed .hamburger-icon span:nth-child(3) {
+  transform: translateY(-8px) rotate(-45deg);
+}
+
+.game-info-sidebar:hover {
+  transform: perspective(800px) rotateY(-2deg) translateZ(10px);
+  box-shadow: 
+    0 15px 40px rgba(0, 0, 0, 0.6),
+    0 0 20px rgba(0, 229, 255, 0.3),
+    inset 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.info-content {
+  padding: 30px 15px 20px;
+}
+
+.info-content h3 {
+  color: #00e5ff;
+  text-align: center;
+  font-size: 1.3rem;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(0, 229, 255, 0.3);
+  text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+  font-family: 'Orbitron', sans-serif;
+}
+
+.info-item {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+  padding: 10px 15px;
+  margin: 10px 0;
+  display: flex;
+  justify-content: space-between;
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.info-item:hover {
+  border-color: rgba(0, 229, 255, 0.4);
+  box-shadow: 0 5px 15px rgba(0, 229, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.info-label {
+  color: #ecf0f1;
+  font-weight: 500;
+}
+
+.info-value {
+  color: #00e5ff;
+  font-weight: 600;
+  text-shadow: 0 0 5px rgba(0, 229, 255, 0.5);
+}
+
+.rankings-button {
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px;
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.rankings-button:hover {
+  background: linear-gradient(135deg, #2980b9, #3498db);
+  transform: translateY(-2px);
+  box-shadow: 0 7px 20px rgba(0, 0, 0, 0.3);
+}
+
+.button-icon {
+  margin-right: 8px;
+  font-size: 1.2rem;
+}
+
+/* Media query for smaller screens */
+@media (max-width: 768px) {
+  .game-info-sidebar {
+    width: 200px;
+  }
+  
+  .info-content {
+    padding: 55px 10px 15px;
+  }
+  
+  .info-item {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-height: 600px) {
+  .info-item {
+    padding: 6px 10px;
+    margin: 6px 0;
+  }
+  
+  .info-content h3 {
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+  }
+}
+
+/* Remove old game-info styles to avoid conflicts */
+.game-info {
+  display: none;
+}
