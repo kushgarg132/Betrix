@@ -23,11 +23,12 @@
   border-radius: 5px;
   cursor: pointer;
   margin-bottom: 20px;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .create-game-button:hover {
   background-color: #0056b3;
+  transform: scale(1.05);
 }
 
 .no-games-message {
@@ -52,6 +53,12 @@
   margin-bottom: 10px;
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.game-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 }
 
 .game-details {
@@ -67,11 +74,12 @@
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .join-game-button:hover {
   background-color: #218838;
+  transform: scale(1.05);
 }
 
 .loading {
@@ -79,4 +87,25 @@
   color: #6c757d;
   text-align: center;
   margin-top: 50px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .game-lobby-container {
+    background-color: #343a40;
+    color: white;
+  }
+
+  .game-item {
+    background-color: #444;
+  }
+
+  .create-game-button,
+  .join-game-button {
+    background-color: #555;
+  }
+
+  .create-game-button:hover,
+  .join-game-button:hover {
+    background-color: #666;
+  }
 }
