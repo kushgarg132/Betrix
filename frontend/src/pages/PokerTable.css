@@ -11,7 +11,6 @@
   min-height: 100vh;
   background: linear-gradient(135deg, #0a0e17 0%, #1f2b3e 100%);
   overflow: hidden;
-  font-family: 'Poppins', sans-serif;
   padding-bottom: 140px; /* Increased padding for controls */
   perspective: 1500px; /* Enhanced 3D perspective for better depth */
 }
@@ -402,14 +401,12 @@
 /* Adjust player positions to be ON the table edge rather than hanging off */
 /* Position 0 is the current player (at the bottom) */
 .player[data-position="0"] {
-  bottom: -30px; 
-  left: 50%;
-  transform: translateX(-50%);
-  flex-direction: column;
-  align-items: center;
-  min-width: 160px;
-  min-height: 170px;
-  z-index: 10;
+  bottom: 10px !important; /* Moved closer to the bottom edge */
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  min-width: 120px !important;
+  max-width: 180px !important;
+  z-index: 25 !important; /* Ensure highest z-index for current player */
 }
 
 /* For a 6-player game, positions around the table */
@@ -816,31 +813,7 @@
 
 /* Game status bar for mobile */
 .game-status-bar {
-  position: fixed;
-  bottom: 130px; /* Positioned above betting controls */
-  left: 15px;
-  right: 15px;
-  background: rgba(52, 152, 219, 0.9);
-  border-radius: 8px;
-  padding: 10px 15px;
-  color: white;
-  font-weight: 500;
-  text-align: center;
-  z-index: 999;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  animation: slideUp 0.3s forwards;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-@keyframes slideUp {
-  from { transform: translateY(100%); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-.status-info {
-  display: flex;
-  justify-content: space-around;
-  width: 100%;
+  display: none; /* Hide any existing instances */
 }
 
 /* Opponent bet display - prominently shows on opponent cards */
@@ -1115,9 +1088,9 @@ tr:nth-child(10) .mini-card-container::before {
 
   /* Adjust player positions for mobile */
   .player[data-position="0"] {
-    bottom: -40px;
-    min-width: 130px;
-    min-height: 130px;
+    bottom: 5px !important;
+    min-width: 100px !important;
+    max-width: 160px !important;
   }
 
   .player[data-position="3"] {
@@ -1218,52 +1191,48 @@ tr:nth-child(10) .mini-card-container::before {
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 20px;
-  background: rgba(15, 23, 42, 0.95);
+  padding: 15px 10px;
+  background: linear-gradient(to top, rgba(10, 14, 23, 0.95) 0%, rgba(15, 32, 39, 0.9) 100%);
   backdrop-filter: blur(10px);
-  border-top: 2px solid rgba(0, 229, 255, 0.3);
+  border-top: 2px solid rgba(0, 229, 255, 0.4);
   z-index: 1000;
-  min-height: 90px;
-  box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.5);
-  animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-@keyframes slideUp {
-  from { transform: translateY(100%); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.7);
+  transform: translateZ(0); /* Force hardware acceleration */
+  transition: transform 0.3s ease;
 }
 
 .betting-controls-container {
-  max-width: 800px;
+  max-width: 600px;
   margin: 0 auto;
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 15px;
+  gap: 12px;
+  height: 70px;
 }
 
-/* Button styling in betting controls */
+/* Button styling in betting controls - simplified and improved */
 .check-button,
 .call-button,
 .raise-button,
 .fold-button {
-  padding: 12px 10px;
-  min-width: 110px;
+  height: 60px;
+  flex: 1;
   border: none;
   border-radius: 8px;
   font-family: 'Poppins', sans-serif;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.2s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  box-shadow: 
-    0 5px 15px rgba(0, 0, 0, 0.3),
-    inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
   position: relative;
   overflow: hidden;
+  min-width: 80px;
+  padding: 0;
 }
 
 .check-button::before,
@@ -1273,121 +1242,123 @@ tr:nth-child(10) .mini-card-container::before {
   content: '';
   position: absolute;
   top: 0;
-  left: 0;
+  left: -100%;
   width: 100%;
   height: 100%;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  transform: translateX(-100%);
+  animation: shine 2s infinite;
+  opacity: 0;
+  transition: opacity 0.3s;
 }
 
 .check-button:hover::before,
 .call-button:hover::before,
 .raise-button:hover::before,
 .fold-button:hover::before {
-  animation: shimmer 1.5s infinite;
+  opacity: 1;
+}
+
+@keyframes shine {
+  100% { left: 100%; }
 }
 
 .check-button {
-  background: linear-gradient(135deg, #2ecc71, #27ae60);
+  background: linear-gradient(to bottom, #27ae60, #2ecc71);
   color: white;
+  border-bottom: 3px solid #219652;
 }
 
-.check-button:hover {
-  background: linear-gradient(135deg, #27ae60, #219a52);
-  transform: translateY(-5px);
-  box-shadow: 
-    0 8px 20px rgba(46, 204, 113, 0.4),
-    inset 0 1px 1px rgba(255, 255, 255, 0.3);
+.check-button:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.4);
+  border-bottom-width: 1px;
 }
 
 .call-button {
-  background: linear-gradient(135deg, #3498db, #2980b9);
+  background: linear-gradient(to bottom, #2980b9, #3498db);
   color: white;
+  border-bottom: 3px solid #1a5c8f;
 }
 
-.call-button:hover {
-  background: linear-gradient(135deg, #2980b9, #2471a3);
-  transform: translateY(-5px);
-  box-shadow: 
-    0 8px 20px rgba(52, 152, 219, 0.4),
-    inset 0 1px 1px rgba(255, 255, 255, 0.3);
+.call-button:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.4);
+  border-bottom-width: 1px;
 }
 
 .raise-button {
-  background: linear-gradient(135deg, #f1c40f, #f39c12);
+  background: linear-gradient(to bottom, #f39c12, #f1c40f);
   color: white;
+  border-bottom: 3px solid #d68910;
 }
 
-.raise-button:hover {
-  background: linear-gradient(135deg, #f39c12, #d68910);
-  transform: translateY(-5px);
-  box-shadow: 
-    0 8px 20px rgba(241, 196, 15, 0.4),
-    inset 0 1px 1px rgba(255, 255, 255, 0.3);
+.raise-button:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.4);
+  border-bottom-width: 1px;
 }
 
 .fold-button {
-  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  background: linear-gradient(to bottom, #c0392b, #e74c3c);
   color: white;
+  border-bottom: 3px solid #922b21;
 }
 
-.fold-button:hover {
-  background: linear-gradient(135deg, #c0392b, #a93226);
-  transform: translateY(-5px);
-  box-shadow: 
-    0 8px 20px rgba(231, 76, 60, 0.4),
-    inset 0 1px 1px rgba(255, 255, 255, 0.3);
+.fold-button:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.4);
+  border-bottom-width: 1px;
 }
 
 .action-text {
-  font-size: 1rem;
+  font-size: 1.1rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
-  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  margin-bottom: 3px;
 }
 
 .action-amount {
   font-size: 0.9rem;
-  opacity: 0.9;
-  margin-top: 3px;
+  font-family: 'Orbitron', sans-serif;
   font-weight: 500;
+  padding: 2px 6px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
 }
 
-/* Sleek raise slider overlay and component */
+/* Raise slider overlay - simplified and improved */
 .raise-slider-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(5px);
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
   z-index: 2000;
   display: flex;
   justify-content: center;
   align-items: center;
-  animation: fadeIn 0.3s ease;
+  animation: fadeIn 0.2s ease;
 }
 
 .raise-controls {
   width: 350px;
   max-width: 90%;
-  background: rgba(15, 23, 42, 0.98);
+  background: linear-gradient(145deg, #0f172a, #1e293b);
   border-radius: 12px;
-  padding: 25px;
-  box-shadow: 
-    0 15px 40px rgba(0, 0, 0, 0.7),
-    0 0 20px rgba(0, 229, 255, 0.2),
-    inset 0 0 30px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(0, 229, 255, 0.3);
+  padding: 20px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
   position: relative;
   z-index: 2001;
-  animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  transform-style: preserve-3d;
+  animation: scaleIn 0.3s ease-out;
+  border: 1px solid rgba(0, 229, 255, 0.4);
 }
 
 @keyframes scaleIn {
-  from { transform: scale(0.8); opacity: 0; }
+  from { transform: scale(0.9); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
 
@@ -1395,29 +1366,36 @@ tr:nth-child(10) .mini-card-container::before {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
   color: #ecf0f1;
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
 }
 
 .close-button {
-  background: none;
+  width: 30px;
+  height: 30px;
+  background: rgba(255, 255, 255, 0.1);
   border: none;
+  border-radius: 50%;
   color: #ecf0f1;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  padding: 0 8px;
-  transition: color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .close-button:hover {
-  color: #e74c3c;
+  background: rgba(255, 255, 255, 0.2);
+  transform: rotate(90deg);
 }
 
 .raise-slider-container {
   position: relative;
   margin: 30px 0;
+  padding: 0 10px;
 }
 
 .slider-track {
@@ -1425,21 +1403,23 @@ tr:nth-child(10) .mini-card-container::before {
   top: 50%;
   left: 0;
   right: 0;
-  height: 8px;
-  background: linear-gradient(to right, rgba(52, 152, 219, 0.5), rgba(241, 196, 15, 0.5));
+  height: 10px;
+  background: linear-gradient(to right, #2980b9, #f39c12);
   transform: translateY(-50%);
-  border-radius: 4px;
+  border-radius: 5px;
   z-index: 0;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .raise-slider {
   -webkit-appearance: none;
   width: 100%;
-  height: 8px;
+  height: 10px;
   background: transparent;
   outline: none;
   position: relative;
   z-index: 1;
+  cursor: pointer;
 }
 
 .raise-slider::-webkit-slider-thumb {
@@ -1450,15 +1430,15 @@ tr:nth-child(10) .mini-card-container::before {
   background: linear-gradient(135deg, #f1c40f, #f39c12);
   cursor: pointer;
   border: 2px solid #fff;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s ease;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
   position: relative;
   z-index: 2;
 }
 
 .raise-slider::-webkit-slider-thumb:hover {
   transform: scale(1.1);
-  box-shadow: 0 8px 25px rgba(241, 196, 15, 0.5);
+  box-shadow: 0 8px 15px rgba(241, 196, 15, 0.5);
 }
 
 .raise-slider::-moz-range-thumb {
@@ -1468,8 +1448,8 @@ tr:nth-child(10) .mini-card-container::before {
   background: linear-gradient(135deg, #f1c40f, #f39c12);
   cursor: pointer;
   border: 2px solid #fff;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s ease;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
 }
 
 .raise-info {
@@ -1481,208 +1461,94 @@ tr:nth-child(10) .mini-card-container::before {
 }
 
 .raise-amount {
-  font-size: 1.5rem;
+  font-size: 2rem;
   font-weight: 700;
   color: #f1c40f;
-  text-shadow: 0 0 15px rgba(241, 196, 15, 0.4);
-  margin: 10px 0;
+  text-shadow: 0 0 10px rgba(241, 196, 15, 0.4);
+  margin: 10px 0 25px;
   text-align: center;
-  display: block;
-  width: 100%;
   font-family: 'Orbitron', sans-serif;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(241, 196, 15, 0.3);
 }
 
 .raise-buttons {
   display: flex;
-  gap: 10px;
+  gap: 15px;
 }
 
 .confirm-raise-button {
-  background: linear-gradient(135deg, #f1c40f, #f39c12);
-  color: white;
   flex: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 12px;
+  height: 50px;
+  background: linear-gradient(to bottom, #f39c12, #e67e22);
+  color: white;
   border: none;
   border-radius: 8px;
   font-family: 'Poppins', sans-serif;
   font-weight: 600;
+  font-size: 1rem;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 0 #d35400;
+  transition: all 0.2s ease;
+  letter-spacing: 1px;
 }
 
 .confirm-raise-button:hover {
-  background: linear-gradient(135deg, #f39c12, #d68910);
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(241, 196, 15, 0.4);
+  background: linear-gradient(to bottom, #e67e22, #d35400);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 #d35400;
+}
+
+.confirm-raise-button:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #d35400;
 }
 
 .cancel-raise-button {
-  background: linear-gradient(135deg, #7f8c8d, #95a5a6);
-  color: white;
   flex: 1;
-  padding: 12px;
+  height: 50px;
+  background: linear-gradient(to bottom, #95a5a6, #7f8c8d);
+  color: white;
   border: none;
   border-radius: 8px;
   font-family: 'Poppins', sans-serif;
   font-weight: 600;
+  font-size: 1rem;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 0 #616a6b;
+  transition: all 0.2s ease;
 }
 
 .cancel-raise-button:hover {
-  background: linear-gradient(135deg, #95a5a6, #bdc3c7);
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(127, 140, 141, 0.4);
+  background: linear-gradient(to bottom, #7f8c8d, #616a6b);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 #616a6b;
 }
 
-/* Blind indicator styles */
-.blind-indicator {
-  position: absolute;
-  top: -10px;
-  right: -10px;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #ffffff;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
-  z-index: 10;
+.cancel-raise-button:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #616a6b;
 }
 
-.big-blind .blind-indicator.big-blind {
-  background: linear-gradient(135deg, #e74c3c, #c0392b);
-  border: 2px solid #ffffff;
-}
-
-.small-blind .blind-indicator.small-blind {
-  background: linear-gradient(135deg, #f1c40f, #f39c12);
-  border: 2px solid #ffffff;
-}
-
-.opponent-bet-display {
-  position: absolute;
-  top: -15px;
-  right: -15px;
-  background: radial-gradient(circle at center, rgba(0, 229, 255, 0.8) 0%, rgba(30, 144, 255, 0.8) 100%);
-  color: white;
-  border-radius: 50%;
-  padding: 6px;
-  min-width: 34px;
-  min-height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 0.95rem;
-  box-shadow: 0 0 15px rgba(0, 229, 255, 0.5);
-  border: 2px solid rgba(255, 255, 255, 0.8);
-  z-index: 10;
-  text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-  animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-@keyframes popIn {
-  0% { transform: scale(0); opacity: 0; }
-  70% { transform: scale(1.2); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* Responsive styles for landscape mobile */
+/* Responsive design for betting controls */
 @media (max-width: 768px) {
-  .poker-table {
-    padding-bottom: 120px;
-  }
-  
-  .table-felt {
-    height: 450px;
-    transform: rotateX(12deg);
-    margin-top: 15px;
-  }
-  
-  .table-felt.my-turn {
-    transform: rotateX(10deg) scale(0.9);
-  }
-  
-  .card.realistic {
-    width: 50px;
-    height: 75px;
-  }
-  
-  .card.hidden {
-    width: 50px;
-    height: 75px;
-  }
-  
-  .card-center {
-    font-size: 1.4rem;
-  }
-  
-  .card-top,
-  .card-bottom {
-    font-size: 0.8rem;
-  }
-  
-  .player {
-    min-width: 110px;
-    min-height: 80px;
-    padding: 8px;
-  }
-  
-  .player-name {
-    font-size: 0.9rem;
-  }
-  
-  .player[data-position="0"] {
-    min-width: 140px;
-    min-height: 150px;
-  }
-  
-  .game-info {
-    width: 200px;
-    top: 10px;
-    right: 10px;
-  }
-  
-  .info-item {
-    padding: 6px 8px;
-    font-size: 0.85rem;
-  }
-  
-  .game-info h3 {
-    padding: 10px;
-    font-size: 1.1rem;
-  }
-  
   .betting-controls-wrapper {
-    padding: 15px 10px;
-    min-height: 80px;
+    padding: 10px 5px;
   }
   
   .betting-controls-container {
-    gap: 10px;
+    height: 60px;
+    gap: 8px;
   }
   
   .check-button,
   .call-button,
   .raise-button,
   .fold-button {
-    min-width: 85px;
-    padding: 10px 8px;
+    height: 50px;
+    min-width: 60px;
   }
   
   .action-text {
@@ -1693,646 +1559,513 @@ tr:nth-child(10) .mini-card-container::before {
     font-size: 0.8rem;
   }
   
-  .game-status-bar {
-    bottom: 100px;
+  .raise-controls {
+    width: 320px;
+    padding: 15px;
+  }
+  
+  .raise-header {
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+  }
+  
+  .raise-amount {
+    font-size: 1.6rem;
+    margin: 10px 0 20px;
+  }
+  
+  .confirm-raise-button,
+  .cancel-raise-button {
+    height: 45px;
+    font-size: 0.9rem;
   }
 }
 
-/* Landscape specific adjustments */
-@media (max-height: 600px) and (orientation: landscape) {
-  .poker-table {
-    padding-bottom: 90px;
-  }
-  
-  .table-felt {
-    height: 380px;
-    transform: rotateX(10deg);
-  }
-  
-  .card.realistic, .card.hidden {
-    width: 45px;
-    height: 68px;
-  }
-  
-  .card-center {
-    font-size: 1.2rem;
-  }
-  
-  .player {
-    min-width: 100px;
-    min-height: 70px;
-    padding: 6px;
-  }
-  
-  .player[data-position="0"] {
-    min-width: 130px;
-    min-height: 130px;
-    bottom: -20px;
-  }
-  
-  .player[data-position="3"] {
-    top: -20px;
-  }
-  
-  .player[data-position="2"],
-  .player[data-position="5"] {
-    top: 15%;
-  }
-  
-  .player[data-position="1"],
-  .player[data-position="4"] {
-    top: 50%;
-  }
-  
-  .game-info {
-    top: 5px;
-    right: 5px;
-    width: 180px;
-    transform: perspective(800px) rotateY(-3deg);
-  }
-  
-  .game-info h3 {
-    padding: 8px;
-    font-size: 1rem;
-    margin-bottom: 10px;
-  }
-  
-  .info-item {
-    padding: 5px;
-    margin: 6px 0;
-    font-size: 0.8rem;
-  }
-  
+@media (max-height: 600px) {
   .betting-controls-wrapper {
-    min-height: 70px;
-    padding: 10px;
+    padding: 5px;
+  }
+  
+  .betting-controls-container {
+    height: 50px;
   }
   
   .check-button,
   .call-button,
   .raise-button,
   .fold-button {
-    min-width: 80px;
-    padding: 8px 6px;
+    height: 45px;
   }
   
-  .game-status-bar {
-    bottom: 80px;
-    padding: 8px;
+  .raise-controls {
+    padding: 12px;
   }
   
-  .pot-label {
-    font-size: 1rem;
-    padding: 4px 10px;
+  .raise-slider-container {
+    margin: 20px 0;
   }
   
-  .poker-chip {
-    width: 24px;
-    height: 24px;
-  }
-}
-
-/* Hand Rankings Modal with visual examples */
-.rankings-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-  animation: fadeIn 0.3s ease;
-  backdrop-filter: blur(5px);
-}
-
-.rankings-modal {
-  width: 90%;
-  max-width: 800px;
-  max-height: 90vh;
-  background: linear-gradient(145deg, #1a2433, #0f172a);
-  border-radius: 16px;
-  box-shadow: 
-    0 20px 50px rgba(0, 0, 0, 0.5),
-    0 0 20px rgba(0, 229, 255, 0.2),
-    inset 0 0 30px rgba(0, 0, 0, 0.5);
-  overflow: hidden;
-  animation: scaleIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  border: 1px solid rgba(0, 229, 255, 0.3);
-  transform-style: preserve-3d;
-  transform: perspective(1000px);
-}
-
-.rankings-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 20px;
-  background: linear-gradient(135deg, #2980b9, #1e3a8a);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.rankings-header h3 {
-  color: #ffffff;
-  margin: 0;
-  font-size: 1.2rem;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
-}
-
-.rankings-content {
-  padding: 0;
-  max-height: calc(90vh - 60px);
-  overflow-y: auto;
-}
-
-.rankings-table {
-  width: 100%;
-  border-collapse: collapse;
-  color: #ecf0f1;
-  perspective: 1000px;
-}
-
-.rankings-table th, 
-.rankings-table td {
-  padding: 12px 15px;
-  text-align: left;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.rankings-table th {
-  background: rgba(30, 41, 59, 0.8);
-  color: #ffffff;
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 0.9rem;
-  letter-spacing: 0.5px;
-}
-
-.rankings-table tbody tr {
-  transition: background 0.3s ease, transform 0.3s ease;
-}
-
-.rankings-table tbody tr:hover {
-  background: rgba(30, 58, 138, 0.2);
-  transform: scale(1.01) translateZ(5px);
-}
-
-.rankings-table td:first-child {
-  color: #f1c40f;
-  font-weight: 600;
-  text-align: center;
-  width: 50px;
-}
-
-.hand-example {
-  padding: 10px;
-  text-align: center;
-}
-
-/* Example cards for rankings table */
-.example-cards {
-  display: flex;
-  gap: 4px;
-  perspective: 500px;
-  transform-style: preserve-3d;
-  justify-content: center;
-}
-
-.mini-card {
-  width: 28px;
-  height: 38px;
-  background: white;
-  border-radius: 4px;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.3);
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 0.75rem;
-  font-weight: 600;
-  transform-style: preserve-3d;
-  transform: rotateY(0) translateZ(0);
-  transition: transform 0.3s;
-  margin: 0 2px;
-  border: 1px solid rgba(200, 200, 200, 0.8);
-}
-
-.mini-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, 
-    rgba(255,255,255,0.7) 0%, 
-    rgba(255,255,255,0) 60%);
-  border-radius: 3px;
-  pointer-events: none;
-}
-
-.mini-card.hearts, .mini-card.diamonds {
-  color: #e74c3c;
-}
-
-.mini-card.clubs, .mini-card.spades {
-  color: #2c3e50;
-}
-
-.mini-card:hover {
-  transform: rotateY(15deg) translateZ(10px);
-  z-index: 2;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.4);
-}
-
-/* Blind indicator icons to player names */
-.player.big-blind .player-name::after {
-  content: " 🎯";
-  font-size: 0.9rem;
-}
-
-.player.small-blind .player-name::after {
-  content: " 🔄";
-  font-size: 0.9rem;
-}
-
-/* Responsive adjustments for hand rankings modal */
-@media (max-width: 768px) {
-  .rankings-modal {
-    width: 95%;
-    max-height: 80vh;
+  .raise-amount {
+    font-size: 1.4rem;
+    margin: 8px 0 15px;
+    padding: 5px;
   }
   
-  .rankings-table th, 
-  .rankings-table td {
-    padding: 8px 10px;
-    font-size: 0.85rem;
-  }
-  
-  .mini-card {
-    width: 22px;
-    height: 30px;
-    font-size: 0.7rem;
-  }
-  
-  .rankings-header h3 {
-    font-size: 1.1rem;
-  }
-}
-
-@media (max-height: 600px) and (orientation: landscape) {
-  .rankings-modal {
-    max-height: 90vh;
-    width: 95%;
-  }
-  
-  .rankings-table th, 
-  .rankings-table td {
-    padding: 6px 8px;
-    font-size: 0.8rem;
-  }
-  
-  .mini-card {
-    width: 20px;
-    height: 28px;
-    font-size: 0.65rem;
-  }
-  
-  .rankings-header {
-    padding: 10px;
-  }
-  
-  .rankings-header h3 {
-    font-size: 1rem;
-  }
-  
-  .rankings-content {
-    max-height: calc(90vh - 50px);
-  }
-}
-
-/* Optimizations for performance */
-.card-top span,
-.card-bottom span,
-.card-center,
-.player-name,
-.chips,
-.player-bet,
-.pot-label,
-.info-label,
-.info-value,
-.action-text,
-.action-amount,
-.raise-amount,
-.blind-indicator,
-.opponent-bet-display {
-  will-change: transform, opacity;
-}
-
-/* Ensure smooth animations */
-@keyframes pulseBorder {
-  0% { border-color: rgba(0, 229, 255, 0.3); }
-  50% { border-color: rgba(0, 229, 255, 0.8); }
-  100% { border-color: rgba(0, 229, 255, 0.3); }
-}
-
-/* Make sure the community cards stay visible */
-.community-cards {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  gap: 12px;
-  z-index: 6;
-  margin-top: 30px;
-}
-
-/* Player positioning adjustments to ensure they're on the table edge */
-.player-cards {
-  display: flex;
-  gap: 5px;
-  transform: scale(0.85);
-  position: relative;
-  z-index: 2;
-  margin: 5px 0;
-}
-
-.opponent-cards {
-  display: flex;
-  gap: 5px;
-  transform: scale(0.85);
-  position: relative;
-  z-index: 2;
-  margin: 5px 0;
-}
-
-.player-info-container {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  margin-left: 10px;
-  position: relative;
-  z-index: 1;
-}
-
-.chips {
-  color: #00e5ff;
-  font-weight: 600;
-  font-size: 0.9rem;
-  text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
-  letter-spacing: 0.5px;
-  margin-top: 3px;
-  background: rgba(0, 0, 0, 0.3);
-  padding: 3px 8px;
-  border-radius: 4px;
-  position: relative;
-  z-index: 1;
-  text-align: left;
-  border: 1px solid rgba(0, 229, 255, 0.3);
-  font-family: 'Orbitron', sans-serif;
-}
-
-.player-bet {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: #00e5ff;
-  letter-spacing: 0.5px;
-  text-shadow: 0 0 5px rgba(0, 229, 255, 0.5);
-  margin-top: 3px;
-  position: relative;
-  z-index: 1;
-  text-align: left;
-}
-
-/* Loading spinner */
-.loading-spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid rgba(0, 229, 255, 0.3);
-  border-radius: 50%;
-  border-top-color: #00e5ff;
-  animation: spin 1s infinite ease-in-out;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-@keyframes spin {
-  to { transform: translate(-50%, -50%) rotate(360deg); }
-}
-
-/* Error message */
-.error {
-  background: rgba(231, 76, 60, 0.2);
-  color: #e74c3c;
-  padding: 15px 20px;
-  border-radius: 10px;
-  border: 1px solid rgba(231, 76, 60, 0.5);
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-weight: 500;
-  max-width: 80%;
-  text-align: center;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-}
-
-/* Game info sidebar */
-.game-info-sidebar {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  height: auto;
-  width: 240px;
-  background: rgba(15, 23, 42, 0.9);
-  border-radius: 12px;
-  box-shadow: 
-    0 10px 30px rgba(0, 0, 0, 0.5),
-    0 0 15px rgba(0, 229, 255, 0.2),
-    inset 0 0 20px rgba(0, 0, 0, 0.3);
-  z-index: 1000;
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  backdrop-filter: blur(10px);
-  overflow: hidden;
-  border: 1px solid rgba(0, 229, 255, 0.3);
-  font-family: 'Poppins', sans-serif;
-  transform-style: preserve-3d;
-  transform: perspective(800px) rotateY(-5deg);
-}
-
-.game-info-sidebar.collapsed {
-  transform: perspective(800px) translateX(calc(100% - 40px)) rotateY(-15deg);
-}
-
-.sidebar-toggle {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 229, 255, 0.2);
-  border-radius: 5px;
-  cursor: pointer;
-  z-index: 1001;
-  transition: all 0.3s ease;
-  box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
-  border: 1px solid rgba(0, 229, 255, 0.4);
-}
-
-.sidebar-toggle:hover {
-  background: rgba(0, 229, 255, 0.3);
-  transform: scale(1.05);
-}
-
-.hamburger-icon {
-  width: 20px;
-  height: 20px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.hamburger-icon span {
-  width: 100%;
-  height: 3px;
-  background: #00e5ff;
-  border-radius: 2px;
-  transition: all 0.3s ease;
-  box-shadow: 0 0 5px rgba(0, 229, 255, 0.5);
-}
-
-.collapsed .hamburger-icon span:nth-child(1) {
-  transform: translateY(8px) rotate(45deg);
-}
-
-.collapsed .hamburger-icon span:nth-child(2) {
-  opacity: 0;
-}
-
-.collapsed .hamburger-icon span:nth-child(3) {
-  transform: translateY(-8px) rotate(-45deg);
-}
-
-.game-info-sidebar:hover {
-  transform: perspective(800px) rotateY(-2deg) translateZ(10px);
-  box-shadow: 
-    0 15px 40px rgba(0, 0, 0, 0.6),
-    0 0 20px rgba(0, 229, 255, 0.3),
-    inset 0 0 20px rgba(0, 0, 0, 0.3);
-}
-
-.info-content {
-  padding: 30px 15px 20px;
-}
-
-.info-content h3 {
-  color: #00e5ff;
-  text-align: center;
-  font-size: 1.3rem;
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid rgba(0, 229, 255, 0.3);
-  text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
-  font-family: 'Orbitron', sans-serif;
-}
-
-.info-item {
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 6px;
-  padding: 10px 15px;
-  margin: 10px 0;
-  display: flex;
-  justify-content: space-between;
-  border: 1px solid rgba(0, 229, 255, 0.2);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-  transition: all 0.3s ease;
-}
-
-.info-item:hover {
-  border-color: rgba(0, 229, 255, 0.4);
-  box-shadow: 0 5px 15px rgba(0, 229, 255, 0.1);
-  transform: translateY(-2px);
-}
-
-.info-label {
-  color: #ecf0f1;
-  font-weight: 500;
-}
-
-.info-value {
-  color: #00e5ff;
-  font-weight: 600;
-  text-shadow: 0 0 5px rgba(0, 229, 255, 0.5);
-}
-
-.rankings-button {
-  width: 100%;
-  margin-top: 20px;
-  padding: 12px;
-  background: linear-gradient(135deg, #3498db, #2980b9);
-  border: none;
-  border-radius: 8px;
-  color: white;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-  transition: all 0.3s ease;
-}
-
-.rankings-button:hover {
-  background: linear-gradient(135deg, #2980b9, #3498db);
-  transform: translateY(-2px);
-  box-shadow: 0 7px 20px rgba(0, 0, 0, 0.3);
-}
-
-.button-icon {
-  margin-right: 8px;
-  font-size: 1.2rem;
-}
-
-/* Media query for smaller screens */
-@media (max-width: 768px) {
-  .game-info-sidebar {
-    width: 200px;
-  }
-  
-  .info-content {
-    padding: 55px 10px 15px;
-  }
-  
-  .info-item {
-    padding: 8px 12px;
-    font-size: 0.9rem;
-  }
-}
-
-@media (max-height: 600px) {
-  .info-item {
-    padding: 6px 10px;
-    margin: 6px 0;
-  }
-  
-  .info-content h3 {
-    font-size: 1.1rem;
-    margin-bottom: 15px;
+  .confirm-raise-button,
+  .cancel-raise-button {
+    height: 40px;
   }
 }
 
 /* Remove old game-info styles to avoid conflicts */
 .game-info {
   display: none;
+}
+
+/* Add CSS for the left sidebar similar to the game-info-sidebar */
+.left-sidebar {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 250px;
+  height: auto;
+  max-height: 80vh;
+  background: linear-gradient(to right, #1d2b38, #2c3e50);
+  border-radius: 0 10px 10px 0;
+  box-shadow: 4px 0 15px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease-in-out;
+  z-index: 100;
+  color: #ecf0f1;
+  overflow-y: auto;
+  padding: 20px;
+  border: 1px solid #34495e;
+  border-left: none;
+}
+
+.left-sidebar.expanded {
+  transform: translateY(-50%) translateX(0);
+}
+
+.left-sidebar.collapsed {
+  transform: translateY(-50%) translateX(-90%);
+}
+
+.left-sidebar .sidebar-toggle {
+  position: absolute;
+  right: -20px;
+  top: 20px;
+  width: 40px;
+  height: 40px;
+  background: #2c3e50;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  border: 1px solid #34495e;
+  z-index: 999; /* Increased z-index to ensure it's clickable */
+}
+
+/* Modify hamburger icon for better visibility */
+.left-sidebar .hamburger-icon span {
+  width: 100%;
+  height: 3px;
+  background: #00e5ff;
+  border-radius: 2px;
+  margin: 2px 0;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 5px rgba(0, 229, 255, 0.5);
+}
+
+/* Special styling for collapsed state toggle button */
+.left-sidebar.collapsed .sidebar-toggle {
+  right: -20px;
+  background: #1e90ff;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.5);
+}
+
+.left-sidebar .sidebar-content {
+  padding-right: 25px;
+}
+
+.left-sidebar h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 18px;
+  color: #f1c40f;
+  text-align: center;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.leave-table-button {
+  width: 100%;
+  padding: 12px 15px;
+  background: linear-gradient(to bottom, #c0392b, #e74c3c);
+  border: none;
+  border-radius: 5px;
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.leave-table-button:hover {
+  background: linear-gradient(to bottom, #e74c3c, #c0392b);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.25);
+}
+
+.leave-table-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.leave-table-button .button-icon {
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+/* Complete rewrite of the left sidebar styles */
+.left-sidebar-container {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+}
+
+.left-sidebar {
+  background: linear-gradient(to right, #1a1a2e, #16213e);
+  color: white;
+  width: 250px;
+  padding: 20px;
+  border-radius: 0 10px 10px 0;
+  box-shadow: 2px 0 15px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease;
+  border: 1px solid #00b4d8;
+  border-left: none;
+}
+
+.left-sidebar.expanded {
+  transform: translateX(0);
+}
+
+.left-sidebar.collapsed {
+  transform: translateX(-100%);
+}
+
+.left-sidebar-toggle-btn {
+  width: 40px;
+  height: 40px;
+  background: #00b4d8;
+  color: white;
+  border: none;
+  border-radius: 0 8px 8px 0;
+  font-size: 20px;
+  cursor: pointer;
+  margin-left: -1px;
+  box-shadow: 5px 0 15px rgba(0, 0, 0, 0.2);
+  z-index: 1001;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  outline: none;
+}
+
+.left-sidebar-toggle-btn:hover {
+  background: #0096c7;
+  transform: scale(1.05);
+}
+
+.left-sidebar-toggle-btn:active {
+  transform: scale(0.95);
+}
+
+.sidebar-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.left-sidebar h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #00b4d8;
+  text-align: center;
+  font-size: 18px;
+  text-shadow: 0 0 5px rgba(0, 180, 216, 0.5);
+}
+
+.leave-table-button {
+  width: 100%;
+  padding: 12px 15px;
+  background: linear-gradient(to bottom, #e63946, #d62828);
+  border: none;
+  border-radius: 5px;
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.leave-table-button:hover {
+  background: linear-gradient(to bottom, #d62828, #c1121f);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.25);
+}
+
+.leave-table-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.leave-table-button .button-icon {
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .poker-table {
+    padding-bottom: 110px;
+  }
+}
+
+@media (max-height: 600px) and (orientation: landscape) {
+  .poker-table {
+    padding-bottom: 80px;
+    min-height: 100vh;
+    perspective: 1200px;
+  }
+}
+
+/* Main container and layout structure */
+.poker-table-container {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #0a0e17;
+}
+
+.poker-table-main {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 0 100px;
+  overflow: hidden;
+}
+
+.player-positions {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10; /* Increase z-index to ensure players are visible */
+  display: block; /* Ensure display is set to block */
+}
+
+.player-positions > div {
+  pointer-events: auto;
+}
+
+/* Reduce animation complexity to improve performance */
+@keyframes optimizedPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes optimizedGlow {
+  0%, 100% { box-shadow: 0 0 10px rgba(0, 229, 255, 0.2); }
+  50% { box-shadow: 0 0 15px rgba(0, 229, 255, 0.4); }
+}
+
+/* Optimize existing animations for better performance */
+.card.realistic:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  z-index: 10;
+}
+
+.circular-table {
+  animation: optimizedPulse 5s infinite ease-in-out;
+}
+
+/* Make table size more responsive */
+.table-felt {
+  width: 85%;
+  max-width: 900px;
+  height: 480px;
+  margin: 0 auto;
+  transform: rotateX(10deg);
+}
+
+/* Better positioning for players */
+.player[data-position="0"] {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(10%);
+}
+
+.player[data-position="1"] {
+  top: 25%;
+  right: 10%;
+}
+
+.player[data-position="2"] {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(-10%);
+}
+
+.player[data-position="3"] {
+  top: 25%;
+  left: 10%;
+}
+
+.player[data-position="4"] {
+  bottom: 25%;
+  left: 5%;
+}
+
+.player[data-position="5"] {
+  bottom: 25%;
+  right: 5%;
+}
+
+/* Media queries for better responsiveness */
+@media (max-width: 768px) {
+  .table-felt {
+    width: 95%;
+    height: 380px;
+    transform: rotateX(5deg);
+  }
+  
+  .player {
+    width: 110px;
+    height: 110px;
+  }
+}
+
+@media (max-height: 700px) {
+  .poker-table-main {
+    padding: 60px 0 80px;
+  }
+  
+  .table-felt {
+    height: 350px;
+  }
+}
+
+/* Ensure sidebars don't interfere with main layout */
+.game-info-sidebar, .left-sidebar-container {
+  z-index: 90;
+}
+
+/* Betting controls improvements */
+.betting-controls-wrapper {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.7) 70%, transparent 100%);
+  padding: 10px 5px;
+}
+
+/* Fix for any existing poker-table class references */
+.poker-table {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* More performance optimizations */
+.card.hidden::before, 
+.card.realistic::before, 
+.poker-chip::before {
+  will-change: transform;
+}
+
+/* Status bar positioning */
+.game-status-bar {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 95;
+}
+
+/* Community cards positioning */
+.community-cards {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  z-index: 5;
+}
+
+/* Specific styling to ensure current player UI is not too large */
+.player.current-player {
+  padding: 5px !important;
+  min-width: unset !important;
+  width: auto !important;
+  margin-bottom: 15px !important;
+}
+
+.player.current-player .player-cards-container {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.player.current-player .player-cards {
+  transform: scale(0.8) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* More compact player cards for better space utilization */
+.player.current-player .card {
+  margin: 0 -5px !important;
+}
+
+/* Media queries for responsive design */
+@media (max-width: 768px) {
+  .player[data-position="0"] {
+    bottom: 5px !important;
+    min-width: 100px !important;
+    max-width: 160px !important;
+  }
+  
+  .player.current-player .player-cards {
+    transform: scale(0.7) !important;
+  }
 }

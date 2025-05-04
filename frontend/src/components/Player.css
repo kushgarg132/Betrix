@@ -1,0 +1,355 @@
+.player {
+  position: absolute !important; /* Force absolute positioning */
+  width: 130px;
+  height: auto;
+  min-height: 130px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.6), 0 0 10px rgba(52, 152, 219, 0.3);
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  color: white;
+  padding: 8px;
+  border: 2px solid rgba(52, 152, 219, 0.3);
+  overflow: visible;
+  backdrop-filter: blur(3px);
+  z-index: 20;
+  transition: all 0.2s ease;
+  transform-origin: center center; /* Fixed transform origin */
+}
+
+.player.current-turn {
+  box-shadow: 0 0 25px rgba(241, 196, 15, 0.7);
+  border: 2px solid #f1c40f;
+  z-index: 25;
+}
+
+.player.current-player {
+  background: rgba(0, 20, 40, 0.8);
+  border: 2px solid rgba(52, 152, 219, 0.7);
+  z-index: 25;
+  padding: 5px;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: auto !important;
+  min-width: 120px !important;
+  max-width: 180px !important;
+}
+
+/* Fixed, clear positions for all players - with !important flags to ensure visibility */
+.player[data-position="0"] {
+  bottom: 5% !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 130px !important;
+  height: auto !important;
+  max-height: 140px !important;
+  z-index: 24 !important;
+}
+
+.player[data-position="1"] {
+  bottom: 25% !important;
+  right: 10% !important;
+  left: auto !important; /* Override any left values */
+  top: auto !important; /* Override any top values */
+  z-index: 21 !important;
+}
+
+.player[data-position="2"] {
+  top: 10% !important;
+  right: 25% !important;
+  left: auto !important; /* Override any left values */
+  bottom: auto !important; /* Override any bottom values */
+  z-index: 21 !important;
+}
+
+.player[data-position="3"] {
+  top: 10% !important;
+  left: 25% !important;
+  right: auto !important; /* Override any right values */
+  bottom: auto !important; /* Override any bottom values */
+  z-index: 21 !important;
+}
+
+.player[data-position="4"] {
+  bottom: 25% !important;
+  left: 10% !important;
+  right: auto !important; /* Override any right values */
+  top: auto !important; /* Override any top values */
+  z-index: 21 !important;
+}
+
+.player[data-position="5"] {
+  bottom: 40% !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  right: auto !important; /* Override any right values */
+  top: auto !important; /* Override any top values */
+  z-index: 21 !important;
+}
+
+/* Player avatar */
+.player-avatar {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.player-name {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #ffffff;
+  text-shadow: 0 0 5px rgba(0, 229, 255, 0.4);
+  padding: 3px 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  z-index: 3;
+  display: inline-block;
+}
+
+/* Cards container */
+.player-cards-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin: 5px 0;
+  min-height: 50px;
+}
+
+.player-cards {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  position: relative;
+  z-index: 2;
+}
+
+.opponent-cards {
+  display: flex;
+  gap: 5px;
+  transform: scale(0.9);
+  position: relative;
+  z-index: 2;
+}
+
+.opponent-cards .card.hidden {
+  margin: 0 -15px;
+}
+
+/* Ensure bet display is positioned correctly relative to opponent cards */
+.opponent-cards .opponent-bet-display {
+  display: none;
+}
+
+/* Player info and chips */
+.player-info-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-top: 5px;
+  position: relative;
+}
+
+.chips {
+  font-size: 1rem;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-weight: bold;
+  display: inline-block;
+  text-shadow: 0 0 3px rgba(0, 229, 255, 0.4);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+}
+
+.player-bet {
+  font-size: 0.8rem;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-weight: 500;
+  display: inline-block;
+  margin-top: 3px;
+}
+
+/* Opponent bet display - smaller and more compact */
+.opponent-bet-display {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: radial-gradient(circle at center, rgba(0, 229, 255, 0.8) 0%, rgba(30, 144, 255, 0.8) 100%);
+  color: white;
+  border-radius: 50%;
+  padding: 3px;
+  min-width: 24px;
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.75rem;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  transform: scale(0.9);
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 30; /* Increased z-index to ensure visibility */
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+/* Special styling for current player bet display */
+.current-player-bet {
+  top: -8px;
+  right: -8px;
+  z-index: 30; /* Higher z-index to ensure visibility */
+  font-weight: 700;
+  min-width: 26px;
+  min-height: 26px;
+  font-size: 0.8rem;
+}
+
+.blind-indicator {
+  position: absolute;
+  top: -25px;
+  right: -10px;
+  background: rgba(0, 0, 0, 0.7);
+  font-size: 0.8rem;
+  font-weight: bold;
+  padding: 4px;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+  z-index: 10;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.big-blind .blind-indicator {
+  color: #e74c3c;
+  border: 1px solid rgba(231, 76, 60, 0.6);
+}
+
+.small-blind .blind-indicator {
+  color: #f1c40f;
+  border: 1px solid rgba(241, 196, 15, 0.6);
+}
+
+.bet-chips {
+  position: absolute;
+  top: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Create special styling for current player cards to be more compact */
+.player.current-player .player-cards {
+  transform: scale(0.85);
+  margin: 0;
+  padding: 0;
+}
+
+.player.current-player .player-avatar {
+  margin-bottom: 0;
+  flex: 0 0 auto;
+}
+
+.player.current-player .player-info-container {
+  margin-top: 0;
+  padding: 0 5px;
+  flex: 1 1 auto;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .player {
+    width: 110px;
+    min-height: 110px;
+    padding: 5px;
+  }
+  
+  .player[data-position="0"] {
+    width: 120px !important;
+    max-height: 130px !important;
+  }
+  
+  .player.current-player {
+    padding: 3px;
+    min-width: 100px !important;
+  }
+  
+  .player-name {
+    font-size: 0.9rem;
+  }
+  
+  .chips {
+    font-size: 0.9rem;
+    padding: 2px 6px;
+  }
+  
+  /* Adjust bet display for mobile */
+  .opponent-bet-display {
+    min-width: 20px;
+    min-height: 20px;
+    font-size: 0.7rem;
+    top: -6px;
+    right: -6px;
+    padding: 2px;
+  }
+  
+  .current-player-bet {
+    min-width: 22px;
+    min-height: 22px;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-height: 600px) {
+  .player {
+    min-height: 100px;
+  }
+  
+  .player-cards-container {
+    min-height: 40px;
+  }
+}
+
+/* Hide bet text on normal screens but show on mobile */
+.player-bet-small-screen {
+  display: none;
+  font-size: 0.8rem;
+  color: #00e5ff;
+  margin-top: 2px;
+}
+
+/* Media query to show bet text on small screens */
+@media (max-width: 768px) {
+  .player-bet-small-screen {
+    display: block;
+  }
+  
+  /* On mobile, hide the opponent-bet-display when in landscape to save space */
+  @media (max-height: 500px) {
+    .opponent-bet-display {
+      min-width: 18px;
+      min-height: 18px;
+      font-size: 0.65rem;
+      padding: 1px;
+    }
+  }
+}
+
+/* Modify the animation for bet display to avoid layout shifts */
+@keyframes popIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(0.9); opacity: 1; }
+} 

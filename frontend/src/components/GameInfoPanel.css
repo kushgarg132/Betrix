@@ -1,0 +1,228 @@
+.game-info-sidebar {
+  position: fixed;
+  top: 80px;
+  right: 0;
+  height: calc(100vh - 80px);
+  width: 260px;
+  background: linear-gradient(145deg, #132639, #1e3c5a);
+  color: white;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 100;
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+  box-shadow: -5px 0 20px rgba(0, 0, 0, 0.5);
+  transform: translateX(0);
+  border-left: 1px solid rgba(52, 152, 219, 0.3);
+  display: flex;
+  flex-direction: column;
+}
+
+.game-info-sidebar.collapsed {
+  transform: translateX(calc(100% - 40px));
+}
+
+.game-info-sidebar:hover {
+  box-shadow: -5px 0 20px rgba(0, 0, 0, 0.5);
+}
+
+.game-info-sidebar.expanded:hover {
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.7);
+}
+
+.sidebar-toggle {
+  width: 40px;
+  height: 100px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: #2980b9;
+  border-radius: 8px 0 0 8px;
+  cursor: pointer;
+  position: absolute;
+  left: -40px;
+  top: 50px;
+  box-shadow: -3px 0 10px rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(52, 152, 219, 0.7);
+  border-right: none;
+  transition: all 0.3s ease;
+  z-index: 200;
+  color: white;
+  font-weight: bold;
+  padding: 10px 0;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  font-size: 14px;
+}
+
+.sidebar-toggle:hover {
+  background: #3498db;
+  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.6);
+  width: 42px;
+}
+
+.sidebar-toggle::after {
+  content: attr(aria-label);
+  margin-top: 10px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.toggle-icon {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.toggle-icon.expanded {
+  transform: rotate(180deg);
+}
+
+.toggle-text {
+  font-size: 14px;
+  font-weight: bold;
+  transform: rotate(180deg);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  color: white;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
+  letter-spacing: 1px;
+}
+
+.info-content {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.info-content h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 1.4rem;
+  color: #3498db;
+  text-align: center;
+  text-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+  border-bottom: 1px solid rgba(52, 152, 219, 0.3);
+  padding-bottom: 10px;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.info-item {
+  margin-bottom: 15px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+  border-left: 2px solid rgba(52, 152, 219, 0.5);
+}
+
+.info-item:hover {
+  background: rgba(52, 152, 219, 0.2);
+  transform: translateX(5px);
+}
+
+.info-label {
+  font-weight: bold;
+  color: #95a5a6;
+}
+
+.info-value {
+  color: #ecf0f1;
+  font-weight: bold;
+  text-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+}
+
+.rankings-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 15px;
+  width: 100%;
+  background: linear-gradient(145deg, #2a5477, #3498db);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  margin-top: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+  position: relative;
+  overflow: hidden;
+  font-size: 1rem;
+  border: 1px solid rgba(52, 152, 219, 0.5);
+}
+
+.rankings-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: all 0.6s ease;
+  z-index: 1;
+}
+
+.rankings-button:hover {
+  background: linear-gradient(145deg, #3498db, #2a5477);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5), 0 0 15px rgba(52, 152, 219, 0.3);
+}
+
+.rankings-button:hover::before {
+  left: 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.button-icon {
+  margin-right: 10px;
+  font-size: 1.2rem;
+}
+
+@media (max-width: 768px) {
+  .game-info-sidebar {
+    width: 220px;
+  }
+  
+  .info-content {
+    padding: 15px;
+  }
+  
+  .info-item {
+    padding: 8px;
+    margin-bottom: 10px;
+  }
+  
+  .info-content h3 {
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+  }
+  
+  .rankings-button {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-height: 600px) {
+  .info-item {
+    padding: 5px;
+    margin-bottom: 8px;
+  }
+  
+  .info-content h3 {
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+  }
+} 

@@ -1,0 +1,187 @@
+/* Betting controls - completely redesigned */
+.betting-controls-wrapper {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 15px 10px;
+  background: linear-gradient(to top, rgba(10, 14, 23, 0.95) 0%, rgba(15, 32, 39, 0.9) 100%);
+  backdrop-filter: blur(10px);
+  border-top: 2px solid rgba(0, 229, 255, 0.4);
+  z-index: 1000;
+  box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.7);
+  transform: translateZ(0); /* Force hardware acceleration */
+  transition: transform 0.3s ease;
+}
+
+.betting-controls-container {
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  height: 70px;
+}
+
+/* Button styling in betting controls - simplified and improved */
+.check-button,
+.call-button,
+.raise-button,
+.fold-button {
+  height: 60px;
+  flex: 1;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  position: relative;
+  overflow: hidden;
+  min-width: 80px;
+  padding: 0;
+}
+
+.check-button::before,
+.call-button::before,
+.raise-button::before,
+.fold-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  animation: shine 2s infinite;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.check-button:hover::before,
+.call-button:hover::before,
+.raise-button:hover::before,
+.fold-button:hover::before {
+  opacity: 1;
+}
+
+@keyframes shine {
+  100% { left: 100%; }
+}
+
+.check-button {
+  background: linear-gradient(to bottom, #27ae60, #2ecc71);
+  color: white;
+  border-bottom: 3px solid #219652;
+}
+
+.check-button:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.4);
+  border-bottom-width: 1px;
+}
+
+.call-button {
+  background: linear-gradient(to bottom, #2980b9, #3498db);
+  color: white;
+  border-bottom: 3px solid #1a5c8f;
+}
+
+.call-button:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.4);
+  border-bottom-width: 1px;
+}
+
+.raise-button {
+  background: linear-gradient(to bottom, #f39c12, #f1c40f);
+  color: white;
+  border-bottom: 3px solid #d68910;
+}
+
+.raise-button:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.4);
+  border-bottom-width: 1px;
+}
+
+.fold-button {
+  background: linear-gradient(to bottom, #c0392b, #e74c3c);
+  color: white;
+  border-bottom: 3px solid #922b21;
+}
+
+.fold-button:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.4);
+  border-bottom-width: 1px;
+}
+
+.action-text {
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  margin-bottom: 3px;
+}
+
+.action-amount {
+  font-size: 0.9rem;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 500;
+  padding: 2px 6px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+/* Responsive design for betting controls */
+@media (max-width: 768px) {
+  .betting-controls-wrapper {
+    padding: 10px 5px;
+  }
+  
+  .betting-controls-container {
+    height: 60px;
+    gap: 8px;
+  }
+  
+  .check-button,
+  .call-button,
+  .raise-button,
+  .fold-button {
+    height: 50px;
+    min-width: 60px;
+  }
+  
+  .action-text {
+    font-size: 0.9rem;
+  }
+  
+  .action-amount {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-height: 600px) {
+  .betting-controls-wrapper {
+    padding: 5px;
+  }
+  
+  .betting-controls-container {
+    height: 50px;
+  }
+  
+  .check-button,
+  .call-button,
+  .raise-button,
+  .fold-button {
+    height: 45px;
+  }
+} 

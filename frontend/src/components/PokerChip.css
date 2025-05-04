@@ -1,0 +1,154 @@
+@keyframes popIn {
+  0% { transform: translateY(10px) scale(0.8); opacity: 0; }
+  70% { transform: translateY(-2px) scale(1.05); opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.chip-stack {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: popIn 0.4s ease-out forwards;
+  transform-style: preserve-3d;
+}
+
+.poker-chip {
+  width: 30px;
+  height: 5px;
+  border-radius: 50%;
+  background: radial-gradient(circle at center, #3498db 0%, #2980b9 60%, #1f618d 100%);
+  position: absolute;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease;
+  transform-style: preserve-3d;
+}
+
+.poker-chip:nth-child(4n+1) { 
+  background: radial-gradient(circle at center, #f1c40f 0%, #f39c12 60%, #e67e22 100%);
+}
+.poker-chip:nth-child(4n+2) { 
+  background: radial-gradient(circle at center, #e74c3c 0%, #c0392b 60%, #962d22 100%);
+}
+.poker-chip:nth-child(4n+3) { 
+  background: radial-gradient(circle at center, #2ecc71 0%, #27ae60 60%, #1e8449 100%);
+}
+.poker-chip:nth-child(4n+4) { 
+  background: radial-gradient(circle at center, #9b59b6 0%, #8e44ad 60%, #6c3483 100%);
+}
+
+.poker-chip::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 50%;
+  box-shadow: 
+    inset 0 0 2px rgba(255, 255, 255, 0.5),
+    inset 0 0 3px rgba(0, 0, 0, 0.2);
+  background: 
+    linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, transparent 50%, rgba(0, 0, 0, 0.15) 100%),
+    repeating-conic-gradient(
+      rgba(255, 255, 255, 0.3) 0deg 20deg, 
+      transparent 20deg 40deg
+    );
+  animation: holographicSpin 6s linear infinite;
+  z-index: 2;
+}
+
+@keyframes holographicSpin {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 100% 100%; }
+}
+
+.poker-chip::after {
+  content: '';
+  position: absolute;
+  top: 25%;
+  left: 25%;
+  width: 50%;
+  height: 50%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+  z-index: 3;
+  animation: chipSpin 5s linear infinite;
+}
+
+@keyframes chipSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Flying chips animation */
+.animated-chips {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 50;
+}
+
+.flying-chip {
+  width: 32px;
+  height: 7px;
+  border-radius: 50%;
+  position: absolute;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.4);
+  transform-style: preserve-3d;
+  bottom: 25%;
+  animation: chipFalling 1s ease-in forwards;
+  background: radial-gradient(circle at center, #3498db 0%, #2980b9 60%, #1f618d 100%);
+}
+
+.flying-chip:nth-child(6n+1) { background: radial-gradient(circle at center, #f1c40f 0%, #f39c12 60%, #e67e22 100%); }
+.flying-chip:nth-child(6n+2) { background: radial-gradient(circle at center, #e74c3c 0%, #c0392b 60%, #962d22 100%); }
+.flying-chip:nth-child(6n+3) { background: radial-gradient(circle at center, #3498db 0%, #2980b9 60%, #1f618d 100%); }
+.flying-chip:nth-child(6n+4) { background: radial-gradient(circle at center, #2ecc71 0%, #27ae60 60%, #1e8449 100%); }
+.flying-chip:nth-child(6n+5) { background: radial-gradient(circle at center, #9b59b6 0%, #8e44ad 60%, #6c3483 100%); }
+.flying-chip:nth-child(6n+6) { background: radial-gradient(circle at center, #1abc9c 0%, #16a085 60%, #0e6655 100%); }
+
+.flying-chip::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 50%;
+  box-shadow: 
+    inset 0 0 2px rgba(255, 255, 255, 0.5),
+    inset 0 0 4px rgba(0, 0, 0, 0.2);
+  background: 
+    linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, transparent 50%, rgba(0, 0, 0, 0.15) 100%),
+    repeating-conic-gradient(
+      rgba(255, 255, 255, 0.3) 0deg 20deg, 
+      transparent 20deg 40deg
+    );
+  animation: chipSpin 3s linear infinite;
+}
+
+@keyframes chipFalling {
+  0% {
+    transform: translate(0, 0) rotateX(70deg) scale(0.7);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(0, -200px) rotateX(0) scale(1);
+    opacity: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .poker-chip {
+    width: 25px;
+    height: 4px;
+  }
+} 

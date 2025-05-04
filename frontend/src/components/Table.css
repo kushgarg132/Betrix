@@ -1,0 +1,182 @@
+/* Table layout */
+.table-felt {
+  width: 85%;
+  max-width: 900px;
+  height: 480px;
+  perspective: 800px;
+  margin: 0 auto;
+  position: relative;
+  transform-style: preserve-3d;
+  transform: rotateX(10deg);
+  transition: transform 0.3s ease, height 0.3s ease;
+}
+
+/* When it's the user's turn, slightly adjust the table to make room for controls */
+.table-felt.my-turn {
+  transform: rotateX(12deg) scale(0.95);
+  margin-bottom: 40px; /* Add space for controls */
+}
+
+.wood-border {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  border-radius: 100px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+  transform-style: preserve-3d;
+  overflow: visible;
+  background: linear-gradient(145deg, #2c3e50, #1a242f);
+  border: 8px solid rgba(30, 144, 255, 0.2);
+  transition: all 0.2s ease;
+}
+
+.wood-border::before {
+  content: '';
+  position: absolute;
+  width: calc(100% - 16px);
+  height: calc(100% - 16px);
+  top: 8px;
+  left: 8px;
+  /* Modern circuit pattern */
+  background: 
+    linear-gradient(90deg, rgba(30, 144, 255, 0.05) 1px, transparent 1px) 0 0 / 20px 20px,
+    linear-gradient(0deg, rgba(30, 144, 255, 0.05) 1px, transparent 1px) 0 0 / 20px 20px;
+  border-radius: 90px; /* Follow the outer border */
+  z-index: 0;
+}
+
+.circular-table {
+  position: absolute;
+  width: calc(100% - 40px);
+  height: calc(100% - 40px);
+  top: 20px;
+  left: 20px;
+  border-radius: 80px;
+  background: linear-gradient(145deg, #0f2027, #203a43);
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  overflow: visible;
+}
+
+/* Add futuristic pattern to table */
+.circular-table::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 80px;
+  background: 
+    radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.8) 100%),
+    linear-gradient(90deg, rgba(30, 144, 255, 0.03) 1px, transparent 1px) 0 0 / 40px 40px,
+    linear-gradient(0deg, rgba(30, 144, 255, 0.03) 1px, transparent 1px) 0 0 / 40px 40px;
+  opacity: 1;
+  z-index: 0;
+}
+
+/* Add subtle pulsing glow to table */
+@keyframes tablePulse {
+  0% { box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.7), 0 0 15px rgba(0, 229, 255, 0.1); }
+  50% { box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.7), 0 0 25px rgba(0, 229, 255, 0.3); }
+  100% { box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.7), 0 0 15px rgba(0, 229, 255, 0.1); }
+}
+
+.circular-table {
+  animation: tablePulse 5s infinite ease-in-out;
+}
+
+.pot-area {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -120%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  margin-top: -30px;
+}
+
+.pot-label {
+  color: rgba(255, 255, 255, 1);
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-top: 15px;
+  text-shadow: 0 0 15px rgba(0, 229, 255, 0.9);
+  font-family: 'Orbitron', sans-serif;
+  letter-spacing: 1px;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 5px 15px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 229, 255, 0.4);
+  transform: translateZ(10px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+/* Add card placeholder styling */
+.card-placeholder {
+  width: 60px;
+  height: 90px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  border: 1px dashed rgba(52, 152, 219, 0.3);
+  margin: 0 4px;
+}
+
+/* Better community cards layout */
+.community-cards {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -35%);
+  z-index: 5;
+  gap: 8px;
+  max-width: 100%;
+  flex-wrap: wrap;
+}
+
+/* More responsive layout */
+@media (max-width: 768px) {
+  .table-felt {
+    width: 95%;
+    height: 380px;
+    transform: rotateX(8deg);
+  }
+  
+  .card-placeholder {
+    width: 40px;
+    height: 60px;
+  }
+  
+  .community-cards {
+    transform: translate(-50%, -30%);
+    gap: 5px;
+  }
+  
+  .pot-area {
+    transform: translate(-50%, -120%);
+  }
+  
+  .pot-label {
+    font-size: 1rem;
+    padding: 4px 10px;
+  }
+}
+
+@media (max-height: 600px) {
+  .table-felt {
+    height: 320px;
+  }
+  
+  .community-cards {
+    transform: translate(-50%, -25%);
+  }
+} 

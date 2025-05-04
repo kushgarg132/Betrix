@@ -1,0 +1,118 @@
+.left-sidebar-container {
+  position: fixed;
+  top: 80px;
+  left: 0;
+  height: calc(100vh - 80px);
+  z-index: 100;
+  display: flex;
+}
+
+.left-sidebar {
+  width: 200px;
+  background: linear-gradient(145deg, #132639, #1e3c5a);
+  color: white;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+  box-shadow: 5px 0 20px rgba(0, 0, 0, 0.5);
+  border-right: 1px solid rgba(52, 152, 219, 0.3);
+  transform-style: preserve-3d;
+  height: 100%;
+}
+
+.left-sidebar.expanded {
+  transform: translateX(0);
+}
+
+.left-sidebar.collapsed {
+  transform: translateX(-100%);
+}
+
+.left-sidebar-toggle-btn {
+  width: 30px;
+  height: 80px;
+  background: linear-gradient(145deg, #132639, #1e3c5a);
+  color: white;
+  font-size: 1.2rem;
+  border: none;
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+  cursor: pointer;
+  box-shadow: 5px 0 10px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(52, 152, 219, 0.3);
+  border-left: none;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: all 0.3s ease;
+  z-index: 101;
+}
+
+/* Add specific styling for collapsed state */
+.left-sidebar-toggle-btn.collapsed {
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+  border-left: 1px solid rgba(52, 152, 219, 0.3);
+}
+
+.left-sidebar-toggle-btn:hover {
+  background: linear-gradient(145deg, #1e3c5a, #2a5477);
+  box-shadow: 5px 0 15px rgba(0, 0, 0, 0.4);
+}
+
+.left-sidebar-toggle-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.sidebar-content {
+  padding: 20px;
+  height: 100%;
+}
+
+.left-sidebar h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 1.4rem;
+  color: #3498db;
+  text-align: center;
+  text-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+  border-bottom: 1px solid rgba(52, 152, 219, 0.3);
+  padding-bottom: 10px;
+}
+
+.leave-table-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 15px;
+  width: 100%;
+  background: linear-gradient(145deg, #c0392b, #e74c3c);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  margin-top: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+  position: relative;
+  overflow: hidden;
+  font-size: 1rem;
+  border: 1px solid rgba(231, 76, 60, 0.5);
+}
+
+.leave-table-button:hover {
+  background: linear-gradient(145deg, #e74c3c, #c0392b);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5), 0 0 15px rgba(231, 76, 60, 0.3);
+  transform: translateY(-2px);
+}
+
+.leave-table-button:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.leave-table-button .button-icon {
+  margin-right: 10px;
+  font-size: 1.2rem;
+} 
