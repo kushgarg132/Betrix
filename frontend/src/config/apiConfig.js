@@ -2,10 +2,10 @@
 const API_CONFIG = {
   // Server host and port - fetched from Firebase environment variables with fallbacks
   get SERVER_HOST() {
-    return process.env.REACT_APP_SERVER_HOST || 'http://localhost';
+    return process.env.REACT_APP_SERVER_HOST || 'https://betrix-backend.onrender.com';
   },
   get SERVER_PORT() {
-    return process.env.REACT_APP_SERVER_PORT || '8080';
+    return process.env.REACT_APP_SERVER_PORT || '';
   },
   
   // WebSocket URL (without /ws path)
