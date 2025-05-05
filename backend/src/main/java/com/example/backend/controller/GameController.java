@@ -1,6 +1,7 @@
 package com.example.backend.controller;
 
 import com.example.backend.entity.Game;
+import com.example.backend.model.BlindPayload;
 import com.example.backend.service.GameService;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -25,10 +26,10 @@ public class GameController {
 
     @PostMapping("/create-new")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Game> createGame() {
+    public ResponseEntity<Game> createGame(@RequestBody BlindPayload payload) {
         logger.info("Request received to create a new game");
         try {
-            Game game = gameService.createGame();
+            Game game = gameService.createGame(payload);
             logger.debug("New game created: {}", game);
             return ResponseEntity.ok(game);
         } catch (Exception e) {

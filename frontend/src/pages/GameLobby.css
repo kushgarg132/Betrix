@@ -256,156 +256,274 @@
 }
 
 .loading-text {
-  color: white;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
+  color: #f1c40f;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-/* Sidebar */
-.lobby-sidebar {
-  width: 280px;
-  background: rgba(0, 0, 0, 0.2);
-  height: 100%;
-  transition: all 0.3s ease;
-  position: relative;
-  transform: translateX(0);
-  z-index: 100;
-  display: flex;
-  flex-direction: column;
-}
-
-.lobby-sidebar.collapsed {
-  transform: translateX(260px);
-}
-
-.sidebar-toggle {
-  position: absolute;
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
   left: 0;
-  top: 20px;
-  width: 40px;
-  height: 40px;
-  background: rgba(0, 0, 0, 0.5);
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  border-radius: 0 5px 5px 0;
+  z-index: 1000;
+  backdrop-filter: blur(3px);
+  animation: fadeIn 0.3s ease;
 }
 
-.hamburger-icon {
+.modal-container {
+  background: linear-gradient(135deg, #1a2a36 0%, #0d1721 100%);
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  animation: slideIn 0.3s ease;
+}
+
+.modal-header {
   display: flex;
-  flex-direction: column;
   justify-content: space-between;
-  width: 20px;
-  height: 16px;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
 }
 
-.hamburger-icon span {
+.modal-header h2 {
+  color: #f1c40f;
+  margin: 0;
+  font-size: 1.5rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.8rem;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.modal-close:hover {
+  opacity: 1;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+/* Blind options */
+.blind-options h3 {
+  color: #f1c40f;
+  font-size: 1.2rem;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.option-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin-bottom: 10px;
+}
+
+.blind-option {
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 15px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.3s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.blind-option:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+  border-color: rgba(241, 196, 15, 0.5);
+}
+
+.blind-values {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.small-blind {
+  color: #3498db;
+}
+
+.blind-separator {
+  margin: 0 6px;
+  opacity: 0.7;
+}
+
+.big-blind {
+  color: #e74c3c;
+}
+
+.custom-option {
+  background: rgba(52, 152, 219, 0.15);
+  border-color: rgba(52, 152, 219, 0.3);
+}
+
+.custom-option .blind-values {
+  color: #f1c40f;
+}
+
+.custom-option:hover {
+  border-color: #f1c40f;
+}
+
+.custom-blinds {
+  animation: fadeIn 0.3s ease;
+}
+
+.custom-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+  color: #f1c40f;
+}
+
+.form-group input {
   width: 100%;
-  height: 2px;
-  background-color: white;
+  padding: 12px 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 1rem;
   transition: all 0.3s ease;
 }
 
-.sidebar-content {
-  padding: 20px;
-  overflow-y: auto;
-  flex: 1;
+.form-group input:focus {
+  outline: none;
+  border-color: #f1c40f;
+  box-shadow: 0 0 8px rgba(241, 196, 15, 0.5);
 }
 
-.sidebar-content h3 {
-  color: #f1c40f;
-  font-size: 1.5rem;
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+.error-message {
+  background-color: rgba(231, 76, 60, 0.3);
+  color: #fff;
+  padding: 10px 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  border-left: 4px solid #e74c3c;
 }
 
-.sidebar-section {
-  margin-bottom: 25px;
+.modal-footer {
+  padding: 15px 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.1);
 }
 
-.sidebar-section h4 {
-  font-size: 1.1rem;
-  margin-bottom: 10px;
+.modal-button {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.modal-button.cancel {
+  background-color: transparent;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.modal-button.cancel:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.modal-button.confirm {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
   color: white;
 }
 
-.stats-value {
-  font-size: 2rem;
-  font-weight: bold;
-  color: #f1c40f;
+.modal-button.confirm:hover {
+  background: linear-gradient(135deg, #2980b9 0%, #1a5276 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
-.rules-list {
-  padding-left: 20px;
-  color: rgba(255, 255, 255, 0.8);
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.rules-list li {
-  margin-bottom: 8px;
+@keyframes slideIn {
+  from { transform: translateY(-30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
-/* Responsive styles */
 @media (max-width: 768px) {
-  .lobby-content {
-    flex-direction: column;
-  }
-  
-  .lobby-sidebar {
-    width: 100%;
-    height: auto;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    transform: translateY(calc(100% - 50px));
-    z-index: 1000;
-  }
-  
-  .lobby-sidebar.expanded {
-    transform: translateY(0);
-  }
-  
-  .lobby-sidebar.collapsed {
-    transform: translateY(calc(100% - 50px));
-  }
-  
-  .sidebar-toggle {
-    top: -40px;
-    width: 100%;
-    border-radius: 8px 8px 0 0;
-    left: 0;
-  }
-  
   .games-list {
     grid-template-columns: 1fr;
   }
-  
+
   .lobby-header {
-    padding: 15px;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    background: rgba(26, 42, 54, 0.95);
+    flex-direction: row;
+    align-items: center;
+    padding: 15px 20px;
   }
-  
+
   .lobby-title {
     font-size: 1.8rem;
   }
-  
+
   .create-game-button {
     max-width: 100%;
   }
-  
+
   .main-content {
-    padding: 20px 15px;
-    margin-bottom: 70px; /* Increased to prevent overlap with sidebar */
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    padding: 20px;
   }
 
   .game-card {
-    max-width: 100%;
     margin-bottom: 15px;
+  }
+  
+  .modal-container {
+    width: 95%;
   }
 }
 
@@ -413,11 +531,11 @@
   .game-info-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .lobby-title {
     font-size: 1.5rem;
   }
-  
+
   .game-card-content {
     padding: 15px;
   }
@@ -425,14 +543,13 @@
   .game-card-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 8px;
-    padding: 10px;
+    gap: 10px;
   }
 
   .game-id {
     width: 100%;
-    text-align: left;
-    margin-top: 5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .info-item {
@@ -440,7 +557,7 @@
   }
 
   .info-label {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
   }
 
   .info-value {
@@ -448,14 +565,13 @@
   }
 
   .join-game-button {
-    width: 100%;
     padding: 10px;
     font-size: 1rem;
   }
 
   .create-game-button {
-    font-size: 1.1rem;
     padding: 12px 20px;
+    font-size: 1rem;
   }
 
   .refresh-button {
@@ -467,42 +583,51 @@
     font-size: 1.2rem;
   }
 
-  /* Fix for loading spinner position on small screens */
   .lobby-loading {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 9999;
+    padding: 20px;
   }
-
-  /* Add bottom padding to body to prevent content from being hidden behind the sidebar */
-  body {
-    padding-bottom: 60px;
+  
+  .modal-header h2 {
+    font-size: 1.3rem;
+  }
+  
+  .modal-body {
+    padding: 15px;
+  }
+  
+  .option-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .blind-values {
+    font-size: 1.2rem;
+  }
+  
+  .modal-footer {
+    padding: 12px 15px;
   }
 }
 
-/* Add portrait-specific fixes for very small screens */
 @media (max-width: 360px) {
   .lobby-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 12px;
+    padding: 10px 15px;
   }
 
   .refresh-button {
-    align-self: flex-end;
-    margin-top: -30px;
+    width: 30px;
+    height: 30px;
   }
 
   .main-content {
-    padding: 15px 10px;
-    margin-bottom: 60px;
+    padding: 15px;
   }
 
   .game-info-grid {
-    gap: 8px;
+    gap: 10px;
+  }
+  
+  .modal-button {
+    padding: 8px 15px;
+    font-size: 0.9rem;
   }
 }

@@ -1,6 +1,7 @@
 package com.example.backend.service;
 
 import com.example.backend.entity.User;
+import com.example.backend.model.BlindPayload;
 import com.example.backend.model.Card;
 import com.example.backend.entity.Game;
 import com.example.backend.model.GameUpdate;
@@ -49,10 +50,10 @@ public class GameServiceImpl implements GameService {
 
     @Override
     @Transactional
-    public Game createGame() {
+    public Game createGame(BlindPayload payload) {
         logger.info("Creating a new game");
         try {
-            Game game = new Game();
+            Game game = new Game(payload.getSmallBlindAmount() , payload.getBigBlindAmount());
             Game savedGame = gameRepository.save(game);
             logger.debug("Created game: {}", savedGame);
             return savedGame;

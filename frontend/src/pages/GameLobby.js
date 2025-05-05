@@ -6,8 +6,20 @@ import './GameLobby.css';
 const GameLobby = () => {
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [sidebarVisible, setSidebarVisible] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [smallBlind, setSmallBlind] = useState('');
+  const [bigBlind, setBigBlind] = useState('');
+  const [showCustomOption, setShowCustomOption] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  // Preset blind options
+  const blindOptions = [
+    { small: 5, big: 10 },
+    { small: 25, big: 50 },
+    { small: 50, big: 100 },
+    { small: 100, big: 200 }
+  ];
 
   useEffect(() => {
     fetchGames();
@@ -30,15 +42,65 @@ const GameLobby = () => {
       });
   };
 
-  const createGame = () => {
-    axios
-      .post('/game/create-new')
-      .then((response) => navigate(`/game/${response.data.id}`))
-      .catch((error) => console.error('Error creating game:', error));
+  const openCreateGameModal = () => {
+    setSmallBlind('');
+    setBigBlind('');
+    setShowCustomOption(false);
+    setError('');
+    setShowModal(true);
   };
 
-  const toggleSidebar = () => {
-    setSidebarVisible(prev => !prev);
+  const handleModalClose = () => {
+    setShowModal(false);
+  };
+
+  const handleSelectBlinds = (small, big) => {
+    setSmallBlind(small.toString());
+    setBigBlind(big.toString());
+    createGameWithBlinds(small, big);
+  };
+
+  const handleCustomOption = () => {
+    setSmallBlind('');
+    setBigBlind('');
+    setShowCustomOption(true);
+  };
+
+  const handleCreateCustomGame = () => {
+    // Validate inputs
+    if (!smallBlind || isNaN(smallBlind) || parseFloat(smallBlind) <= 0) {
+      setError('Please enter a valid small blind amount.');
+      return;
+    }
+
+    if (!bigBlind || isNaN(bigBlind) || parseFloat(bigBlind) <= 0) {
+      setError('Please enter a valid big blind amount.');
+      return;
+    }
+
+    if (parseFloat(bigBlind) < parseFloat(smallBlind)) {
+      setError('Big blind amount must be greater than or equal to small blind amount.');
+      return;
+    }
+
+    createGameWithBlinds(parseFloat(smallBlind), parseFloat(bigBlind));
+  };
+
+  const createGameWithBlinds = (smallBlindAmount, bigBlindAmount) => {
+    // Create game with specified blind amounts
+    axios
+      .post('/game/create-new', {
+        smallBlindAmount: smallBlindAmount,
+        bigBlindAmount: bigBlindAmount
+      })
+      .then((response) => {
+        setShowModal(false);
+        navigate(`/game/${response.data.id}`);
+      })
+      .catch((error) => {
+        console.error('Error creating game:', error);
+        setError('Failed to create game. Please try again.');
+      });
   };
 
   const getStatusClass = (status) => {
@@ -58,7 +120,6 @@ const GameLobby = () => {
     return (
       <div className="lobby-loading">
         <div className="loading-spinner"></div>
-        <div className="loading-text">Loading games...</div>
       </div>
     );
   }
@@ -74,7 +135,7 @@ const GameLobby = () => {
       
       <div className="lobby-content">
         <div className="main-content">
-          <button className="create-game-button" onClick={createGame}>
+          <button className="create-game-button" onClick={openCreateGameModal}>
             <span className="create-icon">+</span>
             <span>Create New Game</span>
           </button>
@@ -127,39 +188,89 @@ const GameLobby = () => {
             </div>
           )}
         </div>
-        
-        <div className={`lobby-sidebar ${sidebarVisible ? 'expanded' : 'collapsed'}`}>
-          <div className="sidebar-toggle" onClick={toggleSidebar}>
-            <div className="hamburger-icon">
-              <span></span>
-              <span></span>
-              <span></span>
+      </div>
+
+      {/* Create Game Modal */}
+      {showModal && (
+        <div className="modal-overlay">
+          <div className="modal-container">
+            <div className="modal-header">
+              <h2>Create New Game</h2>
+              <button className="modal-close" onClick={handleModalClose}>×</button>
             </div>
-          </div>
-          
-          <div className="sidebar-content">
-            <h3>Poker Info</h3>
-            <div className="sidebar-section">
-              <h4>Active Games</h4>
-              <div className="stats-value">{games.filter(game => game.status === 'ACTIVE').length}</div>
+            <div className="modal-body">
+              {error && <div className="error-message">{error}</div>}
+              
+              {!showCustomOption ? (
+                <div className="blind-options">
+                  <h3>Select Blinds:</h3>
+                  <div className="option-grid">
+                    {blindOptions.map((option, index) => (
+                      <div 
+                        key={index} 
+                        className="blind-option" 
+                        onClick={() => handleSelectBlinds(option.small, option.big)}
+                      >
+                        <div className="blind-values">
+                          <span className="small-blind">${option.small}</span>
+                          <span className="blind-separator">/</span>
+                          <span className="big-blind">${option.big}</span>
+                        </div>
+                      </div>
+                    ))}
+                    <div 
+                      className="blind-option custom-option" 
+                      onClick={handleCustomOption}
+                    >
+                      <div className="blind-values">
+                        <span>Custom</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="custom-blinds">
+                  <div className="form-group">
+                    <label htmlFor="smallBlind">Small Blind Amount ($)</label>
+                    <input
+                      type="number"
+                      id="smallBlind"
+                      value={smallBlind}
+                      onChange={(e) => setSmallBlind(e.target.value)}
+                      min="1"
+                      placeholder="Enter small blind amount"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="bigBlind">Big Blind Amount ($)</label>
+                    <input
+                      type="number"
+                      id="bigBlind"
+                      value={bigBlind}
+                      onChange={(e) => setBigBlind(e.target.value)}
+                      min="1"
+                      placeholder="Enter big blind amount"
+                    />
+                  </div>
+                  <div className="custom-actions">
+                    <button className="modal-button cancel" onClick={() => setShowCustomOption(false)}>
+                      Back
+                    </button>
+                    <button className="modal-button confirm" onClick={handleCreateCustomGame}>
+                      Create Game
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
-            
-            <div className="sidebar-section">
-              <h4>Waiting Games</h4>
-              <div className="stats-value">{games.filter(game => game.status === 'WAITING').length}</div>
-            </div>
-            
-            <div className="sidebar-section">
-              <h4>Game Rules</h4>
-              <ul className="rules-list">
-                <li>Texas Hold'em Rules</li>
-                <li>Small & Big Blinds</li>
-                <li>Max 6 players per table</li>
-              </ul>
-            </div>
+            {!showCustomOption && (
+              <div className="modal-footer">
+                <button className="modal-button cancel" onClick={handleModalClose}>Cancel</button>
+              </div>
+            )}
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

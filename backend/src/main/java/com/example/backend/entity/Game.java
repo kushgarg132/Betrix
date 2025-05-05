@@ -5,6 +5,7 @@ import com.example.backend.model.Card;
 import com.example.backend.model.Deck;
 import com.example.backend.model.Player;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -16,6 +17,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Data
+@RequiredArgsConstructor
 @Document(collection = "games")
 public class Game {
     private int MAX_PLAYERS = 6;
@@ -52,7 +54,7 @@ public class Game {
         NONE, FOLD, CHECK, SMALL_BLIND , BIG_BLIND , CALL, RAISE, ALL_IN
     }
     
-    public Game() {
+    public Game(int smallBlindAmount ,int bigBlindAmount) {
         this.id = UUID.randomUUID().toString();
         this.players = new ArrayList<>();
         this.deck = new Deck();
@@ -67,8 +69,8 @@ public class Game {
         this.updatedAt = LocalDateTime.now();
         this.currentBet = 0;
         this.lastActions = new HashMap<>();
-        this.smallBlindAmount = 0.5;
-        this.bigBlindAmount = 1.0;
+        this.smallBlindAmount = smallBlindAmount;
+        this.bigBlindAmount = bigBlindAmount;
     }
 
     public Game(Game game) {
@@ -110,8 +112,8 @@ public class Game {
         return players.stream().anyMatch(p -> p.getUsername().equals(username));
     }
 
-    public Player getPlayerByUsername(String userId) {
-        return players.stream().filter(p -> p.getUsername().equals(userId)).findFirst().orElse(null);
+    public Player getPlayerByUsername(String username) {
+        return players.stream().filter(p -> p.getUsername().equals(username)).findFirst().orElse(null);
     }
     
     public void moveToNextPlayer() {
