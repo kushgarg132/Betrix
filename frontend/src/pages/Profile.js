@@ -38,12 +38,29 @@ const Profile = () => {
       <div style={styles.card}>
         <h1 style={styles.title}>Profile</h1>
         <div style={styles.infoContainer}>
-          <p style={styles.info}><strong>Name:</strong> {user.name}</p>
-          <p style={styles.info}><strong>Username:</strong> {user.username}</p>
-          <p style={styles.info}><strong>Email:</strong> {user.email}</p>
+          <div style={styles.avatarContainer}>
+            <div style={styles.avatar}>
+              {user.name ? user.name.charAt(0).toUpperCase() : '?'}
+            </div>
+          </div>
+          <div style={styles.infoItem}>
+            <span style={styles.infoLabel}>Name:</span>
+            <span style={styles.infoValue}>{user.name}</span>
+          </div>
+          <div style={styles.infoItem}>
+            <span style={styles.infoLabel}>Username:</span>
+            <span style={styles.infoValue}>{user.username}</span>
+          </div>
+          <div style={styles.infoItem}>
+            <span style={styles.infoLabel}>Email:</span>
+            <span style={styles.infoValue}>{user.email}</span>
+          </div>
         </div>
         <div style={styles.balanceContainer}>
-          <p style={styles.info}><strong>Balance:</strong> ${user.balance}</p>
+          <div style={styles.balanceInfo}>
+            <span style={styles.balanceLabel}>Balance</span>
+            <span style={styles.balanceValue}>${user.balance}</span>
+          </div>
           <button style={styles.addBalanceButton} onClick={handleAddBalance}>
             Add Balance
           </button>
@@ -61,69 +78,121 @@ const styles = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    height: '100vh',
-    backgroundColor: '#f8f9fa',
+    minHeight: '100vh',
+    backgroundColor: '#1a1a2e',
     padding: '20px',
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: '#16213e',
     padding: '30px',
     borderRadius: '15px',
-    boxShadow: '0 8px 16px rgba(0, 0, 0, 0.2)',
+    boxShadow: '0 8px 20px rgba(0, 0, 0, 0.3)',
     textAlign: 'center',
     width: '100%',
     maxWidth: '500px',
+    color: '#fff',
   },
   title: {
     fontSize: '28px',
-    marginBottom: '20px',
-    color: '#343a40',
+    marginBottom: '25px',
+    color: '#00aaff',
     fontWeight: 'bold',
+    textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+  },
+  avatarContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    marginBottom: '20px',
+  },
+  avatar: {
+    width: '80px',
+    height: '80px',
+    borderRadius: '50%',
+    backgroundColor: '#00aaff',
+    color: '#fff',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '36px',
+    fontWeight: 'bold',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
   },
   infoContainer: {
-    marginBottom: '20px',
+    marginBottom: '25px',
   },
-  info: {
-    fontSize: '18px',
-    margin: '10px 0',
-    color: '#495057',
+  infoItem: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    margin: '12px 0',
+    padding: '10px 15px',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: '8px',
+    transition: 'background-color 0.3s ease',
+  },
+  infoLabel: {
+    fontWeight: 'bold',
+    color: '#00ffcc',
+  },
+  infoValue: {
+    color: '#fff',
   },
   balanceContainer: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    margin: '20px 0',
-    padding: '10px',
-    backgroundColor: '#e9ecef',
+    margin: '25px 0',
+    padding: '15px',
+    backgroundColor: 'rgba(0, 170, 255, 0.15)',
     borderRadius: '10px',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+  },
+  balanceInfo: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+  },
+  balanceLabel: {
+    fontSize: '14px',
+    color: '#00ffcc',
+    marginBottom: '5px',
+  },
+  balanceValue: {
+    fontSize: '24px',
+    fontWeight: 'bold',
+    color: '#fff',
   },
   addBalanceButton: {
     padding: '10px 15px',
-    backgroundColor: '#28a745',
+    backgroundColor: '#00aaff',
     color: '#fff',
     border: 'none',
-    borderRadius: '5px',
+    borderRadius: '20px',
     cursor: 'pointer',
-    fontSize: '16px',
+    fontSize: '14px',
     fontWeight: 'bold',
     transition: 'background-color 0.3s ease',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
   },
   logoutButton: {
-    padding: '10px 20px',
-    backgroundColor: '#dc3545',
+    padding: '12px 20px',
+    backgroundColor: '#e63946',
     color: '#fff',
     border: 'none',
-    borderRadius: '5px',
+    borderRadius: '20px',
     cursor: 'pointer',
     fontSize: '16px',
     fontWeight: 'bold',
     marginTop: '20px',
     transition: 'background-color 0.3s ease',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+    width: '100%',
   },
   loading: {
     fontSize: '24px',
-    color: '#6c757d',
+    color: '#00aaff',
     textAlign: 'center',
+    margin: '100px auto',
+    textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)',
   },
 };
 

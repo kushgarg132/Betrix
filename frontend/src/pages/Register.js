@@ -23,36 +23,44 @@ const Register = () => {
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <h1 style={styles.title}>Register</h1>
+        <h1 style={styles.title}>Create Account</h1>
         <form onSubmit={handleRegister} style={styles.form}>
-          <input
-            type="text"
-            placeholder="Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            style={styles.input}
-          />
-          <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            style={styles.input}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={styles.input}
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            style={styles.input}
-          />
+          <div style={styles.inputContainer}>
+            <input
+              type="text"
+              placeholder="Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              style={styles.input}
+            />
+          </div>
+          <div style={styles.inputContainer}>
+            <input
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              style={styles.input}
+            />
+          </div>
+          <div style={styles.inputContainer}>
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={styles.input}
+            />
+          </div>
+          <div style={styles.inputContainer}>
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              style={styles.input}
+            />
+          </div>
           <button type="submit" style={styles.button}>
             Register
           </button>
@@ -76,53 +84,72 @@ const styles = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    height: '100vh',
-    backgroundColor: '#f0f2f5',
+    minHeight: '100vh',
+    backgroundColor: '#1a1a2e',
+    padding: '20px',
   },
   card: {
-    backgroundColor: '#fff',
-    padding: '30px',
-    borderRadius: '10px',
-    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+    backgroundColor: '#16213e',
+    padding: '35px',
+    borderRadius: '15px',
+    boxShadow: '0 8px 20px rgba(0, 0, 0, 0.3)',
     textAlign: 'center',
     width: '100%',
     maxWidth: '400px',
+    color: '#fff',
   },
   title: {
-    fontSize: '24px',
-    marginBottom: '20px',
-    color: '#333',
+    fontSize: '28px',
+    marginBottom: '30px',
+    color: '#00aaff',
+    fontWeight: 'bold',
+    textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
   },
   form: {
     display: 'flex',
     flexDirection: 'column',
   },
-  input: {
-    padding: '10px',
+  inputContainer: {
+    position: 'relative',
     margin: '10px 0',
-    borderRadius: '5px',
-    border: '1px solid #ccc',
+  },
+  input: {
+    width: '100%',
+    padding: '12px 15px',
+    margin: '8px 0',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    color: '#fff',
+    border: '1px solid rgba(0, 170, 255, 0.3)',
+    borderRadius: '8px',
     fontSize: '16px',
+    transition: 'all 0.3s ease',
+    boxSizing: 'border-box',
+    outline: 'none',
   },
   button: {
-    padding: '10px',
-    backgroundColor: '#007bff',
+    padding: '12px',
+    backgroundColor: '#00aaff',
     color: '#fff',
     border: 'none',
-    borderRadius: '5px',
+    borderRadius: '20px',
     cursor: 'pointer',
     fontSize: '16px',
-    marginTop: '10px',
+    fontWeight: 'bold',
+    marginTop: '20px',
+    transition: 'background-color 0.3s ease',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
   },
   footerText: {
-    marginTop: '20px',
-    fontSize: '14px',
-    color: '#555',
+    marginTop: '25px',
+    fontSize: '15px',
+    color: '#e0e0e0',
   },
   link: {
-    color: '#007bff',
+    color: '#00ffcc',
     cursor: 'pointer',
-    textDecoration: 'underline',
+    fontWeight: 'bold',
+    textDecoration: 'none',
+    transition: 'color 0.3s ease',
   },
 };
 

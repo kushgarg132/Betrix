@@ -1,19 +1,51 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
-import { AuthContext } from '../context/AuthContext';
 
 const Home = () => {
   const navigate = useNavigate();
 
   return (
     <div style={styles.container}>
-      <div style={styles.mainContent}>
-        <h1 style={styles.title}>Welcome to Poker App</h1>
-        <p style={styles.subtitle}>Join the table and test your skills!</p>
-        <button style={styles.button} onClick={() => navigate('/lobby')}>
-          Enter Game Lobby
-        </button>
+      <div style={styles.overlay}>
+        <div style={styles.mainContent}>
+          <h1 style={styles.title}>
+            <span style={styles.titleHighlight}>BETRIX</span> POKER
+          </h1>
+          <p style={styles.subtitle}>Experience the thrill of poker in a modern digital environment</p>
+          
+          <div style={styles.buttonContainer}>
+            <button 
+              style={styles.primaryButton} 
+              onClick={() => navigate('/lobby')}
+            >
+              Enter Game Lobby
+            </button>
+            <button 
+              style={styles.secondaryButton} 
+              onClick={() => navigate('/profile')}
+            >
+              View Profile
+            </button>
+          </div>
+          
+          <div style={styles.featureGrid}>
+            <div style={styles.featureCard}>
+              <div style={styles.featureIcon}>💰</div>
+              <h3 style={styles.featureTitle}>Real-time Play</h3>
+              <p style={styles.featureText}>Compete in real-time with players worldwide</p>
+            </div>
+            <div style={styles.featureCard}>
+              <div style={styles.featureIcon}>🏆</div>
+              <h3 style={styles.featureTitle}>Tournaments</h3>
+              <p style={styles.featureText}>Join tournaments and win big prizes</p>
+            </div>
+            <div style={styles.featureCard}>
+              <div style={styles.featureIcon}>📊</div>
+              <h3 style={styles.featureTitle}>Stats Tracking</h3>
+              <p style={styles.featureText}>Track your performance and rankings</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -21,45 +53,111 @@ const Home = () => {
 
 const styles = {
   container: {
-    height: '100vh',
-    backgroundImage: 'url("https://images.pexels.com/photos/1796794/pexels-photo-1796794.jpeg?cs=srgb&dl=pexels-ken123films-1796794.jpg&fm=jpg")', // Updated image URL
+    minHeight: '100vh',
+    backgroundImage: 'url("https://images.pexels.com/photos/1796794/pexels-photo-1796794.jpeg?cs=srgb&dl=pexels-ken123films-1796794.jpg&fm=jpg")',
     backgroundSize: 'cover',
     backgroundPosition: 'center',
+    position: 'relative',
+  },
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(26, 26, 46, 0.85)',
     display: 'flex',
     flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '20px',
   },
   mainContent: {
     textAlign: 'center',
-    marginTop: 'auto',
-    marginBottom: 'auto',
-    color: '#fff',
-    textShadow: '0 2px 4px rgba(0, 0, 0, 0.8)',
+    maxWidth: '1000px',
+    width: '100%',
   },
   title: {
-    fontSize: '3rem',
+    fontSize: '3.5rem',
     fontWeight: 'bold',
-    marginBottom: '10px',
+    marginBottom: '20px',
+    color: '#fff',
+    textShadow: '0 3px 6px rgba(0, 0, 0, 0.5)',
+    letterSpacing: '2px',
+  },
+  titleHighlight: {
+    color: '#00aaff',
+    textShadow: '0 0 10px rgba(0, 170, 255, 0.5)',
   },
   subtitle: {
     fontSize: '1.5rem',
-    marginBottom: '20px',
+    marginBottom: '40px',
+    color: '#e0e0e0',
+    maxWidth: '800px',
+    margin: '0 auto 40px',
   },
-  button: {
+  buttonContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    gap: '20px',
+    marginBottom: '50px',
+    flexWrap: 'wrap',
+  },
+  primaryButton: {
     padding: '15px 30px',
     fontSize: '1.2rem',
     fontWeight: 'bold',
     color: '#fff',
-    backgroundColor: '#007bff',
+    backgroundColor: '#00aaff',
     border: 'none',
-    borderRadius: '5px',
+    borderRadius: '30px',
     cursor: 'pointer',
-    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.2)',
-    transition: 'transform 0.2s, background-color 0.2s',
+    boxShadow: '0 4px 15px rgba(0, 170, 255, 0.4)',
+    transition: 'all 0.3s ease',
   },
-  buttonHover: {
-    backgroundColor: '#0056b3',
-    transform: 'scale(1.05)',
+  secondaryButton: {
+    padding: '15px 30px',
+    fontSize: '1.2rem',
+    fontWeight: 'bold',
+    color: '#fff',
+    backgroundColor: 'transparent',
+    border: '2px solid #00ffcc',
+    borderRadius: '30px',
+    cursor: 'pointer',
+    boxShadow: '0 4px 15px rgba(0, 255, 204, 0.2)',
+    transition: 'all 0.3s ease',
   },
+  featureGrid: {
+    display: 'flex',
+    justifyContent: 'center',
+    flexWrap: 'wrap',
+    gap: '30px',
+    marginTop: '20px',
+  },
+  featureCard: {
+    backgroundColor: 'rgba(22, 33, 62, 0.7)',
+    padding: '30px 20px',
+    borderRadius: '15px',
+    width: '250px',
+    boxShadow: '0 8px 20px rgba(0, 0, 0, 0.2)',
+    backdropFilter: 'blur(5px)',
+    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+  },
+  featureIcon: {
+    fontSize: '2.5rem',
+    marginBottom: '15px',
+  },
+  featureTitle: {
+    fontSize: '1.3rem',
+    color: '#00ffcc',
+    marginBottom: '10px',
+    fontWeight: 'bold',
+  },
+  featureText: {
+    fontSize: '1rem',
+    color: '#e0e0e0',
+    lineHeight: '1.5',
+  }
 };
 
 export default Home;

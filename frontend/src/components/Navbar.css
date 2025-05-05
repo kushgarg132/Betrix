@@ -2,13 +2,23 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 20px;
-  background-color: #1a1a2e;
+  padding: 12px 20px;
+  background-color: #16213e;
   color: #fff;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   position: sticky;
   top: 0;
   z-index: 1000;
+  backdrop-filter: blur(10px);
+}
+
+.navLeft, .navCenter, .navRight {
+  display: flex;
+  align-items: center;
+}
+
+.navRight {
+  gap: 15px;
 }
 
 .logo {
@@ -18,30 +28,90 @@
   cursor: pointer;
   color: #00aaff;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s ease;
+  letter-spacing: 1px;
 }
 
+.logo:hover {
+  transform: scale(1.05);
+  text-shadow: 0 0 10px rgba(0, 170, 255, 0.6);
+}
+
+.logoAccent {
+  color: #fff;
+  font-size: 24px;
+  margin-left: 4px;
+}
+
+/* Nav Links */
+.navLinks {
+  display: flex;
+  gap: 25px;
+}
+
+.navLink {
+  font-size: 16px;
+  font-weight: 500;
+  color: #e0e0e0;
+  cursor: pointer;
+  position: relative;
+  padding: 5px 0;
+  transition: all 0.3s ease;
+}
+
+.navLink:hover {
+  color: #00ffcc;
+}
+
+.navLink::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  background-color: #00ffcc;
+  bottom: 0;
+  left: 0;
+  transition: width 0.3s ease;
+}
+
+.navLink:hover::after {
+  width: 100%;
+}
+
+.navLink.active {
+  color: #00ffcc;
+}
+
+.navLink.active::after {
+  width: 100%;
+}
+
+/* User Info */
 .userInfo {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 15px;
+  margin-right: 10px;
 }
 
 .userName {
-  font-size: 16px;
+  font-size: 15px;
   color: #00ffcc;
   font-weight: 500;
 }
 
 .userBalance {
-  background-color: #00aaff;
+  background-color: rgba(0, 170, 255, 0.2);
   color: #fff;
-  padding: 5px 10px;
+  padding: 5px 12px;
   border-radius: 20px;
   font-size: 14px;
   font-weight: bold;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(0, 170, 255, 0.4);
 }
 
+/* User Menu */
 .userMenu {
   position: relative;
   display: inline-block;
@@ -52,6 +122,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.userIcon:hover {
+  transform: scale(1.05);
 }
 
 .initialsCircle {
@@ -66,53 +141,97 @@
   font-size: 16px;
   font-weight: bold;
   text-transform: uppercase;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
 }
 
+.initialsCircle:hover {
+  box-shadow: 0 0 12px rgba(0, 170, 255, 0.6);
+}
+
+/* Dropdown Menu */
 .dropdown {
   position: absolute;
   top: 50px;
   right: 0;
-  background-color: #fff;
-  color: #333;
+  background-color: #1a1a2e;
+  color: #fff;
   border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   z-index: 1000;
-  width: 150px;
+  width: 180px;
   overflow: hidden;
-  display: none; /* Initially hidden */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 170, 255, 0.2);
 }
 
-.userMenu:hover .dropdown,
-.dropdown:hover {
-  display: block; /* Keep dropdown visible when hovering over it */
+.dropdown.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
 }
 
 .dropdownItem {
-  padding: 10px;
+  padding: 12px 15px;
   cursor: pointer;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   text-align: left;
   transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dropdownItem:last-child {
+  border-bottom: none;
 }
 
 .dropdownItem:hover {
-  background-color: #f0f0f0;
+  background-color: rgba(0, 170, 255, 0.1);
+}
+
+/* Auth Buttons */
+.authButtons {
+  display: flex;
+  gap: 10px;
 }
 
 .navButton {
-  margin-left: 10px;
-  padding: 8px 15px;
-  background-color: #00aaff;
+  padding: 8px 16px;
+  background-color: transparent;
   color: #fff;
-  border: none;
+  border: 1px solid rgba(0, 170, 255, 0.5);
   border-radius: 20px;
   cursor: pointer;
   font-size: 14px;
   font-weight: bold;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
+  outline: none;
 }
 
 .navButton:hover {
-  background-color: #0088cc;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.loginBtn {
+  background-color: transparent;
+  border: 1px solid #00ffcc;
+  color: #00ffcc;
+}
+
+.loginBtn:hover {
+  background-color: rgba(0, 255, 204, 0.1);
+}
+
+.signupBtn {
+  background-color: #00aaff;
+  border: 1px solid #00aaff;
+}
+
+.signupBtn:hover {
+  background-color: #0099ee;
 }
