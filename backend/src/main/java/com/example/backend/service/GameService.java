@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface GameService {
     List<Game> getAllGames();
-    Game createGame(BlindPayload payload);
+    void createGame(BlindPayload payload);
     Game getGame(String gameId);
     Game joinGame(String gameId, String username);
     void startNewHand(String gameId);

@@ -1,11 +1,8 @@
 package com.example.backend.service;
 
 import com.example.backend.entity.User;
-import com.example.backend.model.BlindPayload;
-import com.example.backend.model.Card;
+import com.example.backend.model.*;
 import com.example.backend.entity.Game;
-import com.example.backend.model.GameUpdate;
-import com.example.backend.model.Player;
 import com.example.backend.repository.GameRepository;
 import com.example.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -37,8 +34,10 @@ public class GameServiceImpl implements GameService {
         logger.info("Fetching all games");
         try {
             List<Game> games = gameRepository.findAll();
-            games.forEach(game ->
-                    game.getPlayers().forEach(Player::hideDetails)
+            games.forEach(game ->{
+                    game.getPlayers().forEach(Player::hideDetails);
+                    game.setDeck(new Deck());
+            }
             );
             logger.debug("Fetched games: {}", games);
             return games;
@@ -50,13 +49,12 @@ public class GameServiceImpl implements GameService {
 
     @Override
     @Transactional
-    public Game createGame(BlindPayload payload) {
+    public void createGame(BlindPayload payload) {
         logger.info("Creating a new game");
         try {
             Game game = new Game(payload.getSmallBlindAmount() , payload.getBigBlindAmount());
             Game savedGame = gameRepository.save(game);
             logger.debug("Created game: {}", savedGame);
-            return savedGame;
         } catch (Exception e) {
             logger.error("Error creating game: {}", e.getMessage());
             throw new RuntimeException("Failed to create game", e);

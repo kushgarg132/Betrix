@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../api/axios';
+import { AuthContext } from '../context/AuthContext';
 import './GameLobby.css';
 
 const GameLobby = () => {
@@ -11,6 +12,7 @@ const GameLobby = () => {
   const [bigBlind, setBigBlind] = useState('');
   const [showCustomOption, setShowCustomOption] = useState(false);
   const [error, setError] = useState('');
+  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
 
   // Preset blind options
@@ -116,6 +118,12 @@ const GameLobby = () => {
     }
   };
 
+  // Check if current user is already in a game
+  const isPlayerInGame = (game) => {
+    if (!user || !game.players || !game.players.length) return false;
+    return game.players.some(player => player.username === user.username);
+  };
+
   if (loading) {
     return (
       <div className="lobby-loading">
@@ -180,7 +188,10 @@ const GameLobby = () => {
                       // disabled={game.status !== 'WAITING' && game.status !== 'ACTIVE'}
                     >
                       <span className="join-icon">→</span>
-                      <span>{game.status === 'WAITING' ? 'Join Game' : game.status === 'ACTIVE' ? 'Spectate' : 'Completed'}</span>
+                      <span>
+                        {isPlayerInGame(game) ? 'Already Joined' : 
+                          game.status === 'WAITING' ? 'Join Game' : 'Spectate'}
+                      </span>
                     </button>
                   </div>
                 </div>

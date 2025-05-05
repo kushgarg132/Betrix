@@ -26,12 +26,12 @@ public class GameController {
 
     @PostMapping("/create-new")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Game> createGame(@RequestBody BlindPayload payload) {
+    public ResponseEntity<Void> createGame(@RequestBody BlindPayload payload) {
         logger.info("Request received to create a new game");
         try {
-            Game game = gameService.createGame(payload);
-            logger.debug("New game created: {}", game);
-            return ResponseEntity.ok(game);
+            gameService.createGame(payload);
+            logger.debug("New game created");
+            return ResponseEntity.ok().build();
         } catch (Exception e) {
             logger.error("Error creating game: {}", e.getMessage());
             return ResponseEntity.status(500).body(null);
