@@ -93,9 +93,9 @@ const GameLobby = () => {
         smallBlindAmount: smallBlindAmount,
         bigBlindAmount: bigBlindAmount
       })
-      .then((response) => {
+      .then(() => {
         setShowModal(false);
-        navigate(`/game/${response.data.id}`);
+        fetchGames();
       })
       .catch((error) => {
         console.error('Error creating game:', error);
