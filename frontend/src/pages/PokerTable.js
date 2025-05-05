@@ -359,8 +359,8 @@ const PokerTable = () => {
   const leaveTable = () => {
     if (stompClient && stompClient.connected) {
       stompClient.publish({
-        destination: `/app/game/${gameId}/leave`,
-        body: JSON.stringify({ playerId: currentPlayer.id }),
+        destination: `/app/game/${gameId}/action`,
+        body: JSON.stringify({ playerId: currentPlayer.id, actionType: 'LEAVE' }),
       });
       stompClient.deactivate();
       // Redirect to home or lobby
