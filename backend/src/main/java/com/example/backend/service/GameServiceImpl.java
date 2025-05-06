@@ -141,6 +141,9 @@ public class GameServiceImpl implements GameService {
             game.setUpdatedAt(LocalDateTime.now());
             gameRepository.save(game);
 
+            user.setBalance(0);
+            userRepository.save(user);
+
             notifyGameUpdate(gameId, GameUpdate.GameUpdateType.PLAYER_JOINED, new Player(player)); // Player Added
 
             logger.debug("User '{}' joined game: {}", username, game);
@@ -473,25 +476,79 @@ public class GameServiceImpl implements GameService {
     }
 
     private void notifyPlayersHand(Game game) {
-        game.getPlayers().forEach(player -> {
-            notificationService.notifyPlayerUpdate(game.getId(), player.getId(), player.getHand());
-        });
+        try {
+            // Create a map for bulk update
+            Map<String, Object> playerHandUpdates = new HashMap<>();
+            
+            // Prepare hand data for each player
+            game.getPlayers().forEach(player -> {
+                playerHandUpdates.put(player.getId(), player.getHand());
+            });
+            
+            // Send as bulk update for efficiency
+            notificationService.sendBulkPlayerUpdates(
+                game.getId(), 
+                GameUpdate.GameUpdateType.CARDS_DEALT, 
+                playerHandUpdates
+            );
+        } catch (Exception e) {
+            logger.error("Failed to notify players of their hands: {}", e.getMessage(), e);
+            
+            // Fallback to individual notifications
+            game.getPlayers().forEach(player -> {
+                try {
+                    notificationService.notifyPlayerUpdate(game.getId(), player.getId(), player.getHand());
+                } catch (Exception ex) {
+                    logger.error("Failed to notify player {} of their hand: {}", player.getId(), ex.getMessage());
+                }
+            });
+        }
     }
 
     private void notifyGameUpdate(String gameId, GameUpdate.GameUpdateType updateType, Object payload) {
-        GameUpdate update = new GameUpdate();
-        update.setGameId(gameId);
-        update.setType(updateType);
+        try {
+            GameUpdate update = GameUpdate.builder()
+                    .gameId(gameId)
+                    .type(updateType)
+                    .timestamp(LocalDateTime.now())
+                    .build();
 
-        if (update.getType().equals(GameUpdate.GameUpdateType.PLAYER_JOINED)) {
-            Player player = new Player((Player) payload); // Create a copy of the player
-            player.setId(null); // Hide sensitive information
-            update.setPayload(player);
-        } else {
-            update.setPayload(payload);
+            // Process payload based on update type
+            switch (updateType) {
+                case PLAYER_JOINED:
+                    // Create sanitized copy of player data without sensitive info
+                    if (payload instanceof Player) {
+                        Player player = new Player((Player) payload);
+                        player.setId(null); // Hide sensitive information
+                        player.setHand(new ArrayList<>()); // Hide cards
+                        update.setPayload(player);
+                    } else {
+                        update.setPayload(payload);
+                    }
+                    break;
+                    
+                case GAME_STARTED:
+                    // Create sanitized game state for all players
+                    if (payload instanceof Game) {
+                        Game game = new Game((Game) payload);
+                        // Hide all player hands
+                        game.getPlayers().forEach(player -> {
+                            player.setHand(new ArrayList<>());
+                        });
+                        update.setPayload(game);
+                    } else {
+                        update.setPayload(payload);
+                    }
+                    break;
+                    
+                default:
+                    update.setPayload(payload);
+            }
+
+            notificationService.notifyGameUpdate(update);
+        } catch (Exception e) {
+            logger.error("Failed to send game update notification: {}", e.getMessage(), e);
         }
-
-        notificationService.notifyGameUpdate(update);
     }
 
     private void evaluateHandAndAwardPot(Game game) {
@@ -603,5 +660,117 @@ public class GameServiceImpl implements GameService {
 
         // If we get here, the hands are identical in rank
         return 0;
+    }
+    
+    /**
+     * Automatically fold on behalf of a player who has timed out
+     * @param gameId ID of the game
+     * @param playerId ID of the player to auto-fold
+     */
+    @Override
+    @Transactional
+    public void autoFold(String gameId, String playerId) {
+        logger.info("Auto-folding for player '{}' in game with ID: {}", playerId, gameId);
+        try {
+            Game game = getGame(gameId);
+            Player player = findPlayer(game, playerId);
+
+            if (game.getStatus() == Game.GameStatus.WAITING || game.getStatus() == Game.GameStatus.FINISHED) {
+                logger.error("Game not in progress");
+                return;
+            }
+
+            if (!game.isPlayersTurn(playerId)) {
+                logger.error("Not player's turn");
+                return;
+            }
+
+            if (player.isHasFolded()) {
+                logger.error("Player has already folded");
+                return;
+            }
+
+            bettingManager.fold(game, player);
+
+            // Record this as an auto-fold action
+            game.getLastActions().put(player.getUsername(), Game.PlayerAction.AUTO_FOLD);
+
+            // Notify about the fold
+            notifyGameUpdate(gameId, GameUpdate.GameUpdateType.PLAYER_FOLDED, playerId);
+
+            // Check if only one player remains active and not folded
+            int activePlayers = getActivePlayerCount(game);
+
+            if (activePlayers == 1) {
+                // Award pot to last player
+                for (Player p : game.getPlayers()) {
+                    if (p.isActive() && !p.isHasFolded()) {
+                        p.awardPot(game.getPot());
+                        
+                        // Notify about the win due to auto-fold
+                        notifyGameUpdate(game.getId(), GameUpdate.GameUpdateType.GAME_ENDED, Map.of(
+                            "winner", p.getId(),
+                            "amount", game.getPot(),
+                            "reason", "Last player standing (auto-fold)"
+                        ));
+                        break;
+                    }
+                }
+
+                // Reset for new hand
+                game.resetForNewHand();
+                game.setStatus(Game.GameStatus.WAITING);
+            } else {
+                // Advance to next player
+                game.moveToNextPlayer();
+
+                // Check if betting round is complete
+                if (bettingManager.isBettingRoundComplete(game)) {
+                    if (game.getStatus() == Game.GameStatus.RIVER_BETTING) {
+                        evaluateHandAndAwardPot(game);
+                        game.resetForNewHand();
+                        game.setStatus(Game.GameStatus.WAITING);
+                        notifyGameUpdate(gameId, GameUpdate.GameUpdateType.GAME_ENDED, game);
+                    } else {
+                        bettingManager.startNewBettingRound(game);
+                        notifyGameUpdate(gameId, GameUpdate.GameUpdateType.ROUND_STARTED, new Game(game));
+                    }
+                }
+            }
+
+            game.setUpdatedAt(LocalDateTime.now());
+            gameRepository.save(game);
+
+            logger.debug("Auto-fold action completed. Updated game state: {}", game);
+        } catch (Exception e) {
+            logger.error("Error during auto-fold action: {}", e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * Updates all active games to mark the current turn player's action deadline
+     */
+    @Override
+    @Transactional
+    public void updateAllGameActionDeadlines() {
+        try {
+            List<Game> activeGames = gameRepository.findActiveGames();
+            
+            for (Game game : activeGames) {
+                if (game.getCurrentPlayerActionDeadline() == null && 
+                    game.getCurrentPlayerIndex() >= 0 &&
+                    game.getCurrentPlayerIndex() < game.getPlayers().size()) {
+                    
+                    game.updateCurrentPlayerActionDeadline();
+                    gameRepository.save(game);
+                    
+                    logger.debug("Updated action deadline for game {}, player {}", 
+                                game.getId(), 
+                                game.getPlayers().get(game.getCurrentPlayerIndex()).getId());
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Error updating game action deadlines: {}", e.getMessage(), e);
+        }
     }
 }

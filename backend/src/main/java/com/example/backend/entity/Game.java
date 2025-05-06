@@ -22,6 +22,10 @@ import java.util.UUID;
 public class Game {
     private int MAX_PLAYERS = 6;
     
+    // Default timeout values
+    public static final int DEFAULT_PLAYER_ACTION_TIMEOUT_SECONDS = 30;
+    public static final int DEFAULT_GAME_IDLE_TIMEOUT_MINUTES = 10;
+    
     @Id
     private String id;
     private List<Player> players;
@@ -35,6 +39,13 @@ public class Game {
     private double minimumBet;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    
+    // Timeout tracking fields
+    private LocalDateTime currentPlayerActionDeadline;
+    private LocalDateTime lastActivityTime;
+    private int playerActionTimeoutSeconds = DEFAULT_PLAYER_ACTION_TIMEOUT_SECONDS;
+    private int gameIdleTimeoutMinutes = DEFAULT_GAME_IDLE_TIMEOUT_MINUTES;
+    private boolean autoStart = true;
     
     // Additional fields required by BettingManager
     private String smallBlindUserId;
@@ -51,10 +62,10 @@ public class Game {
     }
     
     public enum PlayerAction {
-        NONE, FOLD, CHECK, SMALL_BLIND , BIG_BLIND , CALL, RAISE, ALL_IN
+        NONE, FOLD, CHECK, SMALL_BLIND, BIG_BLIND, CALL, RAISE, ALL_IN, AUTO_FOLD
     }
     
-    public Game(int smallBlindAmount ,int bigBlindAmount) {
+    public Game(int smallBlindAmount, int bigBlindAmount) {
         this.id = UUID.randomUUID().toString();
         this.players = new ArrayList<>();
         this.deck = new Deck();
@@ -71,6 +82,7 @@ public class Game {
         this.lastActions = new HashMap<>();
         this.smallBlindAmount = smallBlindAmount;
         this.bigBlindAmount = bigBlindAmount;
+        this.lastActivityTime = LocalDateTime.now();
     }
 
     public Game(Game game) {
@@ -95,6 +107,11 @@ public class Game {
         this.MAX_PLAYERS = game.getMAX_PLAYERS();
         this.smallBlindUserId = game.getSmallBlindUserId();
         this.bigBlindUserId = game.getBigBlindUserId();
+        this.currentPlayerActionDeadline = game.getCurrentPlayerActionDeadline();
+        this.lastActivityTime = game.getLastActivityTime() != null ? game.getLastActivityTime() : LocalDateTime.now();
+        this.playerActionTimeoutSeconds = game.getPlayerActionTimeoutSeconds();
+        this.gameIdleTimeoutMinutes = game.getGameIdleTimeoutMinutes();
+        this.autoStart = game.isAutoStart();
     }
 
     public boolean isPlayersTurn(String playerId) {
@@ -121,6 +138,53 @@ public class Game {
             currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
         } while (!players.get(currentPlayerIndex).isActive() || 
                  players.get(currentPlayerIndex).isHasFolded());
+                 
+        // Set timeout for the next player's action
+        updateCurrentPlayerActionDeadline();
+        updateLastActivityTime();
+    }
+    
+    /**
+     * Updates the current player's action deadline
+     */
+    public void updateCurrentPlayerActionDeadline() {
+        this.currentPlayerActionDeadline = LocalDateTime.now().plusSeconds(playerActionTimeoutSeconds);
+    }
+    
+    /**
+     * Updates the last activity timestamp
+     */
+    public void updateLastActivityTime() {
+        this.lastActivityTime = LocalDateTime.now();
+    }
+    
+    /**
+     * Checks if the current player's action timeout has expired
+     */
+    public boolean isCurrentPlayerActionTimedOut() {
+        if (this.currentPlayerActionDeadline == null) {
+            return false;
+        }
+        return LocalDateTime.now().isAfter(this.currentPlayerActionDeadline);
+    }
+    
+    /**
+     * Checks if the game has been idle for too long
+     */
+    public boolean isGameIdle() {
+        if (this.lastActivityTime == null) {
+            return false;
+        }
+        return LocalDateTime.now().isAfter(this.lastActivityTime.plusMinutes(gameIdleTimeoutMinutes));
+    }
+    
+    /**
+     * Checks if game can auto-start when enough players join
+     */
+    public boolean canAutoStart() {
+        return this.autoStart && 
+               this.status == GameStatus.WAITING && 
+               this.players.size() >= 2;
     }
     
     public void resetForNewHand() {
@@ -148,6 +212,7 @@ public class Game {
             player.reset();
         }
         
+        updateLastActivityTime();
         updatedAt = LocalDateTime.now();
     }
     
@@ -168,5 +233,9 @@ public class Game {
             firstToActIdx = (firstToActIdx + 1) % players.size();
         }
         currentPlayerIndex = firstToActIdx;
+        
+        // Set timeout for next player action
+        updateCurrentPlayerActionDeadline();
+        updateLastActivityTime();
     }
 }
