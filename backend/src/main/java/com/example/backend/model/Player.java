@@ -51,6 +51,7 @@ public class Player {
         this.hand.clear();
         this.currentBet = 0;
         this.hasFolded = false;
+        this.isActive = true;
     }
     
     public void addCard(Card card) {

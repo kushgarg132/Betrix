@@ -88,7 +88,7 @@ public class Game {
     public Game(Game game) {
         this.id = game.getId() != null ? game.getId() : UUID.randomUUID().toString();
         this.players = new ArrayList<>();
-        game.getPlayers().forEach(p -> {this.players.add(new Player(p)); this.players.forEach(Player::hideDetails);});
+        game.getPlayers().forEach(p -> {this.players.add(new Player(p));});
         this.deck = new Deck();
         this.communityCards = game.getCommunityCards() != null ? new ArrayList<>(game.getCommunityCards()) : new ArrayList<>();
         this.pot = game.getPot();

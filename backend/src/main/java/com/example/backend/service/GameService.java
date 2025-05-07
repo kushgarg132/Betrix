@@ -21,6 +21,6 @@ public interface GameService {
     boolean deleteGame(String gameId);
     
     // New methods for the scheduler
-    void autoFold(String gameId, String playerId);
+//    void autoFold(String gameId, String playerId);
     void updateAllGameActionDeadlines();
 }

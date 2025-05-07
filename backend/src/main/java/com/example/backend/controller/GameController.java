@@ -2,6 +2,7 @@ package com.example.backend.controller;
 
 import com.example.backend.entity.Game;
 import com.example.backend.model.BlindPayload;
+import com.example.backend.service.GameReplayService;
 import com.example.backend.service.GameService;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class GameController {
     private static final Logger logger = LoggerFactory.getLogger(GameController.class);
 
     private final GameService gameService;
+    private final GameReplayService gameReplayService;
 
     @PostMapping("/create-new")
     @PreAuthorize("isAuthenticated()")
@@ -109,6 +111,40 @@ public class GameController {
         } catch (Exception e) {
             logger.error("Error deleting game: {}", e.getMessage());
             return ResponseEntity.status(500).build();
+        }
+    }
+    
+    /**
+     * Replay a game from event history
+     */
+    @GetMapping("/{gameId}/replay")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Game> replayGame(@PathVariable String gameId) {
+        logger.info("Request received to replay game with ID: {}", gameId);
+        try {
+            Game game = gameReplayService.replayGame(gameId);
+            return ResponseEntity.ok(game);
+        } catch (Exception e) {
+            logger.error("Error replaying game: {}", e.getMessage());
+            return ResponseEntity.status(500).body(null);
+        }
+    }
+    
+    /**
+     * Replay a game up to a specific event
+     */
+    @GetMapping("/{gameId}/replay/{eventId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Game> replayGameUntilEvent(
+            @PathVariable String gameId,
+            @PathVariable String eventId) {
+        logger.info("Request received to replay game {} up to event {}", gameId, eventId);
+        try {
+            Game game = gameReplayService.replayGameUntilEvent(gameId, eventId);
+            return ResponseEntity.ok(game);
+        } catch (Exception e) {
+            logger.error("Error replaying game: {}", e.getMessage());
+            return ResponseEntity.status(500).body(null);
         }
     }
 }

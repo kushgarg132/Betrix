@@ -1,51 +1,61 @@
 package com.example.backend.service;
 
 import com.example.backend.entity.Game;
+import com.example.backend.event.CardsDealtEvent;
+import com.example.backend.event.GameEndedEvent;
+import com.example.backend.event.GameEventPublisher;
+import com.example.backend.event.RoundStartedEvent;
+import com.example.backend.model.BettingRound;
 import com.example.backend.model.Card;
 import com.example.backend.model.Player;
-import com.example.backend.model.GameUpdate;
-import lombok.Builder;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class BettingManager {
     private static final Logger logger = LoggerFactory.getLogger(BettingManager.class);
 
-    @Autowired
-    private GameNotificationService notificationService;
-    private List<Game.PlayerAction> notALlowedStatus = List.of(Game.PlayerAction.NONE, Game.PlayerAction.SMALL_BLIND, Game.PlayerAction.BIG_BLIND);
+    private final GameEventPublisher eventPublisher;
+    private final HandEvaluator handEvaluator;
+    private final List<Game.PlayerAction> notAllowedStatus = List.of(Game.PlayerAction.NONE, Game.PlayerAction.SMALL_BLIND, Game.PlayerAction.BIG_BLIND);
 
     public void startNewBettingRound(Game game) {
         logger.info("Starting a new betting round for game with ID: {}", game.getId());
         game.setupNextRound();
 
+        BettingRound.RoundType roundType = BettingRound.RoundType.PRE_FLOP;
+        
         switch (game.getStatus()) {
             case STARTING:
                 setupPreFlopBetting(game);
+                roundType = BettingRound.RoundType.PRE_FLOP;
                 break;
             case PRE_FLOP_BETTING:
                 setupFlopBetting(game);
+                roundType = BettingRound.RoundType.FLOP;
                 break;
             case FLOP_BETTING:
                 setupTurnBetting(game);
+                roundType = BettingRound.RoundType.TURN;
                 break;
             case TURN_BETTING:
                 setupRiverBetting(game);
+                roundType = BettingRound.RoundType.RIVER;
                 break;
             case RIVER_BETTING:
                 game.setStatus(Game.GameStatus.SHOWDOWN);
+                roundType = BettingRound.RoundType.SHOWDOWN;
                 break;
         }
-//        notifyRoundStart(game.getId(), new Game(game));
+        
+        // Publish event for round started
+        eventPublisher.publishEvent(new RoundStartedEvent(game.getId(), game, roundType));
+        
         logger.debug("Betting round started. Updated game state: {}", game);
     }
 
@@ -75,6 +85,13 @@ public class BettingManager {
             communityCards.add(game.getDeck().drawCard());
         }
         game.setCommunityCards(communityCards);
+        
+        // Publish flop cards dealt event
+        eventPublisher.publishEvent(new CardsDealtEvent(
+            game.getId(), 
+            CardsDealtEvent.DealType.FLOP,
+            new ArrayList<>(communityCards)
+        ));
     }
 
     private void setupTurnBetting(Game game) {
@@ -83,8 +100,16 @@ public class BettingManager {
 
         // Add one card to the community cards
         List<Card> communityCards = game.getCommunityCards();
-        communityCards.add(game.getDeck().drawCard());
+        Card turnCard = game.getDeck().drawCard();
+        communityCards.add(turnCard);
         game.setCommunityCards(communityCards);
+        
+        // Publish turn card dealt event
+        eventPublisher.publishEvent(new CardsDealtEvent(
+            game.getId(), 
+            CardsDealtEvent.DealType.TURN,
+            new ArrayList<>(communityCards)
+        ));
     }
 
     private void setupRiverBetting(Game game) {
@@ -93,14 +118,21 @@ public class BettingManager {
 
         // Add one card to the community cards
         List<Card> communityCards = game.getCommunityCards();
-        communityCards.add(game.getDeck().drawCard());
+        Card riverCard = game.getDeck().drawCard();
+        communityCards.add(riverCard);
         game.setCommunityCards(communityCards);
+        
+        // Publish river card dealt event
+        eventPublisher.publishEvent(new CardsDealtEvent(
+            game.getId(), 
+            CardsDealtEvent.DealType.RIVER,
+            new ArrayList<>(communityCards)
+        ));
     }
 
-    public void placeBet(Game game, Player player, double amount ,Game.PlayerAction lastAction ) {
+    public void placeBet(Game game, Player player, double amount, Game.PlayerAction lastAction) {
         logger.info("Player '{}' is placing a bet of {} in game with ID: {}", player.getUsername(), amount, game.getId());
         double betPlacedAmount = game.getCurrentBettingRound().getPlayerBets().getOrDefault(player.getUsername() , 0.0);
-
 
         double betPlacedTotal = betPlacedAmount + amount;
 
@@ -108,11 +140,11 @@ public class BettingManager {
         if(Objects.nonNull(lastAction)) {
             game.getLastActions().put(player.getUsername(), lastAction);
             game.setCurrentBet(betPlacedTotal);
-        }else if (amount > player.getChips()) {
+        } else if (amount > player.getChips()) {
             amount = player.getChips(); // All-in
             betPlacedTotal = betPlacedAmount + amount;
             game.getLastActions().put(player.getUsername(), Game.PlayerAction.ALL_IN);
-        }else if (amount == 0) {
+        } else if (amount == 0) {
             game.getLastActions().put(player.getUsername(), Game.PlayerAction.CHECK);
         } else if (betPlacedTotal == game.getCurrentBet()) {
             game.getLastActions().put(player.getUsername(), Game.PlayerAction.CALL);
@@ -124,8 +156,22 @@ public class BettingManager {
         player.placeBet(amount);
         game.setPot(game.getPot() + amount);
         game.getCurrentBettingRound().getPlayerBets().put(player.getUsername(), betPlacedTotal);
+        
+        // Move to next player after bet
+        game.moveToNextPlayer();
+        
+        // Check if betting round is complete
+        if (isBettingRoundComplete(game)) {
+            if (getActivePlayerCount(game) <= 1 || game.getStatus() == Game.GameStatus.RIVER_BETTING) {
+                // Game will be ended by the service that calls this method
+                evaluateHandAndAwardPot(game);
+                game.resetForNewHand();
+                game.setStatus(Game.GameStatus.WAITING);
+            } else {
+                startNewBettingRound(game);
+            }
+        }
 
-//        notifyBettingAction(game, player, amount);
         logger.debug("Bet placed. Updated game state: {}", game);
     }
 
@@ -136,11 +182,22 @@ public class BettingManager {
         player.setHasFolded(true);
         player.setActive(false);
         game.getLastActions().put(player.getUsername(), Game.PlayerAction.FOLD);
+        
+        // Move to next player after fold
+        game.moveToNextPlayer();
+        
+        // Check if betting round is complete
+        if (isBettingRoundComplete(game)) {
+            if (getActivePlayerCount(game) <= 1 || game.getStatus() == Game.GameStatus.RIVER_BETTING) {
+                // Game will be ended by the service that calls this method
+                evaluateHandAndAwardPot(game);
+                game.resetForNewHand();
+                game.setStatus(Game.GameStatus.WAITING);
+            } else {
+                startNewBettingRound(game);
+            }
+        }
 
-//        // Check if only one player remains
-//        if (getActivePlayerCount(game) == 1) {
-//            endBettingRound(game);
-//        }
         logger.debug("Player '{}' folded. Updated game state: {}", player.getUsername(), game);
     }
 
@@ -160,7 +217,7 @@ public class BettingManager {
             Double playerBet = game.getCurrentBettingRound().getPlayerBets().getOrDefault(player.getUsername() , 0.0);
             Game.PlayerAction lastAction = game.getLastActions().get(player.getUsername());
 
-            if (notALlowedStatus.contains(lastAction) ||
+            if (notAllowedStatus.contains(lastAction) ||
                 (playerBet < targetBet && lastAction != Game.PlayerAction.ALL_IN)) {
                 logger.debug("Betting round complete status: false");
                 return false;
@@ -171,12 +228,121 @@ public class BettingManager {
         return true;
     }
 
-    private void endBettingRound(Game game) {
-        game.getCurrentBettingRound().setRoundComplete(true);
-        notifyBettingRoundComplete(game);
+    private void evaluateHandAndAwardPot(Game game) {
+        logger.info("Evaluating hands and awarding pot for game with ID: {}", game.getId());
+        // Only evaluate if there are multiple players still in the hand
+        List<Player> activePlayers = game.getPlayers().stream()
+                .filter(p -> p.isActive() && !p.isHasFolded())
+                .toList();
+
+        if (activePlayers.isEmpty()) {
+            logger.warn("No active players, unusual case");
+            return;
+        }
+
+        if (activePlayers.size() == 1) {
+            // Single player gets the pot
+            Player winner = activePlayers.get(0);
+            winner.awardPot(game.getPot());
+
+            // Publish game ended event
+            eventPublisher.publishEvent(new GameEndedEvent(
+                    game.getId(),
+                    new Game(game),
+                    List.of(winner)
+            ));
+
+            logger.debug("Single player awarded pot: {}", winner);
+            return;
+        }
+
+        try {
+            // Multiple players - evaluate hands and find winner(s)
+            Map<Player, HandEvaluator.HandResult> playerResults = new HashMap<>();
+            HandEvaluator.HandResult bestResult = null;
+
+            // Evaluate each hand
+            for (Player player : activePlayers) {
+                HandEvaluator.HandResult result = handEvaluator.evaluateHand(
+                        player.getHand(),
+                        game.getCommunityCards()
+                );
+
+                playerResults.put(player, result);
+
+                // Track the best hand
+                if (bestResult == null || compareHandResults(result, bestResult) > 0) {
+                    bestResult = result;
+                }
+            }
+
+            // Find all players with the best hand (could be multiple in case of a tie)
+            List<Player> winners = new ArrayList<>();
+            for (Map.Entry<Player, HandEvaluator.HandResult> entry : playerResults.entrySet()) {
+                if (compareHandResults(entry.getValue(), bestResult) == 0) {
+                    winners.add(entry.getKey());
+                }
+            }
+
+            // Split pot among winners
+            double winAmount = game.getPot() / winners.size();
+            for (Player winner : winners) {
+                winner.awardPot(winAmount);
+            }
+
+            // Publish game ended event
+            eventPublisher.publishEvent(new GameEndedEvent(
+                    game.getId(),
+                    new Game(game),
+                    new ArrayList<>(winners)
+            ));
+
+            logger.debug("Pot split among winners: {}", winners);
+        } catch (Exception e) {
+            // If there's any error in hand evaluation, split the pot equally
+            double splitAmount = game.getPot() / activePlayers.size();
+            for (Player player : activePlayers) {
+                player.awardPot(splitAmount);
+            }
+
+            // Publish game ended event with error information
+            eventPublisher.publishEvent(new GameEndedEvent(
+                    game.getId(),
+                    new Game(game),
+                    new ArrayList<>(activePlayers)
+            ));
+
+            logger.error("Error during hand evaluation: {}", e.getMessage());
+        }
     }
 
-    private int getActivePlayerCount(Game game) {
+    // Compare two hand results
+    private int compareHandResults(HandEvaluator.HandResult result1, HandEvaluator.HandResult result2) {
+        // First compare hand ranks
+        int rankComparison = result1.getRank().ordinal() - result2.getRank().ordinal();
+        if (rankComparison != 0) {
+            return rankComparison;
+        }
+
+        // If ranks are the same, compare high cards
+        List<Card> highCards1 = result1.getHighCards();
+        List<Card> highCards2 = result2.getHighCards();
+
+        int minSize = Math.min(highCards1.size(), highCards2.size());
+
+        for (int i = 0; i < minSize; i++) {
+            int valueComparison = highCards1.get(i).getRank().getValue() -
+                    highCards2.get(i).getRank().getValue();
+            if (valueComparison != 0) {
+                return valueComparison;
+            }
+        }
+
+        // If we get here, the hands are identical in rank
+        return 0;
+    }
+
+    public int getActivePlayerCount(Game game) {
         return (int) game.getPlayers().stream()
                 .filter(Player::isActive)
                 .count();
@@ -194,53 +360,5 @@ public class BettingManager {
                 .filter(p -> p.getUsername().equals(playerUsername))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Player not found"));
-    }
-
-    private void notifyRoundStart(String gameId, Object payload) {
-        GameUpdate update = new GameUpdate();
-        update.setGameId(gameId);
-        update.setType(GameUpdate.GameUpdateType.ROUND_STARTED);
-        update.setPayload(payload);
-        notificationService.notifyGameUpdate(update);
-    }
-
-    private void notifyBettingAction(Game game, Player player, double amount) {
-        GameUpdate update = new GameUpdate();
-        update.setGameId(game.getId());
-        update.setType(GameUpdate.GameUpdateType.PLAYER_BET);
-        update.setPayload(Map.of(
-            "playerId", player.getId(),
-            "username", player.getUsername(),
-            "amount", amount,
-            "action", game.getLastActions().get(player.getUsername()),
-            "pot", game.getPot(),
-            "currentBet", game.getCurrentBet()
-        ));
-        notificationService.notifyGameUpdate(update);
-    }
-
-    private void notifyPlayerFolded(Game game, Player player) {
-        GameUpdate update = new GameUpdate();
-        update.setGameId(game.getId());
-        update.setType(GameUpdate.GameUpdateType.PLAYER_FOLDED);
-        update.setPayload(Map.of(
-            "playerId", player.getId(),
-            "username", player.getUsername(),
-            "remainingPlayers", getActivePlayerCount(game)
-        ));
-        notificationService.notifyGameUpdate(update);
-    }
-
-    private void notifyBettingRoundComplete(Game game) {
-        GameUpdate update = new GameUpdate();
-        update.setGameId(game.getId());
-        update.setType(GameUpdate.GameUpdateType.ROUND_COMPLETE);
-        update.setPayload(Map.of(
-            "pot", game.getPot(),
-            "status", game.getStatus(),
-            "communityCards", game.getCommunityCards(),
-            "activePlayers", getActivePlayerCount(game)
-        ));
-        notificationService.notifyGameUpdate(update);
     }
 }

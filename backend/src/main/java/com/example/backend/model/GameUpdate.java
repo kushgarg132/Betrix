@@ -24,11 +24,11 @@ public class GameUpdate {
         PLAYER_JOINED,
         PLAYER_LEFT,
         PLAYER_TURN,
+        PLAYER_CHECKED,
         PLAYER_BET,
         PLAYER_FOLDED,
         CARDS_DEALT,
         ROUND_STARTED,
-        ROUND_COMPLETE,
         GAME_ENDED
     }
 }

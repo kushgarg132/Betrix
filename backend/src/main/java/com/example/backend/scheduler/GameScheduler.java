@@ -307,7 +307,7 @@ public class GameScheduler implements SchedulingConfigurer {
                             game.getCurrentPlayerIndex() < game.getPlayers().size()) {
                             
                             String playerId = game.getPlayers().get(game.getCurrentPlayerIndex()).getId();
-                            gameService.autoFold(game.getId(), playerId);
+                            gameService.fold(game.getId(), playerId);
                             logger.info("Auto-folded for player {} in game {}", playerId, game.getId());
                         }
                     } catch (Exception e) {
@@ -351,7 +351,7 @@ public class GameScheduler implements SchedulingConfigurer {
                                 game.getCurrentPlayerIndex() < game.getPlayers().size()) {
                                 
                                 String playerId = game.getPlayers().get(game.getCurrentPlayerIndex()).getId();
-                                gameService.autoFold(game.getId(), playerId);
+                                gameService.fold(game.getId(), playerId);
                             }
                             
                             // Force game to finished state
