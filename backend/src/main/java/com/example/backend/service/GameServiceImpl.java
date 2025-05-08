@@ -26,7 +26,6 @@ public class GameServiceImpl implements GameService {
     private final UserRepository userRepository;
     private final GameRepository gameRepository;
     private final BettingManager bettingManager;
-    private final GameNotificationService notificationService;
     private final GameValidatorService gameValidatorService;
     private final GameEventPublisher eventPublisher;
 
@@ -81,17 +80,14 @@ public class GameServiceImpl implements GameService {
 
     @Override
     public Game getGameForPlayer(Game activeGame, String playerId) {
-        logger.info("Fetching game for player with ID: {}", playerId);
         try {
-            Game game = new Game(activeGame);
-            game.getPlayers().forEach(player -> {
-                if (!player.getId().equals(playerId)) {
+            activeGame.getPlayers().forEach(player -> {
+                if (!playerId.equals(player.getId())) {
                     player.setId(null); // Hide other players' IDs'
                     player.setHand(new ArrayList<>()); // Hide other players' hands
                 }
             });
-            logger.debug("Fetched game for player: {}", game);
-            return game;
+            return activeGame;
         } catch (Exception e) {
             logger.error("Error fetching game for player: {}", e.getMessage());
             throw new RuntimeException("Failed to fetch game for player", e);
@@ -103,14 +99,8 @@ public class GameServiceImpl implements GameService {
         logger.info("Fetching game for player with ID: {}", playerId);
         try {
             Game game = getGame(gameId);
-            game.getPlayers().forEach(player -> {
-                if (!player.getId().equals(playerId)) {
-                    player.setId(null); // Hide other players' IDs'
-                    player.setHand(new ArrayList<>()); // Hide other players' hands
-                }
-            });
             logger.debug("Fetched game for player: {}", game);
-            return game;
+            return getGameForPlayer(game , playerId);
         } catch (Exception e) {
             logger.error("Error fetching game for player: {}", e.getMessage());
             throw new RuntimeException("Failed to fetch game for player", e);
@@ -225,20 +215,22 @@ public class GameServiceImpl implements GameService {
             
             // Perform bet logic
             bettingManager.placeBet(game, player, amount, null);
+            // Publish player action event
+            eventPublisher.publishEvent(new PlayerActionEvent(
+                    gameId,
+                    playerId,
+                    PlayerActionEvent.ActionType.BET,
+                    amount,
+                    new Game(game)
+            ));
             
+            // Check if betting round is complete
+            handleCurrentBettingRound(game);
+
             game.setUpdatedAt(LocalDateTime.now());
             game.setLastActivityTime(LocalDateTime.now());
             gameRepository.save(game);
-            
-            // Publish player action event
-            eventPublisher.publishEvent(new PlayerActionEvent(
-                gameId, 
-                playerId,
-                PlayerActionEvent.ActionType.BET,
-                amount,
-                new Game(game)
-            ));
-            
+
             logger.debug("Player '{}' placed bet: {}", playerId, amount);
         } catch (Exception e) {
             logger.error("Error placing bet: {}", e.getMessage());
@@ -261,20 +253,22 @@ public class GameServiceImpl implements GameService {
             
             // Perform check logic - a check is essentially a bet of 0
             bettingManager.placeBet(game, player, 0, null);
-            
+            // Publish player action event
+            eventPublisher.publishEvent(new PlayerActionEvent(
+                    gameId,
+                    playerId,
+                    PlayerActionEvent.ActionType.CHECK,
+                    null,
+                    new Game(game)
+            ));
+
+            // Check if betting round is complete
+            handleCurrentBettingRound(game);
+
             game.setUpdatedAt(LocalDateTime.now());
             game.setLastActivityTime(LocalDateTime.now());
             gameRepository.save(game);
-            
-            // Publish player action event
-            eventPublisher.publishEvent(new PlayerActionEvent(
-                gameId, 
-                playerId,
-                PlayerActionEvent.ActionType.CHECK,
-                null,
-                new Game(game)
-            ));
-            
+
             logger.debug("Player '{}' checked", playerId);
         } catch (Exception e) {
             logger.error("Error checking: {}", e.getMessage());
@@ -289,32 +283,47 @@ public class GameServiceImpl implements GameService {
         try {
             Game game = getGame(gameId);
             Player player = findPlayer(game, playerId);
-            
+
             if (player == null) {
                 logger.error("Player not found in game: {}", playerId);
                 throw new RuntimeException("Player not found in game");
             }
-            
+
             // Perform fold logic
             bettingManager.fold(game, player);
-            
+            // Publish player action event
+            eventPublisher.publishEvent(new PlayerActionEvent(
+                    gameId,
+                    playerId,
+                    PlayerActionEvent.ActionType.FOLD,
+                    null,
+                    new Game(game)
+            ));
+
+            handleCurrentBettingRound(game);
+
             game.setUpdatedAt(LocalDateTime.now());
             game.setLastActivityTime(LocalDateTime.now());
             gameRepository.save(game);
-            
-            // Publish player action event
-            eventPublisher.publishEvent(new PlayerActionEvent(
-                gameId, 
-                playerId,
-                PlayerActionEvent.ActionType.FOLD,
-                null,
-                new Game(game)
-            ));
-            
+
             logger.debug("Player '{}' folded", playerId);
         } catch (Exception e) {
             logger.error("Error folding: {}", e.getMessage());
             throw new RuntimeException("Failed to fold", e);
+        }
+    }
+
+    private void handleCurrentBettingRound(Game game) {
+        // Check if betting round is complete
+        if (bettingManager.isBettingRoundComplete(game)) {
+            if (bettingManager.getActivePlayerCount(game) <= 1 || game.getStatus() == Game.GameStatus.RIVER_BETTING) {
+                // Game will be ended by the service that calls this method
+                bettingManager.evaluateHandAndAwardPot(game);
+                game.resetForNewHand();
+                game.setStatus(Game.GameStatus.WAITING);
+            } else {
+                bettingManager.startNewBettingRound(game);
+            }
         }
     }
 

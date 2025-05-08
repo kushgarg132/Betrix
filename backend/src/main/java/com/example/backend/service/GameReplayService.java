@@ -87,7 +87,7 @@ public class GameReplayService {
      */
     private Game applyEvent(Game game, GameEvent eventRecord) throws Exception {
         String eventType = eventRecord.getEventType();
-        String eventData = eventRecord.getEventData();
+        String eventData = eventRecord.getEventData().toString();
         
         switch (eventType) {
             case "GameStartedEvent":

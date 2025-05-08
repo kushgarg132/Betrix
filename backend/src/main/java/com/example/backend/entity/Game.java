@@ -56,9 +56,7 @@ public class Game {
     private Map<String, PlayerAction> lastActions;
     
     public enum GameStatus {
-        WAITING, PLAYING, FINISHED,
-        // Additional states used in BettingManager
-        STARTING, PRE_FLOP_BETTING, FLOP_BETTING, TURN_BETTING, RIVER_BETTING, SHOWDOWN
+        WAITING, STARTING, PRE_FLOP_BETTING, FLOP_BETTING, TURN_BETTING, RIVER_BETTING, SHOWDOWN
     }
     
     public enum PlayerAction {

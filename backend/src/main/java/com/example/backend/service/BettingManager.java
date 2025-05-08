@@ -159,18 +159,6 @@ public class BettingManager {
         
         // Move to next player after bet
         game.moveToNextPlayer();
-        
-        // Check if betting round is complete
-        if (isBettingRoundComplete(game)) {
-            if (getActivePlayerCount(game) <= 1 || game.getStatus() == Game.GameStatus.RIVER_BETTING) {
-                // Game will be ended by the service that calls this method
-                evaluateHandAndAwardPot(game);
-                game.resetForNewHand();
-                game.setStatus(Game.GameStatus.WAITING);
-            } else {
-                startNewBettingRound(game);
-            }
-        }
 
         logger.debug("Bet placed. Updated game state: {}", game);
     }
@@ -185,18 +173,6 @@ public class BettingManager {
         
         // Move to next player after fold
         game.moveToNextPlayer();
-        
-        // Check if betting round is complete
-        if (isBettingRoundComplete(game)) {
-            if (getActivePlayerCount(game) <= 1 || game.getStatus() == Game.GameStatus.RIVER_BETTING) {
-                // Game will be ended by the service that calls this method
-                evaluateHandAndAwardPot(game);
-                game.resetForNewHand();
-                game.setStatus(Game.GameStatus.WAITING);
-            } else {
-                startNewBettingRound(game);
-            }
-        }
 
         logger.debug("Player '{}' folded. Updated game state: {}", player.getUsername(), game);
     }
@@ -228,8 +204,10 @@ public class BettingManager {
         return true;
     }
 
-    private void evaluateHandAndAwardPot(Game game) {
+    public void evaluateHandAndAwardPot(Game game) {
         logger.info("Evaluating hands and awarding pot for game with ID: {}", game.getId());
+
+        game.setStatus(Game.GameStatus.SHOWDOWN);
         // Only evaluate if there are multiple players still in the hand
         List<Player> activePlayers = game.getPlayers().stream()
                 .filter(p -> p.isActive() && !p.isHasFolded())

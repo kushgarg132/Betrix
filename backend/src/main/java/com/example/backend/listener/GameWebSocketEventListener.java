@@ -1,6 +1,7 @@
-package com.example.backend.event;
+package com.example.backend.listener;
 
 import com.example.backend.entity.Game;
+import com.example.backend.event.*;
 import com.example.backend.model.GameUpdate;
 import com.example.backend.model.Player;
 import com.example.backend.service.GameNotificationService;
@@ -12,7 +13,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**

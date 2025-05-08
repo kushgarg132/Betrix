@@ -19,5 +19,5 @@ public class GameEvent {
     private String gameId;
     private LocalDateTime timestamp;
     private String eventType;
-    private String eventData;
+    private Object eventData;
 } 

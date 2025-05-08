@@ -28,7 +28,7 @@ public class GameEventLogger {
             dbEvent.setGameId(event.getGameId());
             dbEvent.setTimestamp(event.getTimestamp());
             dbEvent.setEventType(event.getClass().getSimpleName());
-            dbEvent.setEventData(objectMapper.writeValueAsString(event));
+            dbEvent.setEventData(event);
             
             // Save to database
             mongoTemplate.save(dbEvent, "game_events");

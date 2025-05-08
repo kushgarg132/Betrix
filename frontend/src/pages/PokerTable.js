@@ -99,6 +99,7 @@ const PokerTable = () => {
     PLAYER_LEFT: 'PLAYER_LEFT',
     PLAYER_TURN: 'PLAYER_TURN',
     PLAYER_BET: 'PLAYER_BET',
+    PLAYER_CHECK: 'PLAYER_CHECK',
     PLAYER_FOLDED: 'PLAYER_FOLDED',
     CARDS_DEALT: 'CARDS_DEALT',
     ROUND_STARTED: 'ROUND_STARTED',
@@ -168,32 +169,32 @@ const PokerTable = () => {
           setGame((prevGame) => ({
             ...prevGame,
             ...updateAction.payload,
-            players: [...prevGame.players],
           }));
           break;
-
         case gameStatus.PLAYER_JOINED:
           setGame((prevGame) => ({
             ...prevGame,
-            players: [...prevGame.players, updateAction.payload],
+            ...updateAction.payload,
+            // players: [...prevGame.players, updateAction.payload],
           }));
           break;
-
         case gameStatus.PLAYER_LEFT:
           setGame((prevGame) => ({
             ...prevGame,
-            players: prevGame.players.filter(
-              (player) => player._id !== updateAction.payload
-            ),
+            ...updateAction.payload,
+            // players: prevGame.players.filter(
+            //   (player) => player._id !== updateAction.payload
+            // ),
           }));
           break;
 
-        case gameStatus.PLAYER_TURN:
+        case gameStatus.PLAYER_CHECK:
           // Update isMyTurn state when turn changes
-          setIsMyTurn(updateAction.payload === currentPlayer.index);
+          // setIsMyTurn(updateAction.payload === currentPlayer.index);
           setGame((prevGame) => ({
             ...prevGame,
-            currentPlayerIndex: updateAction.payload,
+            ...updateAction.payload,
+            // currentPlayerIndex: updateAction.payload,
           }));
           break;
 
