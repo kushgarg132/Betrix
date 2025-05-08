@@ -132,7 +132,7 @@ public class GameServiceImpl implements GameService {
             game.setUpdatedAt(LocalDateTime.now());
             gameRepository.save(game);
 
-            user.setBalance(0);
+//            user.setBalance(0);
             userRepository.save(user);
 
             // Publish player joined event

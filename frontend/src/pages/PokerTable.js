@@ -27,14 +27,31 @@ const initializeSocketConnection = (gameId, playerId, setUpdateActions, setCurre
     debug: (str) => console.log(str),
     onConnect: () => {
       console.log('Connected to WebSocket');
+      
+      // Subscribe to game-wide updates
       client.subscribe(`/topic/game/${gameId}`, (message) => {
-        const updatedGame = JSON.parse(message.body);
-        setUpdateActions(updatedGame);
+        try {
+          const gameUpdate = JSON.parse(message.body);
+          console.log('Received game update:', gameUpdate);
+          setUpdateActions(gameUpdate);
+        } catch (error) {
+          console.error('Error processing game update:', error);
+        }
       });
-      client.subscribe(`/topic/game/${gameId}/${playerId}`, (message) => {
-        const cards = JSON.parse(message.body);
-        setCurrentPlayer((prevPlayer) => ({ ...prevPlayer, hand: cards }));
-        console.log('Received cards:', cards);
+      
+      // Subscribe to player-specific updates (corrected path)
+      client.subscribe(`/topic/game/${gameId}/player/${playerId}`, (message) => {
+        try {
+          const playerUpdate = JSON.parse(message.body);
+          console.log('Received player update:', playerUpdate);
+          
+          // Check if this is a cards update
+          if (playerUpdate.type === 'CARDS_DEALT' && playerUpdate.payload) {
+            setCurrentPlayer((prevPlayer) => ({ ...prevPlayer, hand: playerUpdate.payload }));
+          }
+        } catch (error) {
+          console.error('Error processing player update:', error);
+        }
       });
     },
     onStompError: (frame) => {
@@ -108,17 +125,20 @@ const PokerTable = () => {
   };
 
   useEffect(() => {
-    if (gameId) {
-      setLoading(true); // Ensure loading state is set before API call
-      axios
-        .post(`/game/${gameId}/join`)
-        .then((response) => {
-          setGame(response.data);
-          setLoading(false);
-          console.log('Game Joined', response.data);
-          const playerIndex = response.data.players.findIndex((p) => p?.username === user.username);
-
-          const player = response.data.players[playerIndex];
+    const joinGame = async () => {
+      try {
+        setLoading(true);
+        // First join the game with a POST request
+        const joinResponse = await axios.post(`/game/${gameId}/join`);
+        console.log('Game joined successfully:', joinResponse.data);
+        
+        // Set the game state
+        setGame(joinResponse.data);
+        
+        // Find current player in the game
+        const playerIndex = joinResponse.data.players.findIndex(p => p.username === user.username);
+        if (playerIndex !== -1) {
+          const player = joinResponse.data.players[playerIndex];
           setCurrentPlayer({
             id: player.id,
             username: player.username,
@@ -127,30 +147,150 @@ const PokerTable = () => {
           });
           
           // Check if it's the player's turn initially
-          setIsMyTurn(response.data.currentPlayerIndex === playerIndex);
-          
-          const client = initializeSocketConnection(gameId, player.id, setUpdateActions, setCurrentPlayer, setError);
-          setStompClient(client);
-        })
-        .catch((error) => {
-          console.error('Error fetching game:', error);
-          setError('Failed to load game data.');
-          setLoading(false);
-        });
-
-      return () => {
-        if (stompClient && stompClient.connected) {
-          stompClient.publish({
-            destination: `/app/game/${gameId}/leave`,
-            body: JSON.stringify({ playerId: currentPlayer.id }),
-          });
-          stompClient.deactivate();
+          setIsMyTurn(joinResponse.data.currentPlayerIndex === playerIndex);
+        } else {
+          console.warn('Current player not found in game players list');
         }
-      };
+        
+        setLoading(false);
+        
+        // Initialize WebSocket connection after successfully joining
+        if (user && user.id) {
+          const client = initializeSocketConnection(gameId, user.id, setUpdateActions, setCurrentPlayer, setError);
+          setStompClient(client);
+          
+          // Set up cleanup function
+          return () => {
+            if (client && client.connected) {
+              // Send leave action before disconnecting
+              client.publish({
+                destination: `/app/game/${gameId}/action`,
+                body: JSON.stringify({ playerId: currentPlayer.id, actionType: 'LEAVE' }),
+              });
+              client.deactivate();
+            }
+          };
+        }
+      } catch (error) {
+        console.error('Error joining game:', error);
+        setError('Failed to join the game. Please try again later.');
+        setLoading(false);
+      }
+    };
+    
+    if (gameId && user) {
+      joinGame();
     }
-  }, [gameId]);
+  }, [gameId, user]);
 
   useEffect(() => {
+    if (updateAction && game) {
+      console.log('Processing update action:', updateAction);
+      
+      // Update game state based on the update type and payload
+      setGame(prevGame => {
+        if (!prevGame) return updateAction;
+        
+        // Check if updateAction is already a complete game state (not a GameUpdate object)
+        if (!updateAction.type && !updateAction.payload) {
+          console.log('Received direct game state update:', updateAction);
+          return {
+            ...updateAction,
+            // Ensure these properties exist to prevent errors
+            communityCards: updateAction?.communityCards || [],
+            players: updateAction?.players || []
+          };
+        }
+        
+        // Extract the payload from the GameUpdate object
+        const payload = updateAction.payload;
+        const updateType = updateAction.type;
+        
+        if (!payload) {
+          console.warn('Update action payload is empty');
+          return prevGame;
+        }
+        
+        console.log(`Processing ${updateType} update with payload:`, payload);
+        
+        // Handle different update types
+        switch (updateType) {
+          case 'GAME_STARTED':
+          case 'ROUND_STARTED':
+          case 'PLAYER_BET':
+          case 'PLAYER_CHECKED':
+          case 'PLAYER_FOLDED':
+          case 'PLAYER_LEFT':
+          case 'PLAYER_TURN':
+            // These updates contain the full game state
+            return {
+              ...payload,
+              // Ensure these properties exist to prevent errors
+              communityCards: payload.communityCards || [],
+              players: payload.players || []
+            };
+            
+          case 'PLAYER_JOINED':
+            // Add the new player to the players array
+            return {
+              ...prevGame,
+              players: [...(prevGame.players || []), payload]
+            };
+            
+          case 'GAME_ENDED':
+            // Update with winners and game state
+            return {
+              ...(payload.game || prevGame),
+              winners: payload.winners || [],
+              status: 'ENDED',
+              // Ensure these properties exist to prevent errors
+              communityCards: (payload.game && payload.game.communityCards) || prevGame.communityCards || [],
+              players: (payload.game && payload.game.players) || prevGame.players || []
+            };
+            
+          case 'CARDS_DEALT':
+            // Update community cards
+            return {
+              ...prevGame,
+              communityCards: Array.isArray(payload) ? payload : (prevGame.communityCards || [])
+            };
+            
+          default:
+            console.warn('Unknown update type:', updateType);
+            return {
+              ...prevGame,
+              // Ensure these properties exist to prevent errors
+              communityCards: prevGame.communityCards || [],
+              players: prevGame.players || []
+            };
+        }
+      });
+      
+      // We'll handle the isMyTurn update in a separate useEffect to ensure it's always in sync
+    }
+  }, [updateAction, currentPlayer]);
+
+  // Dedicated useEffect to update isMyTurn whenever game state changes
+  useEffect(() => {
+    if (game && game.players && game.currentPlayerIndex !== -1 && currentPlayer.username) {
+      // Find the current turn player
+      const currentTurnPlayer = game.players[game.currentPlayerIndex];
+      
+      // Check if it's the current user's turn
+      const myTurn = currentTurnPlayer && currentTurnPlayer.username === currentPlayer.username;
+      
+      console.log(
+        `Turn update: Player ${currentTurnPlayer?.username} (index: ${game.currentPlayerIndex}), ` +
+        `Current user: ${currentPlayer.username}, isMyTurn: ${myTurn}`
+      );
+      
+      // Update the isMyTurn state
+      setIsMyTurn(myTurn);
+    } else {
+      // If any required data is missing, set isMyTurn to false
+      setIsMyTurn(false);
+    }
+    
     console.log('Game state updated:', game);
     
     // Debug player positions whenever game state updates
@@ -159,123 +299,7 @@ const PokerTable = () => {
       checkPlayerElements();
       highlightPlayers();
     }
-  }, [game]);
-
-  useEffect(() => {
-    if (updateAction) {
-      console.log('Update action:', updateAction);
-      switch (updateAction.type) {
-        case gameStatus.GAME_STARTED:
-          setGame((prevGame) => ({
-            ...prevGame,
-            ...updateAction.payload,
-          }));
-          break;
-        case gameStatus.PLAYER_JOINED:
-          setGame((prevGame) => ({
-            ...prevGame,
-            ...updateAction.payload,
-            // players: [...prevGame.players, updateAction.payload],
-          }));
-          break;
-        case gameStatus.PLAYER_LEFT:
-          setGame((prevGame) => ({
-            ...prevGame,
-            ...updateAction.payload,
-            // players: prevGame.players.filter(
-            //   (player) => player._id !== updateAction.payload
-            // ),
-          }));
-          break;
-
-        case gameStatus.PLAYER_CHECK:
-          // Update isMyTurn state when turn changes
-          // setIsMyTurn(updateAction.payload === currentPlayer.index);
-          setGame((prevGame) => ({
-            ...prevGame,
-            ...updateAction.payload,
-            // currentPlayerIndex: updateAction.payload,
-          }));
-          break;
-
-        case gameStatus.PLAYER_BET:
-          // Store the last action for animation
-          setLastAction({
-            type: 'bet',
-            playerId: updateAction.payload.players[updateAction.payload.currentPlayerIndex - 1 < 0 
-              ? updateAction.payload.players.length - 1 
-              : updateAction.payload.currentPlayerIndex - 1]._id,
-            amount: updateAction.payload.currentBet
-          });
-          setAnimatingChips(true);
-          setTimeout(() => {
-            setAnimatingChips(false);
-          }, 1000);
-          setGame(updateAction.payload);
-          // Update isMyTurn state when receiving a bet update
-          setIsMyTurn(updateAction.payload.currentPlayerIndex === currentPlayer.index);
-          break;
-
-        case gameStatus.PLAYER_FOLDED:
-          setGame((prevGame) => ({
-            ...prevGame,
-            players: prevGame.players.map((player) =>
-              player._id === updateAction.payload
-                ? { ...player, hasFolded: true }
-                : player
-            ),
-          }));
-          break;
-
-        case gameStatus.CARDS_DEALT:
-          setGame((prevGame) => ({
-            ...prevGame,
-            communityCards: updateAction.payload.communityCards,
-            players: prevGame.players.map((player) => ({
-              ...player,
-              hand: updateAction.payload.playerHands[player._id] || player.hand,
-            })),
-          }));
-          break;
-
-        case gameStatus.ROUND_STARTED:
-          setGame((prevGame) => ({
-            ...prevGame,
-            ...updateAction.payload,
-            players: [...prevGame.players],
-          }));
-          break;
-
-        case gameStatus.ROUND_COMPLETE:
-          setGame((prevGame) => ({
-            ...prevGame,
-            pot: updateAction.payload.pot,
-            communityCards: updateAction.payload.communityCards,
-          }));
-          break;
-
-        case gameStatus.GAME_ENDED:
-          alert('Game has ended!');
-          setGame((prevGame) => ({
-            ...prevGame,
-            status: 'ENDED',
-            winner: updateAction.payload.winner,
-          }));
-          break;
-
-        default:
-          console.warn('Unhandled update action:', updateAction);
-      }
-      setUpdateActions(null); // Reset updateAction after handling
-    }
-  }, [updateAction]);
-
-  // Update isMyTurn whenever currentPlayerIndex changes
-  useEffect(() => {
-    if (game && currentPlayer.index !== null) {
-      setIsMyTurn(game.currentPlayerIndex === currentPlayer.index);
-    }
-  }, [game?.currentPlayerIndex, currentPlayer.index]);
+  }, [game, game?.currentPlayerIndex]);
 
   const placeBet = (amount) => {
     if (stompClient && stompClient.connected) {
@@ -358,23 +382,47 @@ const PokerTable = () => {
   };
 
   const leaveTable = () => {
-    if (stompClient && stompClient.connected) {
-      stompClient.publish({
-        destination: `/app/game/${gameId}/action`,
-        body: JSON.stringify({ playerId: currentPlayer.id, actionType: 'LEAVE' }),
-      });
-      stompClient.deactivate();
-      // Redirect to home or lobby
+    if (stompClient && stompClient.connected && currentPlayer && currentPlayer.id) {
+      try {
+        // Send leave action via WebSocket
+        stompClient.publish({
+          destination: `/app/game/${gameId}/action`,
+          body: JSON.stringify({ playerId: currentPlayer.id, actionType: 'LEAVE' }),
+        });
+        stompClient.deactivate();
+        
+        console.log('Successfully left the game');
+        // Redirect to home or lobby
+        window.location.href = '/';
+      } catch (error) {
+        console.error('Error leaving game:', error);
+        // Still redirect even if there was an error
+        window.location.href = '/';
+      }
+    } else {
+      console.warn('Cannot leave table: WebSocket not connected or player ID not available');
+      // Redirect anyway
       window.location.href = '/';
     }
   };
 
-  if (loading) return <div className="loading-spinner"></div>;
+  if (loading) return <div className="loading-spinner">Loading game...</div>;
   if (error) return <div className="error">{error}</div>;
 
-  if (!game || !game.communityCards || !game.players) {
-    console.error('Game data is incomplete:', game);
-    return <div>No game data available.</div>;
+  if (!game) {
+    console.error('Game data is missing');
+    return <div>No game data available. Please try again later.</div>;
+  }
+  
+  if (!game.communityCards) {
+    console.error('Community cards missing in game data:', game);
+    // Initialize with empty array instead of failing
+    game.communityCards = [];
+  }
+  
+  if (!game.players || !Array.isArray(game.players)) {
+    console.error('Players missing or invalid in game data:', game);
+    return <div>Invalid game data. Please try refreshing the page.</div>;
   }
 
   return (

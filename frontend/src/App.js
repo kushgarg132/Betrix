@@ -8,6 +8,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Navbar from './components/Navbar';
 import Profile from './pages/Profile';
+import AdminPanel from './pages/AdminPanel';
 function App() {
   return (<>
     <Router>
@@ -21,6 +22,7 @@ function App() {
           <Route path="/lobby" element={<GameLobby />} />
           <Route path="/game/:gameId" element={<PokerTable />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/admin" element={<AdminPanel />} />
         </Routes>
       </div>
     </Router>

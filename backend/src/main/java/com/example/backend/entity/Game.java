@@ -56,7 +56,7 @@ public class Game {
     private Map<String, PlayerAction> lastActions;
     
     public enum GameStatus {
-        WAITING, STARTING, PRE_FLOP_BETTING, FLOP_BETTING, TURN_BETTING, RIVER_BETTING, SHOWDOWN
+        WAITING, STARTING, PRE_FLOP_BETTING, FLOP_BETTING, TURN_BETTING, RIVER_BETTING, SHOWDOWN , FINISHED
     }
     
     public enum PlayerAction {
