@@ -53,8 +53,38 @@ const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  // Function to update user balance
+  const updateBalance = (newBalance) => {
+    if (user) {
+      const updatedUser = { ...user, balance: newBalance };
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+    }
+  };
+
+  // Function to refresh user data from the server
+  const refreshUserData = async () => {
+    try {
+      const response = await axios.get('/user/me');
+      setUser(response.data);
+      localStorage.setItem('user', JSON.stringify(response.data));
+      return response.data;
+    } catch (error) {
+      console.error('Error refreshing user data:', error);
+      return null;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ isLoggedIn, user, login, logout }}>
+    <AuthContext.Provider value={{
+      isLoggedIn,
+      user,
+      setUser,
+      login,
+      logout,
+      updateBalance,
+      refreshUserData
+    }}>
       {children}
     </AuthContext.Provider>
   );

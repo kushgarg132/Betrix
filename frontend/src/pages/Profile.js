@@ -4,7 +4,7 @@ import { AuthContext } from '../context/AuthContext';
 import axios from '../api/axios'; // Import axios for API requests
 
 const Profile = () => {
-  const { user, logout, setUser } = useContext(AuthContext); // Add setUser to update user context
+  const { user, logout, updateBalance, refreshUserData } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -22,7 +22,12 @@ const Profile = () => {
     try {
       const response = await axios.post(`/user/add-balance?amount=${parseInt(amount)}`);
       alert(`Balance updated successfully! New Balance: $${response.data.balance}`);
-      setUser({ ...user, balance: response.data.balance }); // Update user context with new balance
+      
+      // Update the user balance in the context (this will update the navbar too)
+      updateBalance(response.data.balance);
+      // refreshUserData();
+      // Alternatively, refresh all user data from the server
+      // await refreshUserData();
     } catch (error) {
       console.error('Error adding balance:', error);
       alert('Failed to add balance. Please try again.');
