@@ -17,17 +17,12 @@ import RankingsModal from '../components/RankingsModal';
 import GameInfoPanel from '../components/GameInfoPanel';
 import LeftSidebar from '../components/LeftSidebar';
 
-// Import debug utility
-import { logPlayers, checkPlayerElements, highlightPlayers } from '../debug/PokerDebug';
-
 const initializeSocketConnection = (gameId, playerId, setUpdateActions, setCurrentPlayer, setError) => {
   const socket = new SockJS(API_CONFIG.WS_URL);
   const client = new Client({
     webSocketFactory: () => socket,
     debug: (str) => console.log(str),
     onConnect: () => {
-      console.log('Connected to WebSocket');
-      
       // Subscribe to game-wide updates
       client.subscribe(`/topic/game/${gameId}`, (message) => {
         try {
@@ -147,8 +142,8 @@ const PokerTable = () => {
         setLoading(false);
         
         // Initialize WebSocket connection after successfully joining
-        if (user && user.id) {
-          const client = initializeSocketConnection(gameId, user.id, setUpdateActions, setCurrentPlayer, setError);
+        if (currentPlayer && currentPlayer.id) {
+          const client = initializeSocketConnection(gameId, currentPlayer.id, setUpdateActions, setCurrentPlayer, setError);
           setStompClient(client);
           
           // Set up cleanup function
@@ -201,6 +196,7 @@ const PokerTable = () => {
 
         console.log(`Processing ${type} update with payload:`, payload);
 
+        let newGameState;
         switch (type) {
           case gameStatus.GAME_STARTED:
           case gameStatus.ROUND_STARTED:
@@ -208,32 +204,31 @@ const PokerTable = () => {
               console.error(`Invalid payload for ${type}:`, payload);
               return prevGame;
             }
-            return {
+            newGameState = {
               ...payload,
               communityCards: payload.communityCards || [],
               players: payload.players || [],
               winners: [] // Explicitly clear winners
             };
+            break;
 
           case gameStatus.PLAYER_ACTION:
             if (!payload || typeof payload !== 'object') {
               console.error(`Invalid payload for ${type}:`, payload);
               return prevGame;
             }
-            return {
+            newGameState = {
               ...payload,
               communityCards: payload.communityCards || [],
               players: payload.players || []
             };
+            break;
 
           case gameStatus.CARDS_DEALT:
             setCurrentPlayer((prevPlayer) => ({
               ...prevPlayer,
               hand: Array.isArray(payload) ? payload : (prevPlayer.hand || [])
             }));
-            // Assuming CARDS_DEALT payload only contains the hand,
-            // and the rest of the game state (pot, turn, etc.) comes from a PLAYER_ACTION or other update.
-            // If CARDS_DEALT implies other game state changes, this part needs adjustment.
             return prevGame;
 
           case gameStatus.PLAYER_JOINED:
@@ -241,23 +236,25 @@ const PokerTable = () => {
               console.error('Invalid payload for PLAYER_JOINED:', payload);
               return prevGame;
             }
-            return {
+            newGameState = {
               ...prevGame,
               players: [...(prevGame?.players || []), payload] // Ensure prevGame.players exists
             };
+            break;
 
           case gameStatus.GAME_ENDED:
             if (!payload || !payload.game || typeof payload.game !== 'object') {
               console.error('Invalid payload for GAME_ENDED (missing or invalid game object):', payload);
               return prevGame;
             }
-            return {
+            newGameState = {
               ...(payload.game), // Base new state on payload.game
               winners: payload.winners || [],
               status: 'ENDED',
               communityCards: payload.game.communityCards || [], // Ensure these exist
               players: payload.game.players || []             // Ensure these exist
             };
+            break;
 
           case gameStatus.COMMUNITY_CARDS:
             if (!Array.isArray(payload)) {
@@ -268,10 +265,11 @@ const PokerTable = () => {
                   communityCards: prevGame?.communityCards || []
               };
             }
-            return {
+            newGameState = {
               ...prevGame,
               communityCards: payload
             };
+            break;
 
           default:
             console.warn('Unknown update type:', type);
@@ -282,12 +280,13 @@ const PokerTable = () => {
                 players: prevGame.players || []
               };
             }
-            // If prevGame is null (e.g., initial load error before game state is set),
-            // returning null might be appropriate, or a default empty game structure.
-            // For now, we return null, which might trigger "No game data" view if not handled upstream.
             console.warn('Cannot process unknown update type with null prevGame');
             return null;
         }
+
+        // Reset the updateAction after processing
+        setUpdateActions(null);
+        return newGameState;
       });
     }
   }, [updateAction]); // gameStatus is a constant object, currentPlayer changes are handled via setCurrentPlayer
@@ -314,13 +313,6 @@ const PokerTable = () => {
     }
     
     console.log('Game state updated:', game);
-    
-    // Debug player positions whenever game state updates
-    if (game && game.players) {
-      logPlayers(game.players, game.currentPlayerIndex);
-      checkPlayerElements();
-      highlightPlayers();
-    }
   }, [game, game?.currentPlayerIndex]);
 
   const placeBet = (amount) => {
