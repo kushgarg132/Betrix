@@ -67,10 +67,14 @@ public class GameWebSocketEventListener {
     @EventListener
     public void handlePlayerActionEvent(PlayerActionEvent event) {
         logger.debug("Handling PlayerActionEvent for gameId: {}", event.getGameId());
-        
+
+        Player player = new Player(event.getPlayer());
+        player.hideDetails();
         Map<String, Object> actionDetails = new HashMap<>();
-        actionDetails.put("playerId", event.getPlayerId());
-        actionDetails.put("action", event.getActionType().name());
+        actionDetails.put("action", event.getActionType());
+        actionDetails.put("player", player);
+        actionDetails.put("currentPlayerIndex", event.getGameState().getCurrentPlayerIndex());
+        actionDetails.put("pot" , event.getGameState().getPot());
         if (event.getAmount() != null) {
             actionDetails.put("amount", event.getAmount());
         }
@@ -117,11 +121,15 @@ public class GameWebSocketEventListener {
     @EventListener
     public void handleRoundStartedEvent(RoundStartedEvent event) {
         logger.debug("Handling RoundStartedEvent for gameId: {}", event.getGameId());
-        
+
+        // Create sanitized game state for all players
+        Game game = new Game(event.getGame());
+        game.getPlayers().forEach(Player::hideDetails);
+
         GameUpdate update = GameUpdate.builder()
                 .gameId(event.getGameId())
                 .type(GameUpdate.GameUpdateType.ROUND_STARTED)
-                .payload(event.getGame())
+                .payload(game)
                 .timestamp(event.getTimestamp())
                 .build();
                 

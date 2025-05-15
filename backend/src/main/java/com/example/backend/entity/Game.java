@@ -36,7 +36,6 @@ public class Game {
     private BettingRound currentBettingRound;
     private int dealerPosition;
     private int currentPlayerIndex;
-    private double minimumBet;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     
@@ -73,7 +72,6 @@ public class Game {
         this.currentBettingRound = new BettingRound();
         this.dealerPosition = 0;
         this.currentPlayerIndex = -1;
-        this.minimumBet = 1.0;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.currentBet = 0;
@@ -94,7 +92,6 @@ public class Game {
         this.currentBettingRound = game.getCurrentBettingRound();
         this.dealerPosition = game.getDealerPosition();
         this.currentPlayerIndex = game.getCurrentPlayerIndex() != -1 ? game.getCurrentPlayerIndex() : 0;
-        this.minimumBet = game.getMinimumBet() != -1 ? game.getMinimumBet() : 1.0;
         this.createdAt = game.getCreatedAt() != null ? game.getCreatedAt() : LocalDateTime.now();
         this.updatedAt = game.getUpdatedAt() != null ? game.getUpdatedAt() : LocalDateTime.now();
         this.currentBet = game.getCurrentBet() != -1 ? game.getCurrentBet() : 0.0;

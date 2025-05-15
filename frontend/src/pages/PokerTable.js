@@ -44,11 +44,7 @@ const initializeSocketConnection = (gameId, playerId, setUpdateActions, setCurre
         try {
           const playerUpdate = JSON.parse(message.body);
           console.log('Received player update:', playerUpdate);
-          
-          // Check if this is a cards update
-          if (playerUpdate.type === 'CARDS_DEALT' && playerUpdate.payload) {
-            setCurrentPlayer((prevPlayer) => ({ ...prevPlayer, hand: playerUpdate.payload }));
-          }
+          setUpdateActions(playerUpdate);
         } catch (error) {
           console.error('Error processing player update:', error);
         }
@@ -113,14 +109,10 @@ const PokerTable = () => {
   const gameStatus = {
     GAME_STARTED: 'GAME_STARTED',
     PLAYER_JOINED: 'PLAYER_JOINED',
-    PLAYER_LEFT: 'PLAYER_LEFT',
-    PLAYER_TURN: 'PLAYER_TURN',
-    PLAYER_BET: 'PLAYER_BET',
-    PLAYER_CHECK: 'PLAYER_CHECK',
-    PLAYER_FOLDED: 'PLAYER_FOLDED',
+    PLAYER_ACTION: 'PLAYER_ACTION',
     CARDS_DEALT: 'CARDS_DEALT',
     ROUND_STARTED: 'ROUND_STARTED',
-    ROUND_COMPLETE: 'ROUND_COMPLETE',
+    COMMUNITY_CARDS: 'COMMUNITY_CARDS',
     GAME_ENDED: 'GAME_ENDED'
   };
 
@@ -184,91 +176,121 @@ const PokerTable = () => {
   }, [gameId, user]);
 
   useEffect(() => {
-    if (updateAction && game) {
+    if (updateAction) { // Only run if updateAction is present
       console.log('Processing update action:', updateAction);
-      
-      // Update game state based on the update type and payload
+
       setGame(prevGame => {
-        if (!prevGame) return updateAction;
-        
-        // Check if updateAction is already a complete game state (not a GameUpdate object)
-        if (!updateAction.type && !updateAction.payload) {
-          console.log('Received direct game state update:', updateAction);
+        // Scenario 1: updateAction is the new, complete game state (no 'type'/'payload')
+        // Check if 'type' is undefined; payload might be undefined if it's a full state
+        if (typeof updateAction.type === 'undefined' /* && typeof updateAction.payload === 'undefined' */) {
+          console.log('Received direct game state:', updateAction);
           return {
             ...updateAction,
-            // Ensure these properties exist to prevent errors
-            communityCards: updateAction?.communityCards || [],
-            players: updateAction?.players || []
+            communityCards: updateAction.communityCards || [],
+            players: updateAction.players || []
           };
         }
-        
-        // Extract the payload from the GameUpdate object
-        const payload = updateAction.payload;
-        const updateType = updateAction.type;
-        
-        if (!payload) {
-          console.warn('Update action payload is empty');
-          return prevGame;
+
+        // Scenario 2: updateAction is a structured update with type and payload
+        const { type, payload } = updateAction;
+
+        if (typeof type === 'undefined' || typeof payload === 'undefined') {
+          console.warn('Update action is missing type or payload:', updateAction);
+          return prevGame; // Return previous state if update is malformed
         }
-        
-        console.log(`Processing ${updateType} update with payload:`, payload);
-        
-        // Handle different update types
-        switch (updateType) {
-          case 'GAME_STARTED':
-          case 'ROUND_STARTED':
-          case 'PLAYER_BET':
-          case 'PLAYER_CHECKED':
-          case 'PLAYER_FOLDED':
-          case 'PLAYER_LEFT':
-          case 'PLAYER_TURN':
-            // These updates contain the full game state
+
+        console.log(`Processing ${type} update with payload:`, payload);
+
+        switch (type) {
+          case gameStatus.GAME_STARTED:
+          case gameStatus.ROUND_STARTED:
+            if (!payload || typeof payload !== 'object') {
+              console.error(`Invalid payload for ${type}:`, payload);
+              return prevGame;
+            }
             return {
               ...payload,
-              // Ensure these properties exist to prevent errors
+              communityCards: payload.communityCards || [],
+              players: payload.players || [],
+              winners: [] // Explicitly clear winners
+            };
+
+          case gameStatus.PLAYER_ACTION:
+            if (!payload || typeof payload !== 'object') {
+              console.error(`Invalid payload for ${type}:`, payload);
+              return prevGame;
+            }
+            return {
+              ...payload,
               communityCards: payload.communityCards || [],
               players: payload.players || []
             };
-            
-          case 'PLAYER_JOINED':
-            // Add the new player to the players array
+
+          case gameStatus.CARDS_DEALT:
+            setCurrentPlayer((prevPlayer) => ({
+              ...prevPlayer,
+              hand: Array.isArray(payload) ? payload : (prevPlayer.hand || [])
+            }));
+            // Assuming CARDS_DEALT payload only contains the hand,
+            // and the rest of the game state (pot, turn, etc.) comes from a PLAYER_ACTION or other update.
+            // If CARDS_DEALT implies other game state changes, this part needs adjustment.
+            return prevGame;
+
+          case gameStatus.PLAYER_JOINED:
+            if (!payload || typeof payload !== 'object') {
+              console.error('Invalid payload for PLAYER_JOINED:', payload);
+              return prevGame;
+            }
             return {
               ...prevGame,
-              players: [...(prevGame.players || []), payload]
+              players: [...(prevGame?.players || []), payload] // Ensure prevGame.players exists
             };
-            
-          case 'GAME_ENDED':
-            // Update with winners and game state
+
+          case gameStatus.GAME_ENDED:
+            if (!payload || !payload.game || typeof payload.game !== 'object') {
+              console.error('Invalid payload for GAME_ENDED (missing or invalid game object):', payload);
+              return prevGame;
+            }
             return {
-              ...(payload.game || prevGame),
+              ...(payload.game), // Base new state on payload.game
               winners: payload.winners || [],
               status: 'ENDED',
-              // Ensure these properties exist to prevent errors
-              communityCards: (payload.game && payload.game.communityCards) || prevGame.communityCards || [],
-              players: (payload.game && payload.game.players) || prevGame.players || []
+              communityCards: payload.game.communityCards || [], // Ensure these exist
+              players: payload.game.players || []             // Ensure these exist
             };
-            
-          case 'CARDS_DEALT':
-            // Update community cards
+
+          case gameStatus.COMMUNITY_CARDS:
+            if (!Array.isArray(payload)) {
+              console.error('Invalid payload for COMMUNITY_CARDS (must be an array):', payload);
+              // Keep existing community cards if payload is invalid, or set to empty if none
+              return {
+                  ...prevGame,
+                  communityCards: prevGame?.communityCards || []
+              };
+            }
             return {
               ...prevGame,
-              communityCards: Array.isArray(payload) ? payload : (prevGame.communityCards || [])
+              communityCards: payload
             };
-            
+
           default:
-            console.warn('Unknown update type:', updateType);
-            return {
-              ...prevGame,
-              // Ensure these properties exist to prevent errors
-              communityCards: prevGame.communityCards || [],
-              players: prevGame.players || []
-            };
+            console.warn('Unknown update type:', type);
+            if (prevGame) {
+              return { // Return previous state, ensuring critical arrays are present
+                ...prevGame,
+                communityCards: prevGame.communityCards || [],
+                players: prevGame.players || []
+              };
+            }
+            // If prevGame is null (e.g., initial load error before game state is set),
+            // returning null might be appropriate, or a default empty game structure.
+            // For now, we return null, which might trigger "No game data" view if not handled upstream.
+            console.warn('Cannot process unknown update type with null prevGame');
+            return null;
         }
       });
-      
-      // We'll handle the isMyTurn update in a separate useEffect to ensure it's always in sync
     }
-  }, [updateAction, currentPlayer]);
+  }, [updateAction]); // gameStatus is a constant object, currentPlayer changes are handled via setCurrentPlayer
 
   // Dedicated useEffect to update isMyTurn whenever game state changes
   useEffect(() => {
@@ -351,36 +373,6 @@ const PokerTable = () => {
     }
   };
 
-  // Function to calculate relative position for display
-  const getDisplayPosition = (actualIndex) => {
-    if (!game || currentPlayer.index === null) {
-      console.log('Cannot position player: game or currentPlayer.index is null');
-      return 0;
-    }
-    
-    const playerCount = game.players.length;
-    // Calculate position relative to current player
-    let relativePosition = (actualIndex - currentPlayer.index + playerCount) % playerCount;
-    
-    // Debug information
-    console.log(`Player positioning: actual=${actualIndex}, current=${currentPlayer.index}, relative=${relativePosition}, count=${playerCount}`);
-    
-    // Force position to be between 0-5 for consistent positioning regardless of player count
-    return relativePosition % 6;
-  };
-
-  // Function to determine if a player is a big or small blind
-  const getBlindStatus = (player) => {
-    if (!game) return null;
-    
-    if (game.bigBlindPosition === player.username) {
-      return 'big-blind';
-    } else if (game.smallBlindPosition === player.username) {
-      return 'small-blind';
-    }
-    return null;
-  };
-
   const leaveTable = () => {
     if (stompClient && stompClient.connected && currentPlayer && currentPlayer.id) {
       try {
@@ -406,18 +398,42 @@ const PokerTable = () => {
     }
   };
 
+  // Function to calculate relative position for display
+  const getDisplayPosition = (actualIndex) => {
+    if (!game || currentPlayer.index === null) {
+      console.log('Cannot position player: game or currentPlayer.index is null');
+      return 0;
+    }
+    
+    const playerCount = game.players.length;
+    // Calculate position relative to current player
+    let relativePosition = (actualIndex - currentPlayer.index + playerCount) % playerCount;
+    
+    // Debug information
+    console.log(`Player positioning: actual=${actualIndex}, current=${currentPlayer.index}, relative=${relativePosition}, count=${playerCount}`);
+    
+    // Force position to be between 0-5 for consistent positioning regardless of player count
+    return relativePosition % 6;
+  };
+
+  // Function to determine if a player is a big or small blind
+  const getBlindStatus = (player) => {
+    if (!game) return null;
+    
+    if (game.bigBlindUserId === player.username) {
+      return 'big-blind';
+    } else if (game.smallBlindUserId === player.username) {
+      return 'small-blind';
+    }
+    return null;
+  };
+
   if (loading) return <div className="loading-spinner">Loading game...</div>;
   if (error) return <div className="error">{error}</div>;
 
   if (!game) {
     console.error('Game data is missing');
     return <div>No game data available. Please try again later.</div>;
-  }
-  
-  if (!game.communityCards) {
-    console.error('Community cards missing in game data:', game);
-    // Initialize with empty array instead of failing
-    game.communityCards = [];
   }
   
   if (!game.players || !Array.isArray(game.players)) {
@@ -435,6 +451,37 @@ const PokerTable = () => {
       />
 
       <div className="poker-table-main">
+        {/* Winners Display */}
+        {game && game.winners && game.winners.length > 0 && (
+          <div className="winners-overlay" style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            color: 'white',
+            padding: '30px',
+            borderRadius: '15px',
+            zIndex: 1000, // Ensure it's on top
+            textAlign: 'center',
+            boxShadow: '0 0 20px rgba(255, 215, 0, 0.5)', // Gold-ish shadow
+            minWidth: '300px',
+            border: '1px solid rgba(255, 215, 0, 0.7)' // Gold-ish border
+          }}>
+            <h2 style={{ color: '#FFD700', marginBottom: '20px' }}>Winner{game.winners.length > 1 ? 's' : ''}!</h2>
+            <ul style={{ listStyle: 'none', padding: 0 }}>
+              {game.winners.map((winner, index) => (
+                <li key={winner.username || index} style={{ margin: '12px 0', fontSize: '1.1em' }}>
+                  <strong>{winner.username}</strong>
+                  {winner.handDescription && <span style={{ display: 'block', fontSize: '0.9em', color: '#ccc' }}>{`Hand: ${winner.handDescription}`}</span>}
+                  {typeof winner.amountWon !== 'undefined' && winner.amountWon > 0 && <span style={{ display: 'block', fontSize: '1em', color: '#4CAF50' }}>{`Wins: ${winner.amountWon} chips`}</span>}
+                </li>
+              ))}
+            </ul>
+            <p style={{ marginTop: '25px', fontSize: '0.9em', color: '#aaa' }}>Next round starting soon...</p>
+          </div>
+        )}
+
         {/* Main Table */}
         <Table 
           isMyTurn={isMyTurn} 

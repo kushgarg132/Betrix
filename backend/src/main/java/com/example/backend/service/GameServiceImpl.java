@@ -94,7 +94,6 @@ public class GameServiceImpl implements GameService {
     @Override
     @Transactional
     public Game joinGame(String gameId, String username) {
-        logger.info("User '{}' is attempting to join game with ID: {}", username, gameId);
         try {
             User user = userRepository.findByUsername(username).orElseThrow(() -> {
                 logger.error("User not found: {}", username);
@@ -204,7 +203,7 @@ public class GameServiceImpl implements GameService {
             // Publish player action event
             eventPublisher.publishEvent(new PlayerActionEvent(
                     gameId,
-                    playerId,
+                    player,
                     PlayerActionEvent.ActionType.BET,
                     amount,
                     new Game(game)
@@ -242,7 +241,7 @@ public class GameServiceImpl implements GameService {
             // Publish player action event
             eventPublisher.publishEvent(new PlayerActionEvent(
                     gameId,
-                    playerId,
+                    player,
                     PlayerActionEvent.ActionType.CHECK,
                     null,
                     new Game(game)
@@ -280,7 +279,7 @@ public class GameServiceImpl implements GameService {
             // Publish player action event
             eventPublisher.publishEvent(new PlayerActionEvent(
                     gameId,
-                    playerId,
+                    player,
                     PlayerActionEvent.ActionType.FOLD,
                     null,
                     new Game(game)
@@ -335,7 +334,7 @@ public class GameServiceImpl implements GameService {
             // Publish player action event for leaving
             eventPublisher.publishEvent(new PlayerActionEvent(
                 gameId, 
-                playerId,
+                player,
                 PlayerActionEvent.ActionType.LEAVE,
                 null,
                 new Game(game)
