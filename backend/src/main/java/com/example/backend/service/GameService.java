@@ -9,7 +9,6 @@ import java.util.List;
 public interface GameService {
     List<Game> getAllGames();
     void createGame(BlindPayload payload);
-    Game getGame(String gameId);
     Game joinGame(String gameId, String username);
     void startNewHand(String gameId);
     void placeBet(String gameId, String playerId, double amount);

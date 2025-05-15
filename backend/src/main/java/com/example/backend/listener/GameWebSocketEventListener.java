@@ -31,8 +31,7 @@ public class GameWebSocketEventListener {
         
         // Create a sanitized copy of player data without sensitive info
         Player player = new Player(event.getPlayer());
-        player.setId(null);
-        player.setHand(new ArrayList<>());
+        player.hideDetails();
         
         GameUpdate update = GameUpdate.builder()
                 .gameId(event.getGameId())
@@ -69,25 +68,6 @@ public class GameWebSocketEventListener {
     public void handlePlayerActionEvent(PlayerActionEvent event) {
         logger.debug("Handling PlayerActionEvent for gameId: {}", event.getGameId());
         
-        GameUpdate.GameUpdateType updateType;
-        
-        switch(event.getActionType()) {
-            case BET:
-                updateType = GameUpdate.GameUpdateType.PLAYER_BET;
-                break;
-            case FOLD:
-                updateType = GameUpdate.GameUpdateType.PLAYER_FOLDED;
-                break;
-            case CHECK:
-                updateType = GameUpdate.GameUpdateType.PLAYER_CHECKED;
-                break;
-            case LEAVE:
-                updateType = GameUpdate.GameUpdateType.PLAYER_LEFT;
-                break;
-            default:
-                updateType = GameUpdate.GameUpdateType.PLAYER_TURN;
-        }
-        
         Map<String, Object> actionDetails = new HashMap<>();
         actionDetails.put("playerId", event.getPlayerId());
         actionDetails.put("action", event.getActionType().name());
@@ -97,7 +77,7 @@ public class GameWebSocketEventListener {
         
         GameUpdate update = GameUpdate.builder()
                 .gameId(event.getGameId())
-                .type(updateType)
+                .type(GameUpdate.GameUpdateType.PLAYER_ACTION)
                 .payload(event.getGameState())
                 .timestamp(event.getTimestamp())
                 .build();
@@ -113,7 +93,7 @@ public class GameWebSocketEventListener {
             // For community cards, send to all players
             GameUpdate update = GameUpdate.builder()
                     .gameId(event.getGameId())
-                    .type(GameUpdate.GameUpdateType.ROUND_STARTED)
+                    .type(GameUpdate.GameUpdateType.COMMUNITY_CARDS)
                     .payload(event.getCommunityCards())
                     .timestamp(event.getTimestamp())
                     .build();
@@ -122,7 +102,14 @@ public class GameWebSocketEventListener {
         } else if (event.getPlayerCards() != null) {
             // For player cards, send to individual players
             event.getPlayerCards().forEach((playerId, cards) -> {
-                notificationService.notifyPlayerUpdate(event.getGameId(), playerId, cards);
+                GameUpdate update = GameUpdate.builder()
+                        .gameId(event.getGameId())
+                        .type(GameUpdate.GameUpdateType.CARDS_DEALT)
+                        .payload(cards)
+                        .timestamp(event.getTimestamp())
+                        .build();
+
+                notificationService.notifyPlayerUpdate(update, playerId);
             });
         }
     }

@@ -20,15 +20,12 @@ public class GameUpdate {
     private LocalDateTime timestamp;
 
     public enum GameUpdateType {
-        GAME_STARTED,
         PLAYER_JOINED,
-        PLAYER_LEFT,
-        PLAYER_TURN,
-        PLAYER_CHECKED,
-        PLAYER_BET,
-        PLAYER_FOLDED,
+        GAME_STARTED,
         CARDS_DEALT,
         ROUND_STARTED,
+        COMMUNITY_CARDS,
+        PLAYER_ACTION,
         GAME_ENDED
     }
 }

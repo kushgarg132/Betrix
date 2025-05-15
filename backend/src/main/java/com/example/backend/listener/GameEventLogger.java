@@ -1,4 +1,4 @@
-package com.example.backend.event;
+package com.example.backend.listener;
 
 import com.example.backend.entity.GameEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;

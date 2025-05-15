@@ -1,5 +1,6 @@
-package com.example.backend.event;
+package com.example.backend.publisher;
 
+import com.example.backend.event.GameEvent;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

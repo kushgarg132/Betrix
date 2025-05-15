@@ -3,7 +3,7 @@ package com.example.backend.service;
 import com.example.backend.entity.Game;
 import com.example.backend.event.CardsDealtEvent;
 import com.example.backend.event.GameEndedEvent;
-import com.example.backend.event.GameEventPublisher;
+import com.example.backend.publisher.GameEventPublisher;
 import com.example.backend.event.RoundStartedEvent;
 import com.example.backend.model.BettingRound;
 import com.example.backend.model.Card;
@@ -29,7 +29,7 @@ public class BettingManager {
         game.setupNextRound();
 
         BettingRound.RoundType roundType = BettingRound.RoundType.PRE_FLOP;
-        
+
         switch (game.getStatus()) {
             case STARTING:
                 setupPreFlopBetting(game);
@@ -62,7 +62,7 @@ public class BettingManager {
     private void setupPreFlopBetting(Game game) {
         // Post small blind
         Player smallBlind = findPlayerByUsername(game, game.getSmallBlindUserId());
-        placeBet(game, smallBlind, game.getSmallBlindAmount(), Game.PlayerAction.SMALL_BLIND);
+        placeBet(game, smallBlind, game.getSmallBlindAmount() , Game.PlayerAction.SMALL_BLIND);
 
         // Post big blind
         Player bigBlind = findPlayerByUsername(game, game.getBigBlindUserId());
@@ -70,14 +70,9 @@ public class BettingManager {
 
         game.setCurrentBet(game.getBigBlindAmount());
         game.setStatus(Game.GameStatus.PRE_FLOP_BETTING);
-
-        // Set first player to act (after big blind)
-        int bigBlindPosition = game.getPlayers().indexOf(bigBlind);
-        game.setCurrentPlayerIndex((bigBlindPosition + 1) % game.getPlayers().size());
     }
 
     private void setupFlopBetting(Game game) {
-        game.setCurrentBet(0);
         game.setStatus(Game.GameStatus.FLOP_BETTING);
 
         List<Card> communityCards = new ArrayList<>();
@@ -95,7 +90,6 @@ public class BettingManager {
     }
 
     private void setupTurnBetting(Game game) {
-        game.setCurrentBet(0);
         game.setStatus(Game.GameStatus.TURN_BETTING);
 
         // Add one card to the community cards
@@ -113,7 +107,6 @@ public class BettingManager {
     }
 
     private void setupRiverBetting(Game game) {
-        game.setCurrentBet(0);
         game.setStatus(Game.GameStatus.RIVER_BETTING);
 
         // Add one card to the community cards
@@ -130,29 +123,28 @@ public class BettingManager {
         ));
     }
 
-    public void placeBet(Game game, Player player, double amount, Game.PlayerAction lastAction) {
+    public void placeBet(Game game, Player player, double amount , Game.PlayerAction action) {
         logger.info("Player '{}' is placing a bet of {} in game with ID: {}", player.getUsername(), amount, game.getId());
         double betPlacedAmount = game.getCurrentBettingRound().getPlayerBets().getOrDefault(player.getUsername() , 0.0);
 
         double betPlacedTotal = betPlacedAmount + amount;
 
         // Check for Blinds
-        if(Objects.nonNull(lastAction)) {
-            game.getLastActions().put(player.getUsername(), lastAction);
-            game.setCurrentBet(betPlacedTotal);
-        } else if (amount > player.getChips()) {
+        if (amount >= player.getChips()) {
             amount = player.getChips(); // All-in
             betPlacedTotal = betPlacedAmount + amount;
             game.getLastActions().put(player.getUsername(), Game.PlayerAction.ALL_IN);
-        } else if (amount == 0) {
-            game.getLastActions().put(player.getUsername(), Game.PlayerAction.CHECK);
-        } else if (betPlacedTotal == game.getCurrentBet()) {
-            game.getLastActions().put(player.getUsername(), Game.PlayerAction.CALL);
-        } else if (betPlacedTotal > game.getCurrentBet()) {
+        }else if(action == Game.PlayerAction.BIG_BLIND || action == Game.PlayerAction.SMALL_BLIND) {
+            game.getLastActions().put(player.getUsername(), action);
+        }else if (betPlacedTotal == game.getCurrentBet()){
+            if(amount == 0)
+                game.getLastActions().put(player.getUsername(), Game.PlayerAction.CHECK);
+            else
+                game.getLastActions().put(player.getUsername(), Game.PlayerAction.CALL);
+        }else if (betPlacedTotal > game.getCurrentBet()) {
             game.getLastActions().put(player.getUsername(), Game.PlayerAction.RAISE);
-            game.setCurrentBet(betPlacedTotal);
         }
-
+        game.setCurrentBet(betPlacedTotal);
         player.placeBet(amount);
         game.setPot(game.getPot() + amount);
         game.getCurrentBettingRound().getPlayerBets().put(player.getUsername(), betPlacedTotal);
@@ -324,13 +316,6 @@ public class BettingManager {
         return (int) game.getPlayers().stream()
                 .filter(Player::isActive)
                 .count();
-    }
-
-    private Player findPlayerById(Game game, String playerId) {
-        return game.getPlayers().stream()
-                .filter(p -> p.getId().equals(playerId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Player not found"));
     }
 
     private Player findPlayerByUsername(Game game, String playerUsername) {

@@ -192,7 +192,7 @@ public class Game {
         currentBettingRound = new BettingRound();
         currentBet = 0;
         lastActions.clear();
-        
+        players.forEach(Player::reset);
         // Rotate dealer position
         dealerPosition = (dealerPosition + 1) % players.size();
         
@@ -204,11 +204,6 @@ public class Game {
         bigBlindUserId = players.get(bigBlindPosition).getUsername();
         
         currentPlayerIndex = (dealerPosition + 1) % players.size();
-        
-        // Reset player hands and bets
-        for (Player player : players) {
-            player.reset();
-        }
         
         updateLastActivityTime();
         updatedAt = LocalDateTime.now();

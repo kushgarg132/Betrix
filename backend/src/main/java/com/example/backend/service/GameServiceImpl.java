@@ -4,6 +4,7 @@ import com.example.backend.entity.User;
 import com.example.backend.model.*;
 import com.example.backend.entity.Game;
 import com.example.backend.event.*;
+import com.example.backend.publisher.GameEventPublisher;
 import com.example.backend.repository.GameRepository;
 import com.example.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -62,31 +63,14 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
-    public Game getGame(String gameId) {
-        logger.info("Fetching game with ID: {}", gameId);
-        try {
-            gameValidatorService.validateGameExists(gameId);
-
-            return gameRepository.findById(gameId)
-                    .orElseThrow(() -> {
-                        logger.error("Game not found with ID: {}", gameId);
-                        return new RuntimeException("Game not found: " + gameId);
-                    });
-        } catch (Exception e) {
-            logger.error("Error fetching game: {}", e.getMessage());
-            throw new RuntimeException("Failed to fetch game", e);
-        }
-    }
-
-    @Override
     public Game getGameForPlayer(Game activeGame, String playerId) {
         try {
             activeGame.getPlayers().forEach(player -> {
                 if (!playerId.equals(player.getId())) {
-                    player.setId(null); // Hide other players' IDs'
-                    player.setHand(new ArrayList<>()); // Hide other players' hands
+                    player.hideDetails();
                 }
             });
+            activeGame.setDeck(null);
             return activeGame;
         } catch (Exception e) {
             logger.error("Error fetching game for player: {}", e.getMessage());
@@ -98,7 +82,7 @@ public class GameServiceImpl implements GameService {
     public Game getGameForPlayer(String gameId, String playerId) {
         logger.info("Fetching game for player with ID: {}", playerId);
         try {
-            Game game = getGame(gameId);
+            Game game = gameValidatorService.validateGameExists(gameId);
             logger.debug("Fetched game for player: {}", game);
             return getGameForPlayer(game , playerId);
         } catch (Exception e) {
@@ -119,27 +103,29 @@ public class GameServiceImpl implements GameService {
 
             Game game = gameValidatorService.validateGameExists(gameId);
             gameValidatorService.validateGameNotFull(game);
-//            gameValidatorService.validateGameStatus(game, Game.GameStatus.WAITING);
 
             if (game.hasPlayer(username)) {
                 logger.info("User '{}' is already in the game", username);
-                return getGameForPlayer(gameId, game.getPlayerByUsername(username).getId());
+                return getGameForPlayer(game, game.getPlayerByUsername(username).getId());
             }
 
             // Add player to game with 1000 chips
             Player player = new Player(user.getName(), user.getUsername(), user.getBalance());
+            if(game.getStatus() != Game.GameStatus.WAITING) {
+                player.setActive(false);
+            }
             game.getPlayers().add(player);
             game.setUpdatedAt(LocalDateTime.now());
             gameRepository.save(game);
 
-//            user.setBalance(0);
+            user.setBalance(0);
             userRepository.save(user);
 
             // Publish player joined event
-            eventPublisher.publishEvent(new PlayerJoinedEvent(gameId, new Player(player)));
+            eventPublisher.publishEvent(new PlayerJoinedEvent(gameId, player));
 
             logger.debug("User '{}' joined game: {}", username, game);
-            return getGameForPlayer(gameId, player.getId());
+            return getGameForPlayer(game, player.getId());
         } catch (Exception e) {
             logger.error("Error joining game: {}", e.getMessage());
             throw new RuntimeException("Failed to join game", e);
@@ -151,7 +137,7 @@ public class GameServiceImpl implements GameService {
     public void startNewHand(String gameId) {
         logger.info("Starting a new hand for game with ID: {}", gameId);
         try {
-            Game game = getGame(gameId);
+            Game game = gameValidatorService.validateGameExists(gameId);
 
             if (game.getPlayers().size() < 2) {
                 logger.error("Need at least 2 players to start a game");
@@ -205,7 +191,7 @@ public class GameServiceImpl implements GameService {
     public void placeBet(String gameId, String playerId, double amount) {
         logger.info("Player '{}' is placing a bet of {} in game '{}'", playerId, amount, gameId);
         try {
-            Game game = getGame(gameId);
+            Game game = gameValidatorService.validateGameExists(gameId);
             Player player = findPlayer(game, playerId);
             
             if (player == null) {
@@ -243,7 +229,7 @@ public class GameServiceImpl implements GameService {
     public void check(String gameId, String playerId) {
         logger.info("Player '{}' is checking in game '{}'", playerId, gameId);
         try {
-            Game game = getGame(gameId);
+            Game game = gameValidatorService.validateGameExists(gameId);
             Player player = findPlayer(game, playerId);
             
             if (player == null) {
@@ -252,7 +238,7 @@ public class GameServiceImpl implements GameService {
             }
             
             // Perform check logic - a check is essentially a bet of 0
-            bettingManager.placeBet(game, player, 0, null);
+            bettingManager.placeBet(game, player, 0, Game.PlayerAction.CHECK);
             // Publish player action event
             eventPublisher.publishEvent(new PlayerActionEvent(
                     gameId,
@@ -281,7 +267,7 @@ public class GameServiceImpl implements GameService {
     public void fold(String gameId, String playerId) {
         logger.info("Player '{}' is folding in game '{}'", playerId, gameId);
         try {
-            Game game = getGame(gameId);
+            Game game = gameValidatorService.validateGameExists(gameId);
             Player player = findPlayer(game, playerId);
 
             if (player == null) {
@@ -313,26 +299,12 @@ public class GameServiceImpl implements GameService {
         }
     }
 
-    private void handleCurrentBettingRound(Game game) {
-        // Check if betting round is complete
-        if (bettingManager.isBettingRoundComplete(game)) {
-            if (bettingManager.getActivePlayerCount(game) <= 1 || game.getStatus() == Game.GameStatus.RIVER_BETTING) {
-                // Game will be ended by the service that calls this method
-                bettingManager.evaluateHandAndAwardPot(game);
-                game.resetForNewHand();
-                game.setStatus(Game.GameStatus.WAITING);
-            } else {
-                bettingManager.startNewBettingRound(game);
-            }
-        }
-    }
-
     @Override
     @Transactional
     public void leaveGame(String gameId, String playerId) {
         logger.info("Player '{}' is leaving game '{}'", playerId, gameId);
         try {
-            Game game = getGame(gameId);
+            Game game = gameValidatorService.validateGameExists(gameId);
             Player player = findPlayer(game, playerId);
             
             if (player == null) {
@@ -357,9 +329,9 @@ public class GameServiceImpl implements GameService {
                 logger.info("Game '{}' deleted as all players left", gameId);
                 return;
             }
-            
+
             gameRepository.save(game);
-            
+
             // Publish player action event for leaving
             eventPublisher.publishEvent(new PlayerActionEvent(
                 gameId, 
@@ -381,7 +353,7 @@ public class GameServiceImpl implements GameService {
     public boolean deleteGame(String gameId) {
         logger.info("Deleting game with ID: {}", gameId);
         try {
-            Game game = getGame(gameId);
+            Game game = gameValidatorService.validateGameExists(gameId);
 
             gameRepository.delete(game);
 
@@ -391,15 +363,6 @@ public class GameServiceImpl implements GameService {
             logger.error("Error deleting game: {}", e.getMessage());
             throw new RuntimeException("Failed to delete game", e);
         }
-    }
-
-    private Player findPlayer(Game game, String playerId) {
-        for (Player player : game.getPlayers()) {
-            if (player.getId().equals(playerId)) {
-                return player;
-            }
-        }
-        return null;
     }
 
     /**
@@ -427,5 +390,27 @@ public class GameServiceImpl implements GameService {
         } catch (Exception e) {
             logger.error("Error updating game action deadlines: {}", e.getMessage(), e);
         }
+    }
+
+    private void handleCurrentBettingRound(Game game) {
+        // Check if betting round is complete
+        if (bettingManager.isBettingRoundComplete(game)) {
+            if (bettingManager.getActivePlayerCount(game) <= 1 || game.getStatus() == Game.GameStatus.RIVER_BETTING) {
+                // Game will be ended by the service that calls this method
+                bettingManager.evaluateHandAndAwardPot(game);
+                game.setStatus(Game.GameStatus.WAITING);
+            } else {
+                bettingManager.startNewBettingRound(game);
+            }
+        }
+    }
+
+    private Player findPlayer(Game game, String playerId) {
+        for (Player player : game.getPlayers()) {
+            if (player.getId().equals(playerId)) {
+                return player;
+            }
+        }
+        return null;
     }
 }
