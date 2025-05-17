@@ -130,17 +130,29 @@
 }
 
 /* Hidden card styling (for opponent cards) */
+.card {
+  width: 80px;
+  height: auto;
+  aspect-ratio: 2.5/3.5;
+  object-fit: contain;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
 .card.hidden {
-  width: 60px;
-  height: 90px;
-  border-radius: 5px;
+  width: 80px;
+  height: auto;
+  aspect-ratio: 2.5/3.5;
+  object-fit: contain;
+  border-radius: 6px;
   background: linear-gradient(135deg, #000a35 0%, #172c66 100%);
-  position: relative;
-  margin: 0 -10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-  transform-style: preserve-3d;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  transform: perspective(800px) rotateY(0deg);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .card.hidden::before {
@@ -206,10 +218,8 @@
 }
 
 @media (max-width: 768px) {
-  .card.realistic {
-    width: 40px;
-    height: 60px;
-    padding: 2px;
+  .card, .card.hidden {
+    width: 60px;
   }
   
   .card-center {
@@ -220,10 +230,11 @@
   .card-bottom {
     font-size: 0.6em;
   }
-  
-  .card.hidden {
-    width: 40px;
-    height: 60px;
+}
+
+@media (max-width: 480px) {
+  .card, .card.hidden {
+    width: 45px;
   }
 }
 

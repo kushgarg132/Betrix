@@ -31,28 +31,40 @@ const getCardFace = (rank, suit) => {
   return null;
 };
 
+const getCardRank = (rank) => {
+  switch (rank) {
+    case "TWO": return '2';
+    case "THREE": return '3';
+    case "FOUR": return '4';
+    case "FIVE": return '5';
+    case "SIX": return '6';
+    case "SEVEN": return '7';
+    case "EIGHT": return '8';
+    case "NINE": return '9';
+    case "TEN": return '10';
+    case "JACK": return 'J';
+    case "QUEEN": return 'Q';
+    case "KING": return 'K';
+    case "ACE": return 'A';
+    default: return '';
+  }
+};
+
 const Card = ({ card, hidden }) => {
   if (hidden) {
-    return <div className="card hidden"></div>;
+    return <img src="/cards/back.svg" alt="Card Back" className="card hidden" />;
   }
 
   const { rank, suit } = card;
+  const cardRank = getCardRank(rank);
+  const cardImage = `/cards/${cardRank}${suit.charAt(0).toUpperCase()}.svg`;
 
   return (
-    <div className={`card realistic ${suit.toLowerCase()}`}>
-      <div className="card-top">
-        <span>{rank}</span>
-        <span>{getSuitSymbol(suit)}</span>
-      </div>
-      {getCardFace(rank, suit)}
-      <div className="card-center">
-        {rank !== 'A' && rank !== 'K' && rank !== 'Q' && rank !== 'J' && getSuitSymbol(suit)}
-      </div>
-      <div className="card-bottom">
-        <span>{getSuitSymbol(suit)}</span>
-        <span>{rank}</span>
-      </div>
-    </div>
+    <img 
+      src={cardImage} 
+      alt={`${cardRank} of ${suit}`} 
+      className="card"
+    />
   );
 };
 

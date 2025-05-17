@@ -126,37 +126,36 @@ const PokerTable = () => {
         const playerIndex = joinResponse.data.players.findIndex(p => p.username === user.username);
         if (playerIndex !== -1) {
           const player = joinResponse.data.players[playerIndex];
-          setCurrentPlayer({
+          const currentPlayerData = {
             id: player.id,
             username: player.username,
             hand: player.hand || [],
             index: playerIndex
-          });
+          };
+          console.log('Setting current player:', currentPlayerData);
+          setCurrentPlayer(currentPlayerData);
           
-          // Check if it's the player's turn initially
-          setIsMyTurn(joinResponse.data.currentPlayerIndex === playerIndex);
-        } else {
-          console.warn('Current player not found in game players list');
-        }
-        
-        setLoading(false);
-        
-        // Initialize WebSocket connection after successfully joining
-        if (currentPlayer && currentPlayer.id) {
-          const client = initializeSocketConnection(gameId, currentPlayer.id, setUpdateActions, setCurrentPlayer, setError);
+          // Initialize WebSocket connection after setting current player
+          console.log('Initializing socket connection...');
+          const client = initializeSocketConnection(gameId, player.id, setUpdateActions, setCurrentPlayer, setError);
           setStompClient(client);
-          
+
+          setLoading(false);
           // Set up cleanup function
           return () => {
             if (client && client.connected) {
+              console.log('Cleaning up socket connection...');
               // Send leave action before disconnecting
               client.publish({
                 destination: `/app/game/${gameId}/action`,
-                body: JSON.stringify({ playerId: currentPlayer.id, actionType: 'LEAVE' }),
+                body: JSON.stringify({ playerId: player.id, actionType: 'LEAVE' }),
               });
               client.deactivate();
             }
           };
+        } else {
+          console.error('Current player not found in game players list');
+          setError('Failed to find player in game. Please try again.');
         }
       } catch (error) {
         console.error('Error joining game:', error);
@@ -166,7 +165,10 @@ const PokerTable = () => {
     };
     
     if (gameId && user) {
+      console.log('Starting game join process...');
       joinGame();
+    } else {
+      console.warn('Cannot join game: missing gameId or user', { gameId, user });
     }
   }, [gameId, user]);
 
