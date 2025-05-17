@@ -2,6 +2,7 @@ package com.example.backend.service;
 
 import com.example.backend.model.Card;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.springframework.stereotype.Service;
 
@@ -301,6 +302,11 @@ public class HandEvaluator {
         public HandResult(HandRank rank, List<Card> highCards) {
             this.rank = rank;
             this.highCards = new ArrayList<>(highCards);
+        }
+
+        public HandResult(HandResult bestResult) {
+            this.highCards = new ArrayList<>(bestResult.highCards);
+            this.rank = bestResult.rank;
         }
 
         public List<Card> getHighCards() {

@@ -249,7 +249,7 @@ public class BettingManager {
                     game.getId(),
                     new Game(game),
                     new ArrayList<>(winners),
-                    bestResult
+                    new HandEvaluator.HandResult(bestResult)
             ));
 
             logger.debug("Pot split among winners: {}", winners);
@@ -265,7 +265,7 @@ public class BettingManager {
                     game.getId(),
                     new Game(game),
                     new ArrayList<>(activePlayers),
-                    bestResult
+                    null
             ));
 
             logger.error("Error during hand evaluation: {}", e.getMessage());
