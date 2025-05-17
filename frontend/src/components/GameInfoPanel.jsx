@@ -31,30 +31,64 @@ const GameInfoPanel = ({
       
       <div className="info-content">
         <h3>Game Information</h3>
-        <div className="info-item">
-          <span className="info-label">Pot:</span>
-          <span className="info-value">${game.pot}</span>
-        </div>
-        <div className="info-item">
-          <span className="info-label">Current Player:</span>
-          <span className="info-value">{game.players[game.currentPlayerIndex]?.username || 'N/A'}</span>
-        </div>
-        {game.bigBlindPosition && (
-          <div className="info-item">
-            <span className="info-label">Big Blind:</span>
-            <span className="info-value">{game.bigBlindPosition}</span>
-          </div>
+        
+        <table className="info-table">
+          <tbody>
+            <tr>
+              <td className="info-label">Pot:</td>
+              <td className="info-value">${game.pot || 0}</td>
+              <td className="info-label">Big Blind:</td>
+              <td className="info-value">{game.bigBlindAmount || 'N/A'}</td>
+            </tr>
+            <tr>
+              <td className="info-label">Current Bet:</td>
+              <td className="info-value">${game.currentBet || 0}</td>
+              <td className="info-label">Small Blind:</td>
+              <td className="info-value">{game.smallBlindAmount || 'N/A'}</td>
+            </tr>
+            <tr>
+              <td className="info-label">Phase:</td>
+              <td className="info-value">{game.phase || 'Pre-Flop'}</td>
+              <td className="info-label">Dealer:</td>
+              <td className="info-value">{game.dealerPosition || 'N/A'}</td>
+            </tr>
+            <tr>
+              <td className="info-label">Current Player:</td>
+              <td className="info-value">{game.players && game.currentPlayerIndex !== undefined ? game.players[game.currentPlayerIndex]?.username || 'N/A' : 'N/A'}</td>
+              <td className="info-label">Players:</td>
+              <td className="info-value">{game.players ? game.players.length : 0}</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        {/* Community Cards */}
+        {game.communityCards && game.communityCards.length > 0 && (
+          <table className="info-table community-table">
+            <tbody>
+              <tr>
+                <td className="info-label" style={{ width: '120px' }}>Community Cards:</td>
+                <td className="info-value cards-container" colSpan="3">
+                  {game.communityCards.map((card, index) => (
+                    <span key={index} className="card">{card}</span>
+                  ))}
+                </td>
+              </tr>
+            </tbody>
+          </table>
         )}
-        {game.smallBlindPosition && (
-          <div className="info-item">
-            <span className="info-label">Small Blind:</span>
-            <span className="info-value">{game.smallBlindPosition}</span>
-          </div>
-        )}
-        <button className="rankings-button" onClick={toggleRankingsModal}>
-          <span className="button-icon">♠</span>
-          <span>Hand Rankings</span>
-        </button>
+        
+        {/* Action Buttons */}
+        <div className="button-row">
+          <button className="game-button rankings-btn" onClick={toggleRankingsModal}>
+            <span className="button-icon">♠</span>
+            <span>Rankings</span>
+          </button>
+          
+          <button className="game-button stats-btn" onClick={() => window.alert('Game history will be available soon!')}>
+            <span className="button-icon">📊</span>
+            <span>Stats</span>
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -1,10 +1,329 @@
-.left-sidebar-container {
+/* Left Sidebar Container */
+.left-sidebar-wrapper {
   position: fixed;
   top: 80px;
   left: 0;
   height: calc(100vh - 80px);
   z-index: 100;
+  position: relative;
+}
+
+.left-sidebar {
+  width: 200px;
+  background: linear-gradient(145deg, #132639, #1e3c5a);
+  color: white;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+  box-shadow: 5px 0 20px rgba(0, 0, 0, 0.5);
+  border-right: 1px solid rgba(52, 152, 219, 0.3);
+  transform-style: preserve-3d;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.left-sidebar.expanded {
+  transform: translateX(0);
+}
+
+.left-sidebar.collapsed {
+  transform: translateX(-100%);
+}
+
+.sidebar-toggle.left {
+  width: 40px;
+  height: 60px;
   display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(145deg, #216396, #2980b9);
+  cursor: pointer;
+  position: absolute;
+  left: 200px;
+  top: 80px;
+  border: 2px solid rgba(52, 152, 219, 0.5);
+  border-left: none;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 1000;
+  color: white;
+  overflow: hidden;
+  animation: leftSidebarPulse 3s infinite ease-in-out;
+  clip-path: polygon(
+    0% 0%,     /* top left */
+    50% 0%,    /* top middle */
+    100% 50%,  /* right middle (arrow point) */
+    50% 100%,  /* bottom middle */
+    0% 100%    /* bottom left */
+  );
+  box-shadow: 3px 0 15px rgba(0, 0, 0, 0.4);
+}
+
+.sidebar-toggle.left::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.sidebar-toggle.left.collapsed {
+  left: 0;
+  z-index: 201;
+  background: linear-gradient(145deg, #1c5681, #3498db);
+  transform: scaleX(-1);
+}
+
+.sidebar-toggle.left.expanded {
+  left: 200px;
+}
+
+.sidebar-toggle.left:hover {
+  background: linear-gradient(145deg, #3498db, #2873a8);
+  box-shadow: 3px 0 20px rgba(52, 152, 219, 0.8);
+  filter: brightness(1.2);
+}
+
+.sidebar-toggle.left:hover::before {
+  transform: translateX(100%);
+}
+
+.sidebar-toggle.left:active {
+  transform: scale(0.95);
+}
+
+.sidebar-toggle.left.collapsed:active {
+  transform: scaleX(-1) scale(0.95);
+}
+
+/* Make the arrow more highlighted with a subtle gradient */
+.sidebar-toggle.left::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0.1) 100%);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+@keyframes leftSidebarPulse {
+  0% {
+    box-shadow: 3px 0 15px rgba(0, 0, 0, 0.4);
+  }
+  50% {
+    box-shadow: 3px 0 20px rgba(52, 152, 219, 0.5);
+  }
+  100% {
+    box-shadow: 3px 0 15px rgba(0, 0, 0, 0.4);
+  }
+}
+
+@keyframes leftSidebarGlow {
+  0% { filter: brightness(1); }
+  50% { filter: brightness(1.3); }
+  100% { filter: brightness(1); }
+}
+
+.sidebar-toggle.left:hover::after {
+  animation: leftSidebarGlow 1.5s infinite;
+}
+
+.sidebar-toggle.left.collapsed:hover {
+  transform: scaleX(-1) translateX(3px);
+}
+
+.sidebar-toggle.left.expanded:hover {
+  transform: translateX(3px);
+}
+
+/* Left Sidebar */
+.left-sidebar {
+  width: 200px;
+  background: linear-gradient(145deg, #132639, #1e3c5a);
+  color: white;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+  box-shadow: 5px 0 20px rgba(0, 0, 0, 0.5);
+  border-right: 1px solid rgba(52, 152, 219, 0.3);
+  transform-style: preserve-3d;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.left-sidebar.expanded {
+  transform: translateX(0);
+}
+
+.left-sidebar.collapsed {
+  transform: translateX(-100%);
+}
+
+/* Toggle button styled like the right sidebar toggle */
+.sidebar-toggle {
+  width: 40px;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(145deg, #216396, #2980b9);
+  cursor: pointer;
+  position: absolute;
+  left: 200px;
+  top: 80px;
+  border: 2px solid rgba(52, 152, 219, 0.5);
+  border-left: none;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 200;
+  color: white;
+  font-size: 1.2rem;
+  clip-path: polygon(
+    100% 0%,     /* top right */
+    50% 0%,      /* top middle */
+    0% 50%,      /* left middle (arrow point) */
+    50% 100%,    /* bottom middle */
+    100% 100%    /* bottom right */
+  );
+  box-shadow: 3px 0 15px rgba(0, 0, 0, 0.4);
+}
+
+/* When sidebar is collapsed, move toggle button to the left edge */
+.left-sidebar.collapsed + .sidebar-toggle {
+  left: 0;
+  transform: scaleX(-1);
+  background: linear-gradient(145deg, #1c5681, #3498db);
+}
+
+/* Hover and active states */
+.sidebar-toggle:hover {
+  background: linear-gradient(145deg, #3498db, #2873a8);
+  box-shadow: 3px 0 20px rgba(52, 152, 219, 0.8);
+  filter: brightness(1.2);
+}
+
+.sidebar-toggle:active {
+  transform: scale(0.95);
+}
+
+.left-sidebar.collapsed + .sidebar-toggle:active {
+  transform: scaleX(-1) scale(0.95);
+}
+
+/* Add subtle animation */
+.sidebar-toggle::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0.1) 100%);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+@keyframes glow {
+  0% { filter: brightness(1); }
+  50% { filter: brightness(1.3); }
+  100% { filter: brightness(1); }
+}
+
+.sidebar-toggle:hover::after {
+  animation: glow 1.5s infinite;
+}
+
+.sidebar-toggle-left::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.sidebar-toggle-left.collapsed {
+  left: 0;
+  z-index: 201;
+  background: linear-gradient(145deg, #1c5681, #3498db);
+  transform: scaleX(-1);
+}
+
+.sidebar-toggle-left.expanded {
+  left: 200px;
+}
+
+.sidebar-toggle-left:hover {
+  background: linear-gradient(145deg, #3498db, #2873a8);
+  box-shadow: 3px 0 20px rgba(52, 152, 219, 0.8);
+  filter: brightness(1.2);
+}
+
+.sidebar-toggle-left:hover::before {
+  transform: translateX(100%);
+}
+
+.sidebar-toggle-left:active {
+  transform: scale(0.95);
+}
+
+.sidebar-toggle-left.collapsed:active {
+  transform: scaleX(-1) scale(0.95);
+}
+
+/* Make the arrow more highlighted with a subtle gradient */
+.sidebar-toggle-left::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0.1) 100%);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+@keyframes subtlePulse {
+  0% {
+    box-shadow: 3px 0 15px rgba(0, 0, 0, 0.4);
+  }
+  50% {
+    box-shadow: 3px 0 20px rgba(52, 152, 219, 0.5);
+  }
+  100% {
+    box-shadow: 3px 0 15px rgba(0, 0, 0, 0.4);
+  }
+}
+
+@keyframes glow {
+  0% { filter: brightness(1); }
+  50% { filter: brightness(1.3); }
+  100% { filter: brightness(1); }
+}
+
+.sidebar-toggle-left:hover::after {
+  animation: glow 1.5s infinite;
+}
+
+.sidebar-toggle-left.collapsed:hover {
+  transform: scaleX(-1) translateX(3px);
+}
+
+.sidebar-toggle-left.expanded:hover {
+  transform: translateX(3px);
 }
 
 .left-sidebar {
@@ -28,40 +347,118 @@
   transform: translateX(-100%);
 }
 
-.left-sidebar-toggle-btn {
-  width: 30px;
-  height: 80px;
-  background: linear-gradient(145deg, #132639, #1e3c5a);
-  color: white;
-  font-size: 1.2rem;
-  border: none;
-  border-top-right-radius: 6px;
-  border-bottom-right-radius: 6px;
+/* Arrow-shaped toggle button for left sidebar */
+.sidebar-toggle.left {
+  width: 40px;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(145deg, #216396, #2980b9);
   cursor: pointer;
-  box-shadow: 5px 0 10px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(52, 152, 219, 0.3);
-  border-left: none;
   position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  transition: all 0.3s ease;
-  z-index: 101;
+  left: 200px; /* Position at the edge of the expanded sidebar */
+  top: 80px;
+  border: 2px solid rgba(52, 152, 219, 0.5);
+  border-right: none;
+  border-left: 2px solid rgba(52, 152, 219, 0.5);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 200;
+  color: white;
+  overflow: hidden;
+  animation: subtlePulse 3s infinite ease-in-out;
+  clip-path: polygon(
+    100% 50%,  /* right middle (arrow point) */
+    50% 0%,    /* top middle */
+    0% 0%,     /* top left */
+    0% 100%,   /* bottom left */
+    50% 100%   /* bottom middle */
+  );
+  box-shadow: -3px 0 15px rgba(0, 0, 0, 0.4);
 }
 
-/* Add specific styling for collapsed state */
-.left-sidebar-toggle-btn.collapsed {
-  border-top-left-radius: 6px;
-  border-bottom-left-radius: 6px;
-  border-left: 1px solid rgba(52, 152, 219, 0.3);
+.sidebar-toggle.left::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
 }
 
-.left-sidebar-toggle-btn:hover {
-  background: linear-gradient(145deg, #1e3c5a, #2a5477);
-  box-shadow: 5px 0 15px rgba(0, 0, 0, 0.4);
+.sidebar-toggle.left.collapsed {
+  left: 0;
+  z-index: 201;
+  background: linear-gradient(145deg, #1c5681, #3498db);
+  transform: scaleX(-1);
 }
 
-.left-sidebar-toggle-btn:active {
-  transform: translateY(-50%) scale(0.95);
+.sidebar-toggle.left.expanded {
+  left: 200px;
+}
+
+.sidebar-toggle.left:hover {
+  background: linear-gradient(145deg, #3498db, #2873a8);
+  box-shadow: 3px 0 20px rgba(52, 152, 219, 0.8);
+  filter: brightness(1.2);
+}
+
+.sidebar-toggle.left:hover::before {
+  transform: translateX(100%);
+}
+
+.sidebar-toggle.left:active {
+  transform: scale(0.95);
+}
+
+.sidebar-toggle.left.collapsed:active {
+  transform: scaleX(-1) scale(0.95);
+}
+
+/* Make the arrow more highlighted with a subtle gradient */
+.sidebar-toggle.left::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0.1) 100%);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+@keyframes subtlePulse {
+  0% {
+    box-shadow: 3px 0 15px rgba(0, 0, 0, 0.4);
+  }
+  50% {
+    box-shadow: 3px 0 20px rgba(52, 152, 219, 0.5);
+  }
+  100% {
+    box-shadow: 3px 0 15px rgba(0, 0, 0, 0.4);
+  }
+}
+
+@keyframes glow {
+  0% { filter: brightness(1); }
+  50% { filter: brightness(1.3); }
+  100% { filter: brightness(1); }
+}
+
+.sidebar-toggle.left:hover::after {
+  animation: glow 1.5s infinite;
+}
+
+.sidebar-toggle.left.collapsed:hover {
+  transform: scaleX(-1) translateX(-3px);
+}
+
+.sidebar-toggle.left.expanded:hover {
+  transform: translateX(-3px);
 }
 
 .sidebar-content {
