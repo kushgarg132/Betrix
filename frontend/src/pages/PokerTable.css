@@ -2069,3 +2069,117 @@ tr:nth-child(10) .mini-card-container::before {
     transform: scale(0.7) !important;
   }
 }
+
+.winners-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 30px;
+  border-radius: 15px;
+  z-index: 1000;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+  min-width: 300px;
+  border: 1px solid rgba(255, 215, 0, 0.7);
+}
+
+.winners-overlay h2 {
+  color: #FFD700;
+  margin-bottom: 20px;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.winners-overlay ul {
+  list-style: none;
+  padding: 0;
+}
+
+.winners-overlay li {
+  margin: 16px 0;
+  font-size: 1.1em;
+}
+
+.winners-overlay strong {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 1.4em;
+  color: #fff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.winners-overlay .hand-rank {
+  display: block;
+  font-size: 1.2em;
+  color: #FFD700;
+  margin-bottom: 5px;
+  text-transform: capitalize;
+  font-weight: bold;
+  font-family: 'Orbitron', sans-serif;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+  letter-spacing: 1px;
+}
+
+.winners-overlay .hand-description {
+  display: block;
+  font-size: 1em;
+  color: #ccc;
+  margin-bottom: 5px;
+}
+
+.winners-overlay .amount-won {
+  display: block;
+  font-size: 1.1em;
+  color: #4CAF50;
+  margin-bottom: 15px;
+  font-weight: bold;
+}
+
+.winners-overlay p {
+  margin-top: 25px;
+  font-size: 0.9em;
+  color: #aaa;
+}
+
+.winner-section {
+  margin: 15px 0;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 10px;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.winner-section h4 {
+  margin: 0 0 10px 0;
+  font-size: 0.9em;
+  color: #3498db;
+  text-shadow: 0 0 8px rgba(52, 152, 219, 0.6);
+}
+
+.winner-hand,
+.winner-cards {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 5px;
+  max-width: 360px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.winner-hand .card,
+.winner-cards .card {
+  width: 60px;
+  height: auto;
+  transform-origin: center;
+  transition: transform 0.3s ease;
+}
+
+.winner-hand .card:hover,
+.winner-cards .card:hover {
+  transform: translateY(-5px) scale(1.1);
+  z-index: 2;
+}
