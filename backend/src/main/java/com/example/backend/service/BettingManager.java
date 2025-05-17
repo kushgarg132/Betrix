@@ -199,6 +199,10 @@ public class BettingManager {
     public void evaluateHandAndAwardPot(Game game) {
         logger.info("Evaluating hands and awarding pot for game with ID: {}", game.getId());
 
+        // Multiple players - evaluate hands and find winner(s)
+        Map<Player, HandEvaluator.HandResult> playerResults = new HashMap<>();
+        HandEvaluator.HandResult bestResult = null;
+
         game.setStatus(Game.GameStatus.SHOWDOWN);
         // Only evaluate if there are multiple players still in the hand
         List<Player> activePlayers = game.getPlayers().stream()
@@ -210,27 +214,7 @@ public class BettingManager {
             return;
         }
 
-        if (activePlayers.size() == 1) {
-            // Single player gets the pot
-            Player winner = activePlayers.get(0);
-            winner.awardPot(game.getPot());
-
-            // Publish game ended event
-            eventPublisher.publishEvent(new GameEndedEvent(
-                    game.getId(),
-                    new Game(game),
-                    List.of(winner)
-            ));
-
-            logger.debug("Single player awarded pot: {}", winner);
-            return;
-        }
-
         try {
-            // Multiple players - evaluate hands and find winner(s)
-            Map<Player, HandEvaluator.HandResult> playerResults = new HashMap<>();
-            HandEvaluator.HandResult bestResult = null;
-
             // Evaluate each hand
             for (Player player : activePlayers) {
                 HandEvaluator.HandResult result = handEvaluator.evaluateHand(
@@ -264,7 +248,8 @@ public class BettingManager {
             eventPublisher.publishEvent(new GameEndedEvent(
                     game.getId(),
                     new Game(game),
-                    new ArrayList<>(winners)
+                    new ArrayList<>(winners),
+                    bestResult
             ));
 
             logger.debug("Pot split among winners: {}", winners);
@@ -279,7 +264,8 @@ public class BettingManager {
             eventPublisher.publishEvent(new GameEndedEvent(
                     game.getId(),
                     new Game(game),
-                    new ArrayList<>(activePlayers)
+                    new ArrayList<>(activePlayers),
+                    bestResult
             ));
 
             logger.error("Error during hand evaluation: {}", e.getMessage());

@@ -143,6 +143,7 @@ public class GameWebSocketEventListener {
         Map<String, Object> gameEndDetails = new HashMap<>();
         gameEndDetails.put("game", event.getGame());
         gameEndDetails.put("winners", event.getWinners());
+        gameEndDetails.put("bestHand" , event.getBestHand());
         
         GameUpdate update = GameUpdate.builder()
                 .gameId(event.getGameId())

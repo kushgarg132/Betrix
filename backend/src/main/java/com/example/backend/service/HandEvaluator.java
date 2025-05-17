@@ -1,6 +1,8 @@
 package com.example.backend.service;
 
 import com.example.backend.model.Card;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -289,24 +291,22 @@ public class HandEvaluator {
         
         return true;
     }
-    
+
+    @Getter
+    @Setter
     public static class HandResult {
         private final HandRank rank;
         private final List<Card> highCards;
-        
+
         public HandResult(HandRank rank, List<Card> highCards) {
             this.rank = rank;
             this.highCards = new ArrayList<>(highCards);
         }
-        
-        public HandRank getRank() {
-            return rank;
-        }
-        
+
         public List<Card> getHighCards() {
             return Collections.unmodifiableList(highCards);
         }
-        
+
         @Override
         public String toString() {
             return "HandResult{rank=" + rank + ", highCards=" + highCards + "}";

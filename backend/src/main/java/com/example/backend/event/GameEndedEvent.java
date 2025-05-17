@@ -2,8 +2,10 @@ package com.example.backend.event;
 
 import com.example.backend.entity.Game;
 import com.example.backend.model.Player;
+import com.example.backend.service.HandEvaluator;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
@@ -15,10 +17,12 @@ import java.util.List;
 public class GameEndedEvent extends GameEvent {
     private Game game;
     private List<Player> winners;
-    
-    public GameEndedEvent(String gameId, Game game, List<Player> winners) {
+    private HandEvaluator.HandResult bestHand;
+
+    public GameEndedEvent(String gameId, Game game, List<Player> winners, HandEvaluator.HandResult bestHand) {
         super(gameId);
         this.game = game;
         this.winners = winners;
+        this.bestHand = bestHand;
     }
 } 
