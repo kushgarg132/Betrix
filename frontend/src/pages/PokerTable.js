@@ -357,15 +357,15 @@ const PokerTable = () => {
               />
               );
             })}
+        </div>
       </div>
 
-        <GameInfoPanel 
+      <GameInfoPanel 
           sidebarVisible={sidebarVisible} 
           toggleSidebar={() => setSidebarVisible(!sidebarVisible)} 
           game={game} 
           toggleRankingsModal={() => setShowRankingsModal(!showRankingsModal)} 
         />
-      </div>
 
       <BettingControls 
         isMyTurn={isMyTurn} 

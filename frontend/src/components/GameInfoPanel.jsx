@@ -18,16 +18,15 @@ const GameInfoPanel = ({
       className={`game-info-sidebar ${sidebarVisible ? 'expanded' : 'collapsed'}`}
       data-testid="game-info-sidebar"
     >
-      {/* Clearly visible toggle button */}
+      {/* Arrow-shaped toggle button */}
       <button 
-        className="sidebar-toggle" 
+        className={`sidebar-toggle ${sidebarVisible ? 'expanded' : 'collapsed'}`}
         onClick={handleToggleClick}
-        // aria-label={sidebarVisible ? "Minimize Game Info" : "Expand Game Info"}
+        aria-label={sidebarVisible ? "Hide game info" : "Show game info"}
       >
-        <div className={`toggle-icon ${sidebarVisible ? 'expanded' : 'collapsed'}`}>
-          {sidebarVisible ? '<' : '<'}
+        <div className="toggle-icon">
+          {/* Icon is hidden, arrow shape is created with CSS */}
         </div>
-        <span className="toggle-text">{sidebarVisible ? 'Hide' : 'Info'}</span>
       </button>
       
       <div className="info-content">
