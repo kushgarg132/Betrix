@@ -214,6 +214,23 @@ public class BettingManager {
             return;
         }
 
+        if (activePlayers.size() == 1) {
+            // Single player gets the pot
+            Player winner = activePlayers.get(0);
+            winner.awardPot(game.getPot());
+
+            // Publish game ended event
+            eventPublisher.publishEvent(new GameEndedEvent(
+                    game.getId(),
+                    new Game(game),
+                    List.of(winner),
+                    null
+            ));
+
+            logger.debug("Single player awarded pot: {}", winner);
+            return;
+        }
+
         try {
             // Evaluate each hand
             for (Player player : activePlayers) {
