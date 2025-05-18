@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -41,7 +42,7 @@ public class Game {
     private LocalDateTime updatedAt;
     
     // Timeout tracking fields
-    private LocalDateTime currentPlayerActionDeadline;
+    private Instant currentPlayerActionDeadline;
     private LocalDateTime lastActivityTime;
     private int playerActionTimeoutSeconds = DEFAULT_PLAYER_ACTION_TIMEOUT_SECONDS;
     private int gameIdleTimeoutMinutes = DEFAULT_GAME_IDLE_TIMEOUT_MINUTES;
@@ -144,7 +145,7 @@ public class Game {
      * Updates the current player's action deadline
      */
     public void updateCurrentPlayerActionDeadline() {
-        this.currentPlayerActionDeadline = LocalDateTime.now(ZoneOffset.UTC).plusSeconds(playerActionTimeoutSeconds);
+        this.currentPlayerActionDeadline = Instant.now().plusSeconds(playerActionTimeoutSeconds);
     }
     
     /**
@@ -161,7 +162,7 @@ public class Game {
         if (this.currentPlayerActionDeadline == null) {
             return false;
         }
-        return LocalDateTime.now(ZoneOffset.UTC).isAfter(this.currentPlayerActionDeadline);
+        return Instant.now().isAfter(this.currentPlayerActionDeadline);
     }
     
     /**

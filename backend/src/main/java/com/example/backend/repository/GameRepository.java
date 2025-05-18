@@ -5,6 +5,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -18,14 +19,14 @@ public interface GameRepository extends MongoRepository<Game, String> {
      */
     @Query("{ 'status': { $in: ['PRE_FLOP_BETTING', 'FLOP_BETTING', 'TURN_BETTING', 'RIVER_BETTING'] }, " +
            "'currentPlayerActionDeadline': { $lt: ?0 } }")
-    List<Game> findGamesWithPlayerActionTimeout(LocalDateTime now);
+    List<Game> findGamesWithPlayerActionTimeout(Instant now);
     
     /**
      * Find all games where the current player's action timeout will expire soon
      */
     @Query("{ 'status': { $in: ['PRE_FLOP_BETTING', 'FLOP_BETTING', 'TURN_BETTING', 'RIVER_BETTING'] }, " +
            "'currentPlayerActionDeadline': { $gt: ?0, $lt: ?1 } }")
-    List<Game> findGamesWithImminentPlayerActionTimeout(LocalDateTime from, LocalDateTime to);
+    List<Game> findGamesWithImminentPlayerActionTimeout(Instant from, Instant to);
     
     /**
      * Find all games that have been idle for too long

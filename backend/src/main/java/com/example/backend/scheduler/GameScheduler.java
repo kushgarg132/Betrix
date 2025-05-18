@@ -176,7 +176,7 @@ public class GameScheduler implements SchedulingConfigurer {
             int activeGamesCount = activeGames.size();
             
             // Find games with imminent player timeouts
-            LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+            Instant now = Instant.now();
             List<Game> timeoutGames = gameRepository.findGamesWithImminentPlayerActionTimeout(
                     now, now.plusSeconds(10)); // Games with timeout in next 10 seconds
             int imminentTimeouts = timeoutGames.size();
@@ -294,7 +294,7 @@ public class GameScheduler implements SchedulingConfigurer {
         taskLastExecutions.put(taskName, start);
         
         try {
-            List<Game> timeoutGames = gameRepository.findGamesWithPlayerActionTimeout(LocalDateTime.now(ZoneOffset.UTC));
+            List<Game> timeoutGames = gameRepository.findGamesWithPlayerActionTimeout(Instant.now());
             
             if (!timeoutGames.isEmpty()) {
                 logger.info("Found {} games with player action timeouts", timeoutGames.size());
