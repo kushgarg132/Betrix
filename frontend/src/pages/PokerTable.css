@@ -1413,11 +1413,13 @@ tr:nth-child(10) .mini-card-container::before {
 
 .raise-slider {
   -webkit-appearance: none;
+  appearance: none;
   width: 100%;
   height: 10px;
   background: transparent;
-  outline: none;
-  position: relative;
+  border: none;
+  color: white;
+  cursor: pointer;
   z-index: 1;
   cursor: pointer;
 }
@@ -1986,6 +1988,37 @@ tr:nth-child(10) .mini-card-container::before {
 /* Ensure sidebars don't interfere with main layout */
 .game-info-sidebar, .left-sidebar-container {
   z-index: 90;
+}
+
+/* Current player controls positioning */
+.current-player-controls {
+  position: absolute;
+  bottom: 25px;
+  left: 20px; /* Position at the bottom left of the table */
+  z-index: 100;
+  pointer-events: all;
+  width: auto;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+/* Adjust positioning for smaller screens */
+@media (max-width: 768px) {
+  .current-player-controls {
+    bottom: 20px;
+    left: 15px;
+    transform: scale(0.85);
+    transform-origin: left center;
+  }
+}
+
+@media (max-width: 576px) {
+  .current-player-controls {
+    bottom: 15px;
+    left: 10px;
+    transform: scale(0.75);
+  }
 }
 
 /* Betting controls improvements */

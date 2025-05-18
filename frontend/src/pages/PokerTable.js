@@ -369,14 +369,19 @@ const PokerTable = () => {
           toggleRankingsModal={() => setShowRankingsModal(!showRankingsModal)} 
         />
 
-      <BettingControls 
-        isMyTurn={isMyTurn} 
-        game={game} 
-        currentPlayer={currentPlayer} 
-        placeBet={placeBet} 
-        check={check} 
-        fold={fold} 
-      />
+      {/* Betting controls positioned above the current player */}
+      {isMyTurn && (
+        <div className="current-player-controls">
+          <BettingControls 
+            isMyTurn={isMyTurn} 
+            game={game} 
+            currentPlayer={currentPlayer} 
+            placeBet={placeBet} 
+            check={check} 
+            fold={fold} 
+          />
+        </div>
+      )}
 
       <RankingsModal 
         showRankingsModal={showRankingsModal} 

@@ -11,11 +11,12 @@ const BettingControls = memo(({
 }) => {
   const [showRaiseSlider, setShowRaiseSlider] = useState(false);
   const [raiseAmount, setRaiseAmount] = useState(1);
+  const [raiseAmountColor, setRaiseAmountColor] = useState('#ffb300');
 
   // Calculate values using useMemo to prevent recalculations on every render
   const { callAmount, canCheck, minRaise, maxRaise } = useMemo(() => {
     if (!game || !currentPlayer) {
-      return { currentPlayerBet: 0, callAmount: 0, canCheck: true, minRaise: 1, maxRaise: 1000 };
+      return { currentPlayerBet: 0, callAmount: 0, canCheck: true, minRaise: 1, maxRaise: 1000, totalBalance: 1000 };
     }
     
     const currentPlayerBet = game.currentBettingRound?.playerBets[currentPlayer.username] || 0;
@@ -36,8 +37,31 @@ const BettingControls = memo(({
 
   // Memoize handlers to prevent recreation on every render
   const handleRaiseChange = useCallback((value) => {
-    setRaiseAmount(parseInt(value));
-  }, []);
+    const newValue = parseInt(value);
+    setRaiseAmount(newValue);
+    
+    // Calculate color based on slider position
+    if (minRaise && maxRaise) {
+      const percentage = (newValue - minRaise) / (maxRaise - minRaise);
+      if (percentage <= 0.33) {
+        // Red to amber gradient for lower third
+        const r = Math.round(229 + (255 - 229) * (percentage * 3));
+        const g = Math.round(57 + (179 - 57) * (percentage * 3));
+        const b = Math.round(53 + (0 - 53) * (percentage * 3));
+        setRaiseAmountColor(`rgb(${r}, ${g}, ${b})`);
+      } else if (percentage <= 0.66) {
+        // Amber to green gradient for upper two thirds
+        const adjustedPercentage = (percentage - 0.33) * 3;
+        const r = Math.round(255 - (255 - 67) * adjustedPercentage);
+        const g = Math.round(179 + (160 - 179) * adjustedPercentage);
+        const b = Math.round(0 + (71 - 0) * adjustedPercentage);
+        setRaiseAmountColor(`rgb(${r}, ${g}, ${b})`);
+      } else {
+        // Full green for upper third
+        setRaiseAmountColor('#43a047');
+      }
+    }
+  }, [minRaise, maxRaise]);
 
   const handleOpenRaiseSlider = useCallback(() => {
     setShowRaiseSlider(true);
@@ -89,7 +113,6 @@ const BettingControls = memo(({
             onClick={handleOpenRaiseSlider}
           >
             <span className="action-text">Raise</span>
-            <span className="action-amount">Min ${formatNumber(minRaise)}</span>
           </button>
 
           <button className="fold-button" onClick={fold}>
@@ -105,8 +128,16 @@ const BettingControls = memo(({
               <span>Set Your Raise</span>
               <button className="close-button" onClick={handleCloseRaiseSlider}>×</button>
             </div>
-            <div className="raise-amount">${formatNumber(raiseAmount)}</div>
+            <div className="raise-amount" style={{ color: raiseAmountColor, textShadow: `0 0 15px ${raiseAmountColor}80`, borderColor: `${raiseAmountColor}80` }}>${formatNumber(raiseAmount)}</div>
             <div className="raise-slider-container">
+              <style>
+                {`
+                  .raise-slider::-webkit-slider-thumb {
+                    background: linear-gradient(135deg, ${raiseAmountColor}, ${raiseAmountColor}dd);
+                    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3), 0 0 15px ${raiseAmountColor}80;
+                  }
+                `}
+              </style>
               <input
                 type="range"
                 className="raise-slider"
@@ -127,7 +158,16 @@ const BettingControls = memo(({
                 onClick={confirmRaise}
               >
                 <span className="action-text">Raise</span>
-                <span className="action-amount">${formatNumber(raiseAmount)}</span>
+              </button>
+              <button 
+                className="all-in-button" 
+                onClick={() => {
+                  // Use the player's total account balance instead of just table chips
+                  placeBet(maxRaise);
+                  setShowRaiseSlider(false);
+                }}
+              >
+                All In
               </button>
               <button 
                 className="cancel-raise-button" 
