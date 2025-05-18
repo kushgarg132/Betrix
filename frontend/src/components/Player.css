@@ -16,14 +16,17 @@
   overflow: visible;
   backdrop-filter: blur(3px);
   z-index: 20;
-  transition: all 0.2s ease;
+  transition: all 0.2s ease, border-image 0.1s linear;
   transform-origin: center center; /* Fixed transform origin */
+  border-style: solid;
+  border-width: 2px;
 }
 
 .player.current-turn {
   box-shadow: 0 0 25px rgba(241, 196, 15, 0.7);
-  border: 2px solid #f1c40f;
+  border-color: #f1c40f;
   z-index: 25;
+  /* The border-image property will be set dynamically in JS */
 }
 
 .player.current-player {
@@ -352,4 +355,10 @@
 @keyframes popIn {
   0% { transform: scale(0.5); opacity: 0; }
   100% { transform: scale(0.9); opacity: 1; }
-} 
+}
+
+/* Animation for the ticking border - not used anymore as we're using dynamic JS-based animation */
+@keyframes borderTick {
+  from { border-image-source: conic-gradient(from 0deg at 50% 50%, transparent 0deg, #f1c40f 0deg 360deg); }
+  to { border-image-source: conic-gradient(from 0deg at 50% 50%, transparent 0deg 360deg, #f1c40f 360deg); }
+}

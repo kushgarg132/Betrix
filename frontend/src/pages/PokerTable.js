@@ -203,6 +203,7 @@ const PokerTable = () => {
         }
         return newGameState;
       });
+      setUpdateActions(null);
     }
   }, [updateAction, gameStatus]);
 
@@ -354,6 +355,7 @@ const PokerTable = () => {
                 isCurrentPlayer={player.username === currentPlayer.username}
                 playerCount={game.players.length}
                 currentHand={currentPlayer.hand}
+                actionDeadline={game.currentPlayerActionDeadline}
               />
               );
             })}

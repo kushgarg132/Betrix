@@ -22,7 +22,7 @@ const BettingControls = memo(({
     const callAmount = game.currentBet - currentPlayerBet;
     const canCheck = callAmount === 0;
     const minRaise = Math.max(callAmount + 1, 1);
-    const maxRaise = currentPlayer.chips;
+    const maxRaise = game.players[currentPlayer.index].chips;
     
     return { callAmount, canCheck, minRaise, maxRaise };
   }, [game, currentPlayer]);
