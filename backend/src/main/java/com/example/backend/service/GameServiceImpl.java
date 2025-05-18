@@ -210,7 +210,7 @@ public class GameServiceImpl implements GameService {
             ));
             
             // Check if betting round is complete
-            handleCurrentBettingRound(game);
+            bettingManager.handleCurrentBettingRound(game);
 
             game.setUpdatedAt(LocalDateTime.now());
             game.setLastActivityTime(LocalDateTime.now());
@@ -248,7 +248,7 @@ public class GameServiceImpl implements GameService {
             ));
 
             // Check if betting round is complete
-            handleCurrentBettingRound(game);
+            bettingManager.handleCurrentBettingRound(game);
 
             game.setUpdatedAt(LocalDateTime.now());
             game.setLastActivityTime(LocalDateTime.now());
@@ -285,7 +285,7 @@ public class GameServiceImpl implements GameService {
                     new Game(game)
             ));
 
-            handleCurrentBettingRound(game);
+            bettingManager.handleCurrentBettingRound(game);
 
             game.setUpdatedAt(LocalDateTime.now());
             game.setLastActivityTime(LocalDateTime.now());
@@ -388,19 +388,6 @@ public class GameServiceImpl implements GameService {
             }
         } catch (Exception e) {
             logger.error("Error updating game action deadlines: {}", e.getMessage(), e);
-        }
-    }
-
-    private void handleCurrentBettingRound(Game game) {
-        // Check if betting round is complete
-        if (bettingManager.isBettingRoundComplete(game)) {
-            if (bettingManager.getActivePlayerCount(game) <= 1 || game.getStatus() == Game.GameStatus.RIVER_BETTING) {
-                // Game will be ended by the service that calls this method
-                bettingManager.evaluateHandAndAwardPot(game);
-                game.setStatus(Game.GameStatus.WAITING);
-            } else {
-                bettingManager.startNewBettingRound(game);
-            }
         }
     }
 

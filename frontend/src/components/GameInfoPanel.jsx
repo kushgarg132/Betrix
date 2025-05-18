@@ -61,21 +61,6 @@ const GameInfoPanel = ({
           </tbody>
         </table>
         
-        {/* Community Cards */}
-        {game.communityCards && game.communityCards.length > 0 && (
-          <table className="info-table community-table">
-            <tbody>
-              <tr>
-                <td className="info-label" style={{ width: '120px' }}>Community Cards:</td>
-                <td className="info-value cards-container" colSpan="3">
-                  {game.communityCards.map((card, index) => (
-                    <span key={index} className="card">{card}</span>
-                  ))}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        )}
         
         {/* Action Buttons */}
         <div className="button-row">

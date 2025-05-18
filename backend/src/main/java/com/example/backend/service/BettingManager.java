@@ -169,6 +169,19 @@ public class BettingManager {
         logger.debug("Player '{}' folded. Updated game state: {}", player.getUsername(), game);
     }
 
+    public void handleCurrentBettingRound(Game game) {
+        // Check if betting round is complete
+        if (isBettingRoundComplete(game)) {
+            if (getActivePlayerCount(game) <= 1 || game.getStatus() == Game.GameStatus.RIVER_BETTING) {
+                // Game will be ended by the service that calls this method
+                evaluateHandAndAwardPot(game);
+                game.setStatus(Game.GameStatus.WAITING);
+            } else {
+                startNewBettingRound(game);
+            }
+        }
+    }
+
     public boolean isBettingRoundComplete(Game game) {
         logger.info("Checking if betting round is complete for game with ID: {}", game.getId());
         int activePlayerCount = getActivePlayerCount(game);
@@ -203,7 +216,7 @@ public class BettingManager {
         Map<Player, HandEvaluator.HandResult> playerResults = new HashMap<>();
         HandEvaluator.HandResult bestResult = null;
 
-//        game.setCurrentPlayerIndex(-1);
+        game.setCurrentPlayerIndex(-1);
         game.setStatus(Game.GameStatus.SHOWDOWN);
         // Only evaluate if there are multiple players still in the hand
         List<Player> activePlayers = game.getPlayers().stream()
