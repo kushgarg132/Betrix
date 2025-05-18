@@ -10,6 +10,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -72,13 +73,13 @@ public class Game {
         this.currentBettingRound = new BettingRound();
         this.dealerPosition = 0;
         this.currentPlayerIndex = -1;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        this.createdAt = LocalDateTime.now(ZoneOffset.UTC);
+        this.updatedAt = LocalDateTime.now(ZoneOffset.UTC);
         this.currentBet = 0;
         this.lastActions = new HashMap<>();
         this.smallBlindAmount = smallBlindAmount;
         this.bigBlindAmount = bigBlindAmount;
-        this.lastActivityTime = LocalDateTime.now();
+        this.lastActivityTime = LocalDateTime.now(ZoneOffset.UTC);
     }
 
     public Game(Game game) {
@@ -92,8 +93,8 @@ public class Game {
         this.currentBettingRound = game.getCurrentBettingRound();
         this.dealerPosition = game.getDealerPosition();
         this.currentPlayerIndex = game.getCurrentPlayerIndex() != -1 ? game.getCurrentPlayerIndex() : 0;
-        this.createdAt = game.getCreatedAt() != null ? game.getCreatedAt() : LocalDateTime.now();
-        this.updatedAt = game.getUpdatedAt() != null ? game.getUpdatedAt() : LocalDateTime.now();
+        this.createdAt = game.getCreatedAt() != null ? game.getCreatedAt() : LocalDateTime.now(ZoneOffset.UTC);
+        this.updatedAt = game.getUpdatedAt() != null ? game.getUpdatedAt() : LocalDateTime.now(ZoneOffset.UTC);
         this.currentBet = game.getCurrentBet() != -1 ? game.getCurrentBet() : 0.0;
         this.lastActions = game.getLastActions() != null ? new HashMap<>(game.getLastActions()) : new HashMap<>();
         this.smallBlindAmount = game.getSmallBlindAmount();
@@ -103,7 +104,7 @@ public class Game {
         this.smallBlindUserId = game.getSmallBlindUserId();
         this.bigBlindUserId = game.getBigBlindUserId();
         this.currentPlayerActionDeadline = game.getCurrentPlayerActionDeadline();
-        this.lastActivityTime = game.getLastActivityTime() != null ? game.getLastActivityTime() : LocalDateTime.now();
+        this.lastActivityTime = game.getLastActivityTime() != null ? game.getLastActivityTime() : LocalDateTime.now(ZoneOffset.UTC);
         this.playerActionTimeoutSeconds = game.getPlayerActionTimeoutSeconds();
         this.gameIdleTimeoutMinutes = game.getGameIdleTimeoutMinutes();
         this.autoStart = game.isAutoStart();
@@ -143,14 +144,14 @@ public class Game {
      * Updates the current player's action deadline
      */
     public void updateCurrentPlayerActionDeadline() {
-        this.currentPlayerActionDeadline = LocalDateTime.now().plusSeconds(playerActionTimeoutSeconds);
+        this.currentPlayerActionDeadline = LocalDateTime.now(ZoneOffset.UTC).plusSeconds(playerActionTimeoutSeconds);
     }
     
     /**
      * Updates the last activity timestamp
      */
     public void updateLastActivityTime() {
-        this.lastActivityTime = LocalDateTime.now();
+        this.lastActivityTime = LocalDateTime.now(ZoneOffset.UTC);
     }
     
     /**
@@ -160,7 +161,7 @@ public class Game {
         if (this.currentPlayerActionDeadline == null) {
             return false;
         }
-        return LocalDateTime.now().isAfter(this.currentPlayerActionDeadline);
+        return LocalDateTime.now(ZoneOffset.UTC).isAfter(this.currentPlayerActionDeadline);
     }
     
     /**
@@ -170,7 +171,7 @@ public class Game {
         if (this.lastActivityTime == null) {
             return false;
         }
-        return LocalDateTime.now().isAfter(this.lastActivityTime.plusMinutes(gameIdleTimeoutMinutes));
+        return LocalDateTime.now(ZoneOffset.UTC).isAfter(this.lastActivityTime.plusMinutes(gameIdleTimeoutMinutes));
     }
     
     /**
@@ -203,7 +204,7 @@ public class Game {
         currentPlayerIndex = (dealerPosition + 1) % players.size();
         
         updateLastActivityTime();
-        updatedAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now(ZoneOffset.UTC);
     }
     
     public void setupNextRound() {

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -114,7 +115,7 @@ public class GameServiceImpl implements GameService {
                 player.setActive(false);
             }
             game.getPlayers().add(player);
-            game.setUpdatedAt(LocalDateTime.now());
+            game.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
             gameRepository.save(game);
 
             user.setBalance(0);
@@ -175,7 +176,7 @@ public class GameServiceImpl implements GameService {
             // Start betting round
             bettingManager.startNewBettingRound(game);
 
-            game.setUpdatedAt(LocalDateTime.now());
+            game.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
             gameRepository.save(game);
 
             logger.debug("New hand started for game: {}", game);
@@ -212,8 +213,8 @@ public class GameServiceImpl implements GameService {
             // Check if betting round is complete
             bettingManager.handleCurrentBettingRound(game);
 
-            game.setUpdatedAt(LocalDateTime.now());
-            game.setLastActivityTime(LocalDateTime.now());
+            game.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
+            game.setLastActivityTime(LocalDateTime.now(ZoneOffset.UTC));
             gameRepository.save(game);
 
             logger.debug("Player '{}' placed bet: {}", playerId, amount);
@@ -250,8 +251,8 @@ public class GameServiceImpl implements GameService {
             // Check if betting round is complete
             bettingManager.handleCurrentBettingRound(game);
 
-            game.setUpdatedAt(LocalDateTime.now());
-            game.setLastActivityTime(LocalDateTime.now());
+            game.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
+            game.setLastActivityTime(LocalDateTime.now(ZoneOffset.UTC));
             gameRepository.save(game);
 
             logger.debug("Player '{}' checked", playerId);
@@ -287,8 +288,8 @@ public class GameServiceImpl implements GameService {
 
             bettingManager.handleCurrentBettingRound(game);
 
-            game.setUpdatedAt(LocalDateTime.now());
-            game.setLastActivityTime(LocalDateTime.now());
+            game.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
+            game.setLastActivityTime(LocalDateTime.now(ZoneOffset.UTC));
             gameRepository.save(game);
 
             logger.debug("Player '{}' folded", playerId);
@@ -319,8 +320,8 @@ public class GameServiceImpl implements GameService {
             
             // Remove player from game
             game.getPlayers().remove(player);
-            game.setUpdatedAt(LocalDateTime.now());
-            game.setLastActivityTime(LocalDateTime.now());
+            game.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
+            game.setLastActivityTime(LocalDateTime.now(ZoneOffset.UTC));
             
             // If no players left, delete the game
             if (game.getPlayers().isEmpty()) {

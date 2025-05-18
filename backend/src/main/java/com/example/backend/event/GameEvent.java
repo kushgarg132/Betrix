@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 /**
  * Base class for all game-related events
@@ -16,6 +17,6 @@ public abstract class GameEvent {
     
     public GameEvent(String gameId) {
         this.gameId = gameId;
-        this.timestamp = LocalDateTime.now();
+        this.timestamp = LocalDateTime.now(ZoneOffset.UTC);
     }
 } 

@@ -10,6 +10,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Map;
 
 @Service
@@ -27,7 +28,7 @@ public class GameNotificationService {
         try {
             // Add timestamp if not already set
             if (update.getTimestamp() == null) {
-                update.setTimestamp(LocalDateTime.now());
+                update.setTimestamp(LocalDateTime.now(ZoneOffset.UTC));
             }
             
             // Send to topic
@@ -49,7 +50,7 @@ public class GameNotificationService {
         try {
             // Add timestamp if not already set
             if (update.getTimestamp() == null) {
-                update.setTimestamp(LocalDateTime.now());
+                update.setTimestamp(LocalDateTime.now(ZoneOffset.UTC));
             }
             // Create destination for specific player
             String destination = "/topic/game/" + update.getGameId() + "/player/" + playerId;

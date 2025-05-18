@@ -17,6 +17,7 @@ import jakarta.annotation.PostConstruct;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -177,7 +178,7 @@ public class GameScheduler implements SchedulingConfigurer {
             int activeGamesCount = activeGames.size();
             
             // Find games with imminent player timeouts
-            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
             List<Game> timeoutGames = gameRepository.findGamesWithImminentPlayerActionTimeout(
                     now, now.plusSeconds(10)); // Games with timeout in next 10 seconds
             int imminentTimeouts = timeoutGames.size();
@@ -295,7 +296,7 @@ public class GameScheduler implements SchedulingConfigurer {
         taskLastExecutions.put(taskName, start);
         
         try {
-            List<Game> timeoutGames = gameRepository.findGamesWithPlayerActionTimeout(LocalDateTime.now());
+            List<Game> timeoutGames = gameRepository.findGamesWithPlayerActionTimeout(LocalDateTime.now(ZoneOffset.UTC));
             
             if (!timeoutGames.isEmpty()) {
                 logger.info("Found {} games with player action timeouts", timeoutGames.size());
@@ -335,7 +336,7 @@ public class GameScheduler implements SchedulingConfigurer {
         taskLastExecutions.put(taskName, start);
         
         try {
-            LocalDateTime idleThreshold = LocalDateTime.now().minusMinutes(Game.DEFAULT_GAME_IDLE_TIMEOUT_MINUTES);
+            LocalDateTime idleThreshold = LocalDateTime.now(ZoneOffset.UTC).minusMinutes(Game.DEFAULT_GAME_IDLE_TIMEOUT_MINUTES);
             List<Game> idleGames = gameRepository.findIdleGames(idleThreshold);
             
             if (!idleGames.isEmpty()) {
