@@ -203,7 +203,7 @@ public class BettingManager {
         Map<Player, HandEvaluator.HandResult> playerResults = new HashMap<>();
         HandEvaluator.HandResult bestResult = null;
 
-        game.setCurrentPlayerIndex(-1);
+//        game.setCurrentPlayerIndex(-1);
         game.setStatus(Game.GameStatus.SHOWDOWN);
         // Only evaluate if there are multiple players still in the hand
         List<Player> activePlayers = game.getPlayers().stream()
