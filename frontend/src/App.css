@@ -1,5 +1,22 @@
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Prevent scrolling at the highest level */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 .App {
   text-align: center;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #1a1a2e; /* Dark theme background */
+  color: white;
 }
 
 .App-logo {
@@ -15,13 +32,15 @@
 
 .App-header {
   background-color: #282c34;
-  min-height: 100vh;
+  /* min-height: 100vh; Remove if .App is managing height */
+  flex-shrink: 0; /* Header shouldn't shrink if content below grows */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
+  padding: 10px 0; /* Add some padding */
 }
 
 .App-link {
@@ -35,4 +54,12 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.main-content {
+  flex-grow: 1;
+  overflow-y: auto; /* Allow scroll within this area if content overflows */
+  overflow-x: hidden;
+  display: flex; /* If PokerTablePage needs to fill this */
+  flex-direction: column;
 }

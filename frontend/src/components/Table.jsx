@@ -4,7 +4,7 @@ import Card from './Card';
 import { ChipStack } from './PokerChip';
 
 // Using memo to prevent unnecessary re-renders
-const Table = memo(({ isMyTurn, game, communityCards, getSuitSymbol, animatingChips }) => {
+const Table = memo(({ isMyTurn, game, communityCards, animatingChips }) => {
   return (
     <div className={`table-felt ${isMyTurn ? 'my-turn' : ''}`}>
       <div className="wood-border">
@@ -16,7 +16,7 @@ const Table = memo(({ isMyTurn, game, communityCards, getSuitSymbol, animatingCh
 
           <div className="community-cards">
             {communityCards.map((card, index) => (
-              <Card key={`card-${index}-${card.suit}-${card.rank}`} card={card} />
+              <Card key={`card-${index}-${card.suit}-${card.rank}`} card={card} cardContext="table" />
             ))}
             
             {/* Fill empty card spots for better layout */}

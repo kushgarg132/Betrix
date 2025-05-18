@@ -117,7 +117,7 @@ const Player = memo(({
         <div className="player-cards-container">
           <div className="player-cards">
             {currentHand?.map((card, idx) => (
-              <Card key={`player-card-${idx}`} card={card} />
+              <Card key={`player-card-${idx}`} card={card} cardContext="player" />
             ))}
           </div>
         </div>
@@ -163,8 +163,8 @@ const Player = memo(({
         {/* Show hidden cards for opponents unless they've folded */}
         {!player.hasFolded && (
           <div className="opponent-cards">
-            <div className="card hidden"></div>
-            <div className="card hidden"></div>
+            <Card hidden={true} cardContext="opponent" />
+            <Card hidden={true} cardContext="opponent" />
           </div>
         )}
       </div>

@@ -9,7 +9,7 @@ import './PokerTable.css';
 
 // Components
 import Player from '../components/Player';
-import Card, { getSuitSymbol } from '../components/Card';
+import Card from '../components/Card';
 import Table from '../components/Table';
 import BettingControls from '../components/BettingControls';
 import RankingsModal from '../components/RankingsModal';
@@ -332,7 +332,6 @@ const PokerTable = () => {
           isMyTurn={isMyTurn} 
           game={game} 
           communityCards={game.communityCards} 
-          getSuitSymbol={getSuitSymbol} 
           animatingChips={animatingChips} 
         />
 

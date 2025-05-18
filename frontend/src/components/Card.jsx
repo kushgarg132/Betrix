@@ -1,35 +1,7 @@
 import React from 'react';
 import './Card.css';
 
-const getSuitSymbol = (suit) => {
-  switch (suit.toLowerCase()) {
-    case 'hearts':
-      return '♥';
-    case 'diamonds':
-      return '♦';
-    case 'clubs':
-      return '♣';
-    case 'spades':
-      return '♠';
-    default:
-      return '';
-  }
-};
 
-// Function to get card face for court cards
-const getCardFace = (rank, suit) => {
-  if (['J', 'Q', 'K', 'A'].includes(rank)) {
-    return (
-      <div className="card-face">
-        {rank === 'K' && <div className="card-king"></div>}
-        {rank === 'Q' && <div className="card-queen"></div>}
-        {rank === 'J' && <div className="card-jack"></div>}
-        {rank === 'A' && <div className="card-ace">{getSuitSymbol(suit)}</div>}
-      </div>
-    );
-  }
-  return null;
-};
 
 const getCardRank = (rank) => {
   switch (rank) {
@@ -50,9 +22,15 @@ const getCardRank = (rank) => {
   }
 };
 
-const Card = ({ card, hidden }) => {
+const Card = ({ card, hidden, cardContext }) => {
+  const classNames = ['card'];
+  if (cardContext) {
+    classNames.push(`${cardContext}-card`);
+  }
+
   if (hidden) {
-    return <img src="/cards/back.svg" alt="Card Back" className="card hidden" />;
+    classNames.push('hidden');
+    return <img src="/cards/back.svg" alt="Card Back" className={classNames.join(' ')} />;
   }
 
   const { rank, suit } = card;
@@ -63,10 +41,9 @@ const Card = ({ card, hidden }) => {
     <img 
       src={cardImage} 
       alt={`${cardRank} of ${suit}`} 
-      className="card"
+      className={classNames.join(' ')}
     />
   );
 };
 
-export { getSuitSymbol };
 export default Card; 
