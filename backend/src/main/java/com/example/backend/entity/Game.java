@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,7 +42,7 @@ public class Game {
     private LocalDateTime updatedAt;
     
     // Timeout tracking fields
-    private LocalDateTime currentPlayerActionDeadline;
+    private ZonedDateTime currentPlayerActionDeadline;
     private LocalDateTime lastActivityTime;
     private int playerActionTimeoutSeconds = DEFAULT_PLAYER_ACTION_TIMEOUT_SECONDS;
     private int gameIdleTimeoutMinutes = DEFAULT_GAME_IDLE_TIMEOUT_MINUTES;
@@ -144,7 +145,7 @@ public class Game {
      * Updates the current player's action deadline
      */
     public void updateCurrentPlayerActionDeadline() {
-        this.currentPlayerActionDeadline = LocalDateTime.now(ZoneOffset.UTC).plusSeconds(playerActionTimeoutSeconds);
+        this.currentPlayerActionDeadline = ZonedDateTime.now(ZoneOffset.UTC).plusSeconds(playerActionTimeoutSeconds);
     }
     
     /**
@@ -161,7 +162,7 @@ public class Game {
         if (this.currentPlayerActionDeadline == null) {
             return false;
         }
-        return LocalDateTime.now(ZoneOffset.UTC).isAfter(this.currentPlayerActionDeadline);
+        return ZonedDateTime.now(ZoneOffset.UTC).isAfter(this.currentPlayerActionDeadline);
     }
     
     /**
