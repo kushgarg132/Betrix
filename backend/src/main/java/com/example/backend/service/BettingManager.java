@@ -3,12 +3,9 @@ package com.example.backend.service;
 import com.example.backend.entity.Game;
 import com.example.backend.event.CardsDealtEvent;
 import com.example.backend.event.GameEndedEvent;
+import com.example.backend.model.*;
 import com.example.backend.publisher.GameEventPublisher;
 import com.example.backend.event.RoundStartedEvent;
-import com.example.backend.model.BettingRound;
-import com.example.backend.model.Card;
-import com.example.backend.model.Player;
-import com.example.backend.model.Pot;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -366,12 +363,21 @@ public class BettingManager {
             Player winner = activePlayers.get(0);
             winner.awardPot(game.getPot());
 
+            // Evaluate the winner's hand if they have cards
+            if (!winner.getHand().isEmpty() && !game.getCommunityCards().isEmpty()) {
+                HandResult result = handEvaluator.evaluateHand(
+                    winner.getHand(),
+                    game.getCommunityCards()
+                );
+                winner.setBestHand(result);
+            }
+
             // Publish game ended event
             eventPublisher.publishEvent(new GameEndedEvent(
                     game.getId(),
                     new Game(game),
                     List.of(winner),
-                    null
+                    winner.getBestHand() // Use the winner's best hand
             ));
 
             logger.debug("Single player awarded pot: {}", winner);
@@ -379,14 +385,12 @@ public class BettingManager {
         }
 
         try {
-            // Evaluate each hand
-            Map<Player, HandEvaluator.HandResult> playerResults = new HashMap<>();
             for (Player player : activePlayers) {
-                HandEvaluator.HandResult result = handEvaluator.evaluateHand(
+                HandResult result = handEvaluator.evaluateHand(
                         player.getHand(),
                         game.getCommunityCards()
                 );
-                playerResults.put(player, result);
+                player.setBestHand(result);
                 logger.debug("Player {} hand evaluated as: {}", player.getUsername(), result.getRank());
             }
 
@@ -394,9 +398,6 @@ public class BettingManager {
             List<Pot> allPots = new ArrayList<>(game.getPots());
             List<Player> allWinners = new ArrayList<>();
             Map<Player, Double> winningsMap = new HashMap<>();
-            
-            // Store the best hand for each winner
-            Map<Player, HandEvaluator.HandResult> winnerHandResults = new HashMap<>();
             
             for (int potIndex = 0; potIndex < allPots.size(); potIndex++) {
                 Pot pot = allPots.get(potIndex);
@@ -421,9 +422,9 @@ public class BettingManager {
                         potIndex, eligiblePlayers.size(), potAmount);
                 
                 // Find the best hand among eligible players
-                HandEvaluator.HandResult bestResult = null;
+                HandResult bestResult = null;
                 for (Player player : eligiblePlayers) {
-                    HandEvaluator.HandResult result = playerResults.get(player);
+                    HandResult result = player.getBestHand();
                     if (bestResult == null || compareHandResults(result, bestResult) > 0) {
                         bestResult = result;
                     }
@@ -432,11 +433,9 @@ public class BettingManager {
                 // Find all winners for this pot
                 List<Player> potWinners = new ArrayList<>();
                 for (Player player : eligiblePlayers) {
-                    HandEvaluator.HandResult result = playerResults.get(player);
+                    HandResult result = player.getBestHand();
                     if (compareHandResults(result, bestResult) == 0) {
                         potWinners.add(player);
-                        // Store the hand result for this winner
-                        winnerHandResults.put(player, result);
                     }
                 }
                 
@@ -467,10 +466,17 @@ public class BettingManager {
                 // Set the amount won in the player object for UI display
                 winner.setLastWinAmount(winAmount);
                 
-                // Attach the best hand result to each winner
-                winner.setBestHand(winnerHandResults.get(winner));
-                
                 logger.debug("Player {} awarded total of {}", winner.getUsername(), winAmount);
+            }
+
+            // Get the best hand from all winners (for display purposes)
+            HandResult bestOverallHand = null;
+            for (Player winner : allWinners) {
+                HandResult winnerHand = winner.getBestHand();
+                if (bestOverallHand == null || (winnerHand != null && 
+                    compareHandResults(winnerHand, bestOverallHand) > 0)) {
+                    bestOverallHand = winnerHand;
+                }
             }
 
             // Publish game ended event with all winners
@@ -478,7 +484,7 @@ public class BettingManager {
                     game.getId(),
                     new Game(game),
                     allWinners,
-                    null // We don't have a single best result anymore, each winner has their own
+                    bestOverallHand // Use the best overall hand for display
             ));
 
         } catch (Exception e) {
@@ -488,6 +494,20 @@ public class BettingManager {
             double splitAmount = game.getPot() / activePlayers.size();
             for (Player player : activePlayers) {
                 player.awardPot(splitAmount);
+                
+                // Try to evaluate the hand even in error case
+                try {
+                    if (!player.getHand().isEmpty() && !game.getCommunityCards().isEmpty()) {
+                        HandResult result = handEvaluator.evaluateHand(
+                            player.getHand(),
+                            game.getCommunityCards()
+                        );
+                        player.setBestHand(result);
+                    }
+                } catch (Exception ex) {
+                    logger.warn("Could not evaluate hand for player {} in error recovery: {}", 
+                        player.getUsername(), ex.getMessage());
+                }
             }
 
             // Publish game ended event with error information
@@ -501,7 +521,7 @@ public class BettingManager {
     }
 
     // Compare two hand results
-    private int compareHandResults(HandEvaluator.HandResult result1, HandEvaluator.HandResult result2) {
+    private int compareHandResults(HandResult result1, HandResult result2) {
         // First compare hand ranks
         int rankComparison = result1.getRank().ordinal() - result2.getRank().ordinal();
         if (rankComparison != 0) {

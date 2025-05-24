@@ -1,6 +1,5 @@
 package com.example.backend.model;
 
-import com.example.backend.service.HandEvaluator;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -20,7 +19,7 @@ public class Player {
     private double currentBet;
     private boolean hasFolded;
     private double lastWinAmount; // Amount won in the last hand
-    private HandEvaluator.HandResult bestHand; // Best hand for the player
+    private HandResult bestHand; // Best hand for the player
     
     public Player(String name, String username, double initialChips) {
         this.id = UUID.randomUUID().toString();

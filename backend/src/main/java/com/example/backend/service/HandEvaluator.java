@@ -1,13 +1,10 @@
 package com.example.backend.service;
 
 import com.example.backend.model.Card;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import com.example.backend.model.HandResult;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -16,20 +13,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class HandEvaluator {
-    
-    public enum HandRank {
-        HIGH_CARD,
-        ONE_PAIR,
-        TWO_PAIR,
-        THREE_OF_A_KIND,
-        STRAIGHT,
-        FLUSH,
-        FULL_HOUSE,
-        FOUR_OF_A_KIND,
-        STRAIGHT_FLUSH,
-        ROYAL_FLUSH
-    }
-    
+
     public HandResult evaluateHand(List<Card> playerCards, List<Card> communityCards) {
         if (playerCards == null || playerCards.size() != 2) {
             throw new IllegalArgumentException("Player must have exactly 2 cards");
@@ -122,12 +106,12 @@ public class HandEvaluator {
         
         // Royal flush
         if (isFlush && isStraight && hand.get(0).getRank() == Card.Rank.ACE) {
-            return new HandResult(HandRank.ROYAL_FLUSH, hand);
+            return new HandResult(HandResult.HandRank.FLUSH, hand);
         }
         
         // Straight flush
         if (isFlush && isStraight) {
-            return new HandResult(HandRank.STRAIGHT_FLUSH, hand);
+            return new HandResult(HandResult.HandRank.STRAIGHT_FLUSH, hand);
         }
         
         // Four of a kind
@@ -149,7 +133,7 @@ public class HandEvaluator {
                 }
             }
             
-            return new HandResult(HandRank.FOUR_OF_A_KIND, highCards);
+            return new HandResult(HandResult.HandRank.FOUR_OF_A_KIND, highCards);
         }
         
         // Full house
@@ -172,17 +156,17 @@ public class HandEvaluator {
                 }
             }
             
-            return new HandResult(HandRank.FULL_HOUSE, highCards);
+            return new HandResult(HandResult.HandRank.FULL_HOUSE, highCards);
         }
         
         // Flush
         if (isFlush) {
-            return new HandResult(HandRank.FLUSH, hand);
+            return new HandResult(HandResult.HandRank.FLUSH, hand);
         }
         
         // Straight
         if (isStraight) {
-            return new HandResult(HandRank.STRAIGHT, hand);
+            return new HandResult(HandResult.HandRank.STRAIGHT, hand);
         }
         
         // Three of a kind
@@ -204,7 +188,7 @@ public class HandEvaluator {
                 }
             }
             
-            return new HandResult(HandRank.THREE_OF_A_KIND, highCards);
+            return new HandResult(HandResult.HandRank.THREE_OF_A_KIND, highCards);
         }
         
         // Two pair
@@ -234,7 +218,7 @@ public class HandEvaluator {
                 }
             }
             
-            return new HandResult(HandRank.TWO_PAIR, highCards);
+            return new HandResult(HandResult.HandRank.TWO_PAIR, highCards);
         }
         
         // One pair
@@ -256,11 +240,11 @@ public class HandEvaluator {
                 }
             }
             
-            return new HandResult(HandRank.ONE_PAIR, highCards);
+            return new HandResult(HandResult.HandRank.ONE_PAIR, highCards);
         }
         
         // High card
-        return new HandResult(HandRank.HIGH_CARD, hand);
+        return new HandResult(HandResult.HandRank.HIGH_CARD, hand);
     }
     
     private boolean isFlush(List<Card> hand) {
@@ -291,31 +275,5 @@ public class HandEvaluator {
         }
         
         return true;
-    }
-
-    @Getter
-    @Setter
-    public static class HandResult {
-        private final HandRank rank;
-        private final List<Card> highCards;
-
-        public HandResult(HandRank rank, List<Card> highCards) {
-            this.rank = rank;
-            this.highCards = new ArrayList<>(highCards);
-        }
-
-        public HandResult(HandResult bestResult) {
-            this.highCards = new ArrayList<>(bestResult.highCards);
-            this.rank = bestResult.rank;
-        }
-
-        public List<Card> getHighCards() {
-            return Collections.unmodifiableList(highCards);
-        }
-
-        @Override
-        public String toString() {
-            return "HandResult{rank=" + rank + ", highCards=" + highCards + "}";
-        }
     }
 }

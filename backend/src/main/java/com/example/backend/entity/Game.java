@@ -108,7 +108,6 @@ public class Game {
         this.lastActions = game.getLastActions() != null ? new HashMap<>(game.getLastActions()) : new HashMap<>();
         this.smallBlindAmount = game.getSmallBlindAmount();
         this.bigBlindAmount = game.getBigBlindAmount();
-        this.players.forEach(p -> {p.setId(null);p.setHand(null);});
         this.MAX_PLAYERS = game.getMAX_PLAYERS();
         this.smallBlindUserId = game.getSmallBlindUserId();
         this.bigBlindUserId = game.getBigBlindUserId();
