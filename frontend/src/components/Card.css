@@ -97,7 +97,7 @@
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
-  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBkPSJNNDU2IDEyOFY4N2EyMy45IDIzLjkgMCAwIDAtMjQtMjRIMzM2Vjhjb3VudGVyMCAwIDAgMS0zIDZjMCA0LTEzIDE2LTIzIDI5LTE1IDIwLTE4IDM0LTE4IDUwaDBjMC0xNi0zLTMwLTE4LTUwQzI2NCAzMCAyNTEgMTggMjUxIDE0YzAtNS0zLTktOC05cy05IDQtOSA5YzAgNS0xMiAxNi0yMyAyOS0xNSAyMC0xOCAzMy0xOCA0OWhyYzAtMTYtMy0yOS0xOC00OUMxNjUgMjkgMTUyIDE4IDE1MiAxNGMwLTYtNC0xMC05LTEwcy08IDQtOCA5YzAgNS0xMyAxNi0yMyAyOS0xNSAyMC0xOCAzNC0xOCA1MGgwYzAgMTYtMSA0My08IDUwSDgwQTIzLjkgMjMuOSAwIDAgMCA1NiA4N3Y0MWMwIDE0IDUgMjcgMTUgMzZhNDcuNSA0Ny41IDAgMCAxIDE0IDM0djJhMjMuOSAyMy45IDAgMCAwIDI0IDI0aDEzYy42IDAgMSAuMiAxIDFhOTYuOCA5Ni44IDAgMCAwIDk2IDk2aDBhOTMuNCAwIDAgMCA0Ny0xM2gwYTk2LjEgOTYuMSAwIDAgMCA1MCAxM2gwYTk2LjggOTYuOCAwIDAgMCA5NS05NmMwLS44LjQtMSAxLTFoMTNhMjMuOSAyMy45IDAgMCAwIDI0LTI0di0yYTQ3LjUgNDcuNSAwIDAgMSAxNC0zNGM5LjctOS40IDE0LjgtMjIgMTQuOC0zNnpNMTE0LjUgMjk4LjlhMSAxIDAgMCAxLTIgLjJoMGExLjQgMS40IDAgMCAxIDAtLjV2LS4zYzIuMi0xNy43IDE3LjctMzIuNCAzNS41LTM0LjlhMS44IDEuOCAwIDAgMCAxLjYtMS44di0uMWMwLTQtLjktNy44LTguMi0xMC43bS0xOSA4OS4xaC0uM2gwYy0uNCAwLS44LS43LTEtMS4zdi0uMWE1OS4zIDU5LjMgMCAwIDEgMC0zMy4ydi0uMWMuMi0uNi42LTEuMiAxLTEuM2gwYy40IDAgLjguNyAxIDEuM3YuMWE2Mi44IDYyLjggMCAwIDEgMCAzMy4ydi4xYy0uMS42LS41IDEuMy0uOSAxLjN6bTEyMi0yMDcuOWwtLjIuMWEyMS41IDIxLjUgMCAwIDAtMTUuOSAxNS45bC0uMS4yYy0uNS0uMS0uOSAwLTEuNSAwbC0uMS0uMmEyMS41IDIxLjUgMCAwIDAtMTUuOS0xNS45bC0uMi0uMS4yLS4xYTIxLjUgMjEuNSAwIDAgMCAxNS45LTE1LjlsLjEtLjJjLjUuMS45IDAgMS41IDBsLjEuMmEyMS41IDIxLjUgMCAwIDAgMTUuOSAxNS45bC4yLjF6bTEuOCAxNjMuOWguM2gwYy40IDAgLjgtLjcgMS0xLjN2LS4xYTU5LjMgNTkuMyAwIDAgMSAwLTMzLjJ2LS4xYy0uMi0uNi0uNi0xLjItMS0xLjNoMGMtLjQgMC0uOC43LTEgMS4zdi4xYTYwLjYgNjAuNiAwIDAgMSAwIDMzLjJ2LjFjLjIuNi41IDEuMyAxIDEuM3ptMTktNTR2.2YzUtMzAuMyAxMi0xMi4yIDQuNy00LjljMi40LTIuNCA0LjUtNS4xIDUuOC04LjFhMTggMTggMCAwIDAgMS41LTYuOXYtLjRhMTkgMTkgMCAwIDAgMC02LjR2LS40YTE4IDE4IDAgMCAwLTEuNS02LjljLTEuMy0zLTMuNC01LjctNS44LTguMWExMDUgMTA1IDAgMCAwLTEyLjMtMTFsLTQtM2ExNC4zIDE0LjMgMCAwIDEtNC41LTcuN2MtLjUtMi44LS4xLTUuOCAxLjgtNy44bC40LjNhMTAuOCAxMC44IDAgMCAwIDEyLjQgMS42IDkuMyA5LjMgMCAwIDAgNC4yLTYuM2MuMy0yLjktMS4xLTYtMy43LTcuOGwtLjctLjRhMTkuOSAxOS45IDAgMCAwLTktNS40aC0uM2MtNC0uOS04LjItLjMtMTEuNyAxLjdsLTIuNiAxLjRjLTMuNCAxLjgtNi43IDMuNi0xMC4zIDQuOWgtLjFjLTMuNSAxLjMtNy4yIDIuMS0xMSAyLjFoLTEuM2E1MC44IDUwLjggMCAwIDEtMTItMi4xYy0zLjUtMS4zLTYuOS0zLjEtMTAuMy00LjlsLTIuNi0xLjRhMjAuOCAyMC44IDAgMCAwLTExLjctMS43aC0uM2ExOC4zIDE4LjMgMCAwIDAtOSA1LjRsLS43LjRjLTIuNiAxLjgtNCAxLjgtMy43IDcuOGE5LjMgOS4zIDAgMCAwIDQuMiA2LjMgMTAuOCAxMC44IDAgMCAwIDEyLjQtMS42bC40LS4zYTcuOCA3LjggMCAwIDEgMS44IDcuOGMtLjggMy4yLTIuNSA1LjctNC41IDcuN2wtNCAzYTEwNSAxMDUgMCAwIDAtMTIuMyAxMWMtMi40IDIuNC00LjUgNS4xLTUuOCA4LjFhMTggMTggMCAwIDAtMS41IDYuOXYuNGExOSAxOSAwIDAgMCAwIDYuNHYuNGExOCAxOCAwIDAgMCAxLjUgNi45YzEuMyAzIDMuNCA1LjcgNS44IDguMWwuNi42YzMuNSAzLjYgNy41IDYuOCA4LjggOGwtNCAzLjhjLTExLjggMTEuOS0xMS45IDMxLjMtLjEgNDMuMnoiIGZpbGw9ImN1cnJlbnRDb2xvciIvPjwvZONnPg==");
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBkPSJNNDU2IDEyOFY4N2EyMy45IDIzLjkgMCAwIDAtMjQtMjRIMzM2Vjhjb3VudGVyMCAwIDAgMS0zIDZjMCA0LTEzIDE2LTIzIDI5LTE1IDIwLTE4IDM0LTE4IDUwaDBjMC0xNi0zLTMwLTE4LTUwQzI2NCAzMCAyNTEgMTggMjUxIDE0YzAtNS0zLTktOC05cy05IDQtOSA5YzAgNS0xMiAxNi0yMyAyOS0xNSAyMC0xOCAzMy0xOCA0OWhyYzAtMTYtMy0yOS0xOC00OUMxNjUgMjkgMTUyIDE4IDE1MiAxNGMwLTYtNC0xMC05LTEwcy04IDQtOCA5YzAgNS0xMyAxNi0yMyAyOS0xNSAyMC0xOCAzNC0xOCA1MGgwYzAgMTYtMSA0My04IDUwSDgwQTIzLjkgMjMuOSAwIDAgMCA1NiA4N3Y0MWMwIDE0IDUgMjcgMTUgMzZhNDcuNSA0Ny41IDAgMCAxIDE0IDM0djJhMjMuOSAyMy45IDAgMCAwIDI0IDI0aDEzYy42IDAgMSAuMiAxIDFhOTYuOCA5Ni44IDAgMCAwIDk2IDk2aDBhOTMuNCAwIDAgMCA0Ny0xM2gwYTk2LjEgOTYuMSAwIDAgMCA1MCAxM2gwYTk2LjggOTYuOCAwIDAgMCA5NS05NmMwLS44LjQtMSAxLTFoMTNhMjMuOSAyMy45IDAgMCAwIDI0LTI0di0yYTQ3LjUgNDcuNSAwIDAgMSAxNC0zNGM5LjctOS40IDE0LjgtMjIgMTQuOC0zNnpNMTE0LjUgMjk4LjlhMSAxIDAgMCAxLTIgLjJoMGExLjQgMS40IDAgMCAxIDAtLjV2LS4zYzIuMi0xNy43IDE3LjctMzIuNCAzNS41LTM0LjlhMS44IDEuOCAwIDAgMCAxLjYtMS44di0uMWMwLTQtLjktNy44LTguMi0xMC43bS0xOSA4OS4xaC0uM2gwYy0uNCAwLS44LS43LTEtMS4zdi0uMWE1OS4zIDU5LjMgMCAwIDEgMC0zMy4ydi0uMWMuMi0uNi42LTEuMiAxLTEuM2gwYy40IDAgLjguNyAxIDEuM3YuMWE2Mi44IDYyLjggMCAwIDEgMCAzMy4ydi4xYy0uMS42LS41IDEuMy0uOSAxLjN6bTEyMi0yMDcuOWwtLjIuMWEyMS41IDIxLjUgMCAwIDAtMTUuOSAxNS45bC0uMS4yYy0uNS0uMS0uOSAwLTEuNSAwbC0uMS0uMmEyMS41IDIxLjUgMCAwIDAtMTUuOS0xNS45bC0uMi0uMS4yLS4xYTIxLjUgMjEuNSAwIDAgMCAxNS45LTE1LjlsLjEtLjJjLjUuMS45IDAgMS41IDBsLjEuMmEyMS41IDIxLjUgMCAwIDAgMTUuOSAxNS45bC4yLjF6bTEuOCAxNjMuOWguM2gwYy40IDAgLjgtLjcgMS0xLjN2LS4xYTU5LjMgNTkuMyAwIDAgMSAwLTMzLjJ2LS4xYy0uMi0uNi0uNi0xLjItMS0xLjNoMGMtLjQgMC0uOC43LTEgMS4zdi4xYTYwLjYgNjAuNiAwIDAgMSAwIDMzLjJ2LjFjLjIuNi41IDEuMyAxIDEuM3ptMTktNTR2.2YzUtMzAuMyAxMi0xMi4yIDQuNy00LjljMi40LTIuNCA0LjUtNS4xIDUuOC04LjFhMTggMTggMCAwIDAgMS41LTYuOXYtLjRhMTkgMTkgMCAwIDAgMC02LjR2LS40YTE4IDE4IDAgMCAwLTEuNS02LjljLTEuMy0zLTMuNC01LjctNS44LTguMWExMDUgMTA1IDAgMCAwLTEyLjMtMTFsLTQtM2ExNC4zIDE0LjMgMCAwIDEtNC41LTcuN2MtLjUtMi44LS4xLTUuOCAxLjgtNy44bC40LjNhMTAuOCAxMC44IDAgMCAwIDEyLjQgMS42IDkuMyA5LjMgMCAwIDAgNC4yLTYuM2MuMy0yLjktMS4xLTYtMy43LTcuOGwtLjctLjRhMTkuOSAxOS45IDAgMCAwLTktNS40aC0uM2MtNC0uOS04LjItLjMtMTEuNyAxLjdsLTIuNiAxLjRjLTMuNCAxLjgtNi43IDMuNi0xMC4zIDQuOWgtLjFjLTMuNSAxLjMtNy4yIDIuMS0xMSAyLjFoLTEuM2E1MC44IDUwLjggMCAwIDEtMTItMi4xYy0zLjUtMS4zLTYuOS0zLjEtMTAuMy00LjlsLTIuNi0xLjRhMjAuOCAyMC44IDAgMCAwLTExLjctMS43aC0uM2ExOC4zIDE4LjMgMCAwIDAtOSA1LjRsLS43LjRjLTIuNiAxLjgtNCAxLjgtMy43IDcuOGE5LjMgOS4zIDAgMCAwIDQuMiA2LjMgMTAuOCAxMC44IDAgMCAwIDEyLjQtMS42bC40LS4zYTcuOCA3LjggMCAwIDEgMS44IDcuOGMtLjggMy4yLTIuNSA1LjctNC41IDcuN2wtNCAzYTEwNSAxMDUgMCAwIDAtMTIuMyAxMWMtMi40IDIuNC00LjUgNS4xLTUuOCA4LjFhMTggMTggMCAwIDAtMS41IDYuOXYuNGExOSAxOSAwIDAgMCAwIDYuNHYuNGExOCAxOCAwIDAgMCAxLjUgNi45YzEuMyAzIDMuNCA1LjcgNS44IDguMWwuNi42YzMuNSAzLjYgNy41IDYuOCA4LjggOGwtNCAzLjhjLTExLjggMTEuOS0xMS45IDMxLjMtLjEgNDMuMnoiIGZpbGw9ImN1cnJlbnRDb2xvciIvPjwvc3ZnPg==");
 }
 
 .card-queen {
@@ -129,15 +129,22 @@
   opacity: 0.7;
 }
 
-/* Hidden card styling (for opponent cards) */
+/* Card base styles */
 .card {
-  width: 100px; /* Increased from 80px */
+  width: 100px;
   height: auto;
   aspect-ratio: 2.5/3.5;
-  object-fit: contain;
+  position: relative;
   border-radius: 8px;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
   transition: transform 0.3s ease;
+  overflow: hidden;
+}
+
+.card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .card:hover {
@@ -146,13 +153,7 @@
 }
 
 .card.hidden {
-  width: 100px; /* Increased from 80px */
-  height: auto;
-  aspect-ratio: 2.5/3.5;
-  object-fit: contain;
-  border-radius: 8px;
   background: linear-gradient(135deg, #000a35 0%, #172c66 100%);
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
 }
 
 .card.hidden::before {
@@ -218,57 +219,8 @@
 }
 
 /* Context-specific card sizes */
-.player-card {
-  width: 120px;
-}
-
-.opponent-card {
-  width: 70px;
-}
-
-.table-card {
-  width: 90px;
-}
-
-@media (max-width: 768px) {
-  .card, .card.hidden {
-    width: 60px;
-  }
-  
-  .card-center {
-    font-size: 1.3em;
-  }
-  
-  .card-top,
-  .card-bottom {
-    font-size: 0.6em;
-  }
-}
-
-@media (max-width: 480px) {
-  .card, .card.hidden {
-    width: 45px;
-  }
-}
-
-@media (max-height: 600px) and (orientation: landscape) {
-  .card.realistic, .card.hidden {
-    width: 35px;
-    height: 50px;
-  }
-  
-  .card-center {
-    font-size: 1.1em;
-  }
-}
-
-/* Card context-specific styles */
 .card-player {
-  width: 110px; /* Slightly reduced from 120px */
-  height: auto;
-  aspect-ratio: 2.5/3.5;
-  object-fit: contain;
-  border-radius: 12px;
+  width: 110px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5), 0 0 25px rgba(0, 229, 255, 0.4);
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   z-index: 2;
@@ -277,6 +229,26 @@
   transform-origin: center bottom;
 }
 
+.card-opponent {
+  width: 90px;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: cardDealOpponent 0.4s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+  transform-origin: center bottom;
+}
+
+.card-community {
+  width: 95px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 229, 255, 0.25);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  margin: 0 1px;
+  flex-shrink: 1;
+  transform: translateZ(5px);
+}
+
+/* Animations */
 @keyframes cardDealPlayer {
   0% {
     opacity: 0;
@@ -292,25 +264,6 @@
   }
 }
 
-.card-player:hover {
-  transform: translateY(-15px) scale(1.2);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 229, 255, 0.6);
-  z-index: 10;
-}
-
-.card-opponent {
-  width: 90px; /* Slightly reduced from 100px */
-  height: auto;
-  aspect-ratio: 2.5/3.5;
-  object-fit: contain;
-  border-radius: 10px;
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.4);
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  animation: cardDealOpponent 0.4s cubic-bezier(0.19, 1, 0.22, 1) forwards;
-  transform-origin: center bottom;
-}
-
 @keyframes cardDealOpponent {
   0% {
     opacity: 0;
@@ -322,62 +275,88 @@
   }
 }
 
+/* Hover effects */
+.card-player:hover {
+  transform: translateY(-15px) scale(1.2);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 229, 255, 0.6);
+  z-index: 10;
+}
+
 .card-opponent:hover {
   transform: translateY(-8px) scale(1.1);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
 }
 
-.card-winner {
-  width: 120px; /* Increased from 100px */
-  height: auto;
-  aspect-ratio: 2.5/3.5;
-  object-fit: contain;
-  border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(241, 196, 15, 0.6), 0 0 30px rgba(241, 196, 15, 0.5);
-  transition: all 0.3s ease;
-  animation: winnerCardPulse 2s infinite alternate;
-  border: 2px solid rgba(241, 196, 15, 0.4);
-}
-
-@keyframes winnerCardPulse {
-  0% { box-shadow: 0 6px 15px rgba(241, 196, 15, 0.6), 0 0 25px rgba(241, 196, 15, 0.4); }
-  100% { box-shadow: 0 6px 15px rgba(241, 196, 15, 0.9), 0 0 35px rgba(241, 196, 15, 0.7); }
-}
-
-/* Media queries for responsive cards */
-@media (max-width: 768px) {
-  .card-player {
-    width: 85px; /* Reduced from 90px */
-  }
-  
-  .card-opponent {
-    width: 75px; /* Reduced from 80px */
-  }
-  
-  .card-winner {
-    width: 90px; /* Reduced from 100px */
-  }
-}
-
-/* Card for community area */
-.card-community {
-  width: 95px; /* Increased from 80px */
-  height: auto;
-  aspect-ratio: 2.5/3.5;
-  object-fit: contain;
-  border-radius: 10px; /* Increased from 8px */
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 229, 255, 0.25);
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  border: 2px solid rgba(255, 255, 255, 0.35); /* Thicker border */
-  margin: 0 1px;
-  flex-shrink: 1;
-  transform: translateZ(5px);
-}
-
 .card-community:hover {
-  transform: translateY(-18px) scale(1.3); /* Increased from 1.25 */
+  transform: translateY(-18px) scale(1.3);
   z-index: 10;
   box-shadow: 0 15px 30px rgba(0, 0, 0, 0.7), 0 0 35px rgba(0, 229, 255, 0.6);
+}
+
+/* Winning card styles */
+.card[data-context="winning-community"],
+.card[data-context="winning-player"],
+.card[data-context="winning-opponent"] {
+  box-shadow: 0 0 15px 5px #ffde59, 0 0 30px 10px rgba(255, 215, 0, 0.5);
+  border: 2px solid gold;
+  animation: winningCardPulse 1.5s infinite alternate ease-in-out;
+  z-index: 10;
+}
+
+@keyframes winningCardPulse {
+  0% {
+    box-shadow: 0 0 15px 5px #ffde59, 0 0 30px 10px rgba(255, 215, 0, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 20px 8px #ffde59, 0 0 40px 15px rgba(255, 215, 0, 0.7);
+  }
+}
+
+/* Winner badge styling */
+.winner-badge {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: gold;
+  color: #333;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: bold;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  z-index: 20;
+  white-space: nowrap;
+  text-transform: capitalize;
+}
+
+/* Winning hand display in the center of the table */
+.winning-hand-display {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-size: 14px;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  border: 1px solid gold;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 50;
+}
+
+.winning-hand-display .winner-name {
+  font-weight: bold;
+  color: gold;
+  margin-bottom: 3px;
+}
+
+.winning-hand-display .hand-type {
+  text-transform: capitalize;
 }
 
 /* Media queries for responsive cards */
@@ -391,28 +370,39 @@
   }
   
   .card-community {
-    width: 75px; /* Increased from 65px */
+    width: 75px;
     margin: 0;
   }
   
-  .card-winner {
-    width: 90px;
+  .winner-badge {
+    font-size: 10px;
+    padding: 1px 6px;
+  }
+  
+  .winning-hand-display {
+    font-size: 12px;
+    padding: 3px 10px;
   }
 }
 
 @media (max-width: 480px) {
-  .card, .card.hidden {
+  .card {
     width: 45px;
+  }
+  
+  .winner-badge {
+    font-size: 8px;
+    padding: 1px 4px;
+  }
+  
+  .winning-hand-display {
+    font-size: 10px;
+    padding: 2px 8px;
   }
 }
 
 @media (max-height: 600px) and (orientation: landscape) {
-  .card.realistic, .card.hidden {
+  .card {
     width: 35px;
-    height: 50px;
-  }
-  
-  .card-center {
-    font-size: 1.1em;
   }
 } 

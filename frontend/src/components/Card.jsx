@@ -21,6 +21,7 @@ const getCardRank = (rank) => {
 };
 
 const Card = ({ card, hidden, cardContext }) => {
+  // Base card classes
   const cardClasses = ['card'];
   
   // Add context-specific classes
@@ -31,12 +32,16 @@ const Card = ({ card, hidden, cardContext }) => {
   if (hidden) {
     cardClasses.push('hidden');
     return (
-      <img 
-        src="/cards/back.svg" 
-        alt="Card Back" 
+      <div 
         className={cardClasses.join(' ')} 
         data-context={cardContext || 'default'}
-      />
+      >
+        <img 
+          src="/cards/back.svg" 
+          alt="Card Back" 
+          className="card-img"
+        />
+      </div>
     );
   }
 
@@ -48,12 +53,16 @@ const Card = ({ card, hidden, cardContext }) => {
   cardClasses.push(suit.toLowerCase());
 
   return (
-    <img 
-      src={cardImage} 
-      alt={`${cardRank} of ${suit}`} 
+    <div 
       className={cardClasses.join(' ')}
       data-context={cardContext || 'default'}
-    />
+    >
+      <img 
+        src={cardImage} 
+        alt={`${cardRank} of ${suit}`} 
+        className="card-img"
+      />
+    </div>
   );
 };
 

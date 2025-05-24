@@ -387,6 +387,16 @@
     min-height: 22px;
     font-size: 0.75rem;
   }
+  
+  .winner-badge {
+    font-size: 9px;
+    padding: 2px 8px;
+    top: -25px;
+  }
+  
+  .player.current-player .winner-badge {
+    top: -20px;
+  }
 }
 
 @media (max-height: 600px) {
@@ -396,6 +406,12 @@
   
   .player-cards-container {
     min-height: 40px;
+  }
+  
+  .winner-badge {
+    font-size: 8px;
+    padding: 2px 6px;
+    top: -20px;
   }
 }
 
@@ -434,4 +450,35 @@
 @keyframes borderTick {
   from { border-image-source: conic-gradient(from 0deg at 50% 50%, transparent 0deg, #f1c40f 0deg 360deg); }
   to { border-image-source: conic-gradient(from 0deg at 50% 50%, transparent 0deg 360deg, #f1c40f 360deg); }
+}
+
+/* Winner badge styling */
+.winner-badge {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(to right, #f1c40f, #f39c12);
+  color: #333;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: bold;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+  z-index: 100;
+  white-space: nowrap;
+  text-transform: capitalize;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+/* Current player winner badge positioning */
+.player.current-player .winner-badge {
+  top: -25px;
+  right: auto;
+  left: 50%;
+  max-width: 200px;
 }

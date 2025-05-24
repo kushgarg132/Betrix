@@ -1,16 +1,16 @@
 .pots-container {
   position: absolute;
-  top: 50%;
+  top: 40%;
   left: 50%;
-  transform: translate(-50%, -120%);
+  transform: translate(-50%, -60%);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   z-index: 5;
-  margin-top: -30px;
   width: 100%;
   max-width: 300px;
+  margin-top: 20px;
 }
 
 .main-pot {

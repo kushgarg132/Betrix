@@ -13,10 +13,34 @@ const Player = memo(({
   isCurrentPlayer, 
   playerCount,
   currentHand,
-  actionDeadline
+  actionDeadline,
+  game // Add game prop to access winners information
 }) => {
   // State to track the remaining time percentage for the border animation
   const [borderProgress, setBorderProgress] = useState(100);
+  
+  // Get the winning cards from the best hand if available
+  const isWinner = game?.winners?.some(winner => winner.username === player.username);
+  
+  // Get ALL winning cards (combine highCards and bestFiveCards)
+  let winningCards = [];
+  if (isWinner) {
+    const winnerData = game.winners.find(w => w.username === player.username);
+    if (winnerData?.bestHand) {
+      // Get highCards (important cards)
+      const highCards = winnerData.bestHand.highCards || [];
+      // Combine them (we'll remove duplicates later)
+      winningCards = [...highCards];
+    }
+  }
+  
+  // Create a map of winning cards for O(1) lookup
+  const winningCardMap = {};
+  if (winningCards.length > 0) {
+    winningCards.forEach(card => {
+      winningCardMap[`${card.rank}-${card.suit}`] = true;
+    });
+  }
   
   // Effect to calculate and update the border progress based on action deadline
   useEffect(() => {
@@ -87,6 +111,7 @@ const Player = memo(({
         className={`player ${blindStatus ? blindStatus : ''} 
                    ${playerCount}-players 
                    ${isCurrentTurn ? 'current-turn' : ''}
+                   ${isWinner ? 'winner' : ''}
                    current-player`}
         data-position={displayPosition}
         style={{
@@ -112,13 +137,17 @@ const Player = memo(({
         <div className="player-cards-container">
           <div className="player-cards">
             {currentHand && currentHand.length > 0 ? (
-              currentHand.map((card, idx) => (
-                <Card 
-                  key={`player-card-${idx}-${card.suit}-${card.rank}`} 
-                  card={card} 
-                  cardContext="player" 
-                />
-              ))
+              currentHand.map((card, idx) => {
+                // Check if this card is part of the winning hand
+                const isWinningCard = winningCardMap[`${card.rank}-${card.suit}`];
+                return (
+                  <Card 
+                    key={`player-card-${idx}-${card.suit}-${card.rank}`} 
+                    card={card} 
+                    cardContext={isWinningCard ? "winning-player" : "player"} 
+                  />
+                );
+              })
             ) : (
               <>
                 <Card hidden={true} cardContext="player" />
@@ -127,6 +156,12 @@ const Player = memo(({
             )}
           </div>
         </div>
+        
+        {isWinner && player.bestHand && (
+          <div className="winner-badge">
+            {player.bestHand.rank.replace(/_/g, ' ')}
+          </div>
+        )}
         
         {blindStatus && (
           <div className={`blind-indicator ${blindStatus}`}>
@@ -149,6 +184,7 @@ const Player = memo(({
       className={`player ${blindStatus ? blindStatus : ''} 
                  ${playerCount}-players 
                  ${isCurrentTurn ? 'current-turn' : ''}
+                 ${isWinner ? 'winner' : ''}
                  ${isCurrentPlayer ? 'current-player' : ''}`}
       data-position={displayPosition}
       style={{
@@ -169,11 +205,34 @@ const Player = memo(({
         {/* Show hidden cards for opponents unless they've folded */}
         {!player.hasFolded && (
           <div className="opponent-cards">
-            <Card hidden={true} cardContext="opponent" />
-            <Card hidden={true} cardContext="opponent" />
+            {isWinner && player.hand && player.hand.length > 0 ? (
+              player.hand.map((card, idx) => {
+                // Check if this card is part of the winning hand
+                const isWinningCard = winningCardMap[`${card.rank}-${card.suit}`];
+                return (
+                  <Card 
+                    key={`opponent-card-${idx}-${card.suit}-${card.rank}`} 
+                    card={card} 
+                    hidden={false}
+                    cardContext={isWinningCard ? "winning-opponent" : "opponent"} 
+                  />
+                );
+              })
+            ) : (
+              <>
+                <Card hidden={true} cardContext="opponent" />
+                <Card hidden={true} cardContext="opponent" />
+              </>
+            )}
           </div>
         )}
       </div>
+      
+      {isWinner && player.bestHand && (
+        <div className="winner-badge">
+          {player.bestHand.rank.replace(/_/g, ' ')}
+        </div>
+      )}
       
       <div className="player-info-container">
         <div className="chips">${player.chips}</div>

@@ -297,52 +297,7 @@ const PokerTable = () => {
       />
 
       <div className="poker-table-main">
-        {game.winners?.length > 0 && (
-          <div className="winners-overlay">
-            <h2>Winner{game.winners.length > 1 ? 's' : ''}!</h2>
-            <div className="winners-list">
-              {game.winners.map((winner, index) => (
-                <div key={winner.username || index} className="winner-card">
-                  <div className="winner-header">
-                    <h3 className="winner-name">{winner.username}</h3>
-                    <div className="winner-amount">
-                      ${winner.lastWinAmount ? winner.lastWinAmount.toFixed(2) : '?'}
-                    </div>
-                  </div>
-                  
-                  {winner.bestHand && winner.bestHand.rank && (
-                    <div className="winner-hand-rank">
-                      <span className="rank-label">Hand:</span>
-                      <span className="rank-value">
-                        {typeof winner.bestHand.rank === 'string' 
-                          ? winner.bestHand.rank.replace(/_/g, ' ') 
-                          : winner.bestHand.rank}
-                      </span>
-                    </div>
-                  )}
-                  
-                  {winner && winner.hand && winner.hand.length > 0 && (
-                    <div className="winner-section">
-                      <div className="winner-cards">
-                        {winner.hand.map((card, cardIndex) => (
-                          <Card 
-                            key={`winner-${index}-card-${cardIndex}-${card.rank}-${card.suit}`} 
-                            card={card} 
-                            hidden={false} 
-                            cardContext="winner"
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-            <button className="next-round-button" onClick={() => console.log("Next round will start automatically")}>
-              Next round starting soon...
-            </button>
-          </div>
-        )}
+
 
         <Table 
           isMyTurn={isMyTurn} 
@@ -371,6 +326,7 @@ const PokerTable = () => {
                 playerCount={game.players.length}
                 currentHand={currentPlayer.hand}
                 actionDeadline={game.currentPlayerActionDeadline}
+                game={game}
               />
               );
             })}
