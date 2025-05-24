@@ -1,8 +1,6 @@
 import React from 'react';
 import './Card.css';
 
-
-
 const getCardRank = (rank) => {
   switch (rank) {
     case "TWO": return '2';
@@ -23,25 +21,38 @@ const getCardRank = (rank) => {
 };
 
 const Card = ({ card, hidden, cardContext }) => {
-  const classNames = ['card'];
+  const cardClasses = ['card'];
+  
+  // Add context-specific classes
   if (cardContext) {
-    classNames.push(`${cardContext}-card`);
+    cardClasses.push(`card-${cardContext}`);
   }
-
+  
   if (hidden) {
-    classNames.push('hidden');
-    return <img src="/cards/back.svg" alt="Card Back" className={classNames.join(' ')} />;
+    cardClasses.push('hidden');
+    return (
+      <img 
+        src="/cards/back.svg" 
+        alt="Card Back" 
+        className={cardClasses.join(' ')} 
+        data-context={cardContext || 'default'}
+      />
+    );
   }
 
   const { rank, suit } = card;
   const cardRank = getCardRank(rank);
   const cardImage = `/cards/${cardRank}${suit.charAt(0).toUpperCase()}.svg`;
+  
+  // Add suit class for styling
+  cardClasses.push(suit.toLowerCase());
 
   return (
     <img 
       src={cardImage} 
       alt={`${cardRank} of ${suit}`} 
-      className={classNames.join(' ')}
+      className={cardClasses.join(' ')}
+      data-context={cardContext || 'default'}
     />
   );
 };

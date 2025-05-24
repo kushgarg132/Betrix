@@ -179,9 +179,11 @@ const PokerTable = () => {
               ...(payload.game),
               winners: payload.winners?.map(winner => {
                 console.log("Winner data:", winner);
+                const bestHand = winner.bestHand || payload.bestHand;
                 return {
                   ...winner,
-                  bestHand: winner.bestHand || payload.bestHand
+                  bestHand: bestHand,
+                  hand: winner.hand || []
                 };
               }) || [],
               status: 'ENDED',
@@ -189,7 +191,7 @@ const PokerTable = () => {
               players: payload.game.players || [],
               pots: payload.game.pots || [{ amount: payload.game.pot || 0, eligiblePlayerIds: [] }]
             };
-            console.log("Updated game state:", newGameState);
+            console.log("Updated game state with winners:", newGameState);
             break;
 
           case gameStatus.COMMUNITY_CARDS:
@@ -298,36 +300,47 @@ const PokerTable = () => {
         {game.winners?.length > 0 && (
           <div className="winners-overlay">
             <h2>Winner{game.winners.length > 1 ? 's' : ''}!</h2>
-            <ul>
+            <div className="winners-list">
               {game.winners.map((winner, index) => (
-                <li key={winner.username || index}>
-                  <strong>{winner.username}</strong>
+                <div key={winner.username || index} className="winner-card">
+                  <div className="winner-header">
+                    <h3 className="winner-name">{winner.username}</h3>
+                    <div className="winner-amount">
+                      ${winner.lastWinAmount ? winner.lastWinAmount.toFixed(2) : '?'}
+                    </div>
+                  </div>
+                  
                   {winner.bestHand && winner.bestHand.rank && (
-                    <span className="hand-rank">
-                      {typeof winner.bestHand.rank === 'string' 
-                        ? winner.bestHand.rank.replace(/_/g, ' ') 
-                        : winner.bestHand.rank}
-                    </span>
+                    <div className="winner-hand-rank">
+                      <span className="rank-label">Hand:</span>
+                      <span className="rank-value">
+                        {typeof winner.bestHand.rank === 'string' 
+                          ? winner.bestHand.rank.replace(/_/g, ' ') 
+                          : winner.bestHand.rank}
+                      </span>
+                    </div>
                   )}
                   
                   {winner && winner.hand && winner.hand.length > 0 && (
                     <div className="winner-section">
-                      <h4>Player Hand</h4>
                       <div className="winner-cards">
                         {winner.hand.map((card, cardIndex) => (
                           <Card 
-                            key={`best-${cardIndex}-${card.rank}-${card.suit}`} 
+                            key={`winner-${index}-card-${cardIndex}-${card.rank}-${card.suit}`} 
                             card={card} 
                             hidden={false} 
+                            cardContext="winner"
                           />
                         ))}
                       </div>
                     </div>
                   )}
-                </li>
+                </div>
               ))}
-            </ul>
-            <p>Next round starting soon...</p>
+            </div>
+            <button className="next-round-button" onClick={() => console.log("Next round will start automatically")}>
+              Next round starting soon...
+            </button>
           </div>
         )}
 

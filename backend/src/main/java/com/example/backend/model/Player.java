@@ -1,5 +1,6 @@
 package com.example.backend.model;
 
+import com.example.backend.service.HandEvaluator;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -18,6 +19,8 @@ public class Player {
     private boolean isActive;
     private double currentBet;
     private boolean hasFolded;
+    private double lastWinAmount; // Amount won in the last hand
+    private HandEvaluator.HandResult bestHand; // Best hand for the player
     
     public Player(String name, String username, double initialChips) {
         this.id = UUID.randomUUID().toString();
@@ -28,6 +31,8 @@ public class Player {
         this.isActive = true;
         this.currentBet = 0;
         this.hasFolded = false;
+        this.lastWinAmount = 0;
+        this.bestHand = null;
     }
 
     public Player(Player player) {
@@ -38,7 +43,9 @@ public class Player {
         this.hand = player.getHand() != null ? new ArrayList<>(player.getHand()) : new ArrayList<>();
         this.isActive = player.isActive();
         this.currentBet = player.getCurrentBet();
-        this.hasFolded = player.isHasFolded();;
+        this.hasFolded = player.isHasFolded();
+        this.lastWinAmount = player.getLastWinAmount();
+        this.bestHand = player.getBestHand();
     }
 
     public void hideDetails(){
@@ -51,6 +58,8 @@ public class Player {
         this.currentBet = 0;
         this.hasFolded = false;
         this.isActive = true;
+        this.lastWinAmount = 0;
+        this.bestHand = null;
     }
     
     public void addCard(Card card) {
@@ -76,6 +85,7 @@ public class Player {
             throw new IllegalArgumentException("Award amount cannot be negative");
         }
         chips += amount;
+        lastWinAmount = amount;
     }
     
     /**

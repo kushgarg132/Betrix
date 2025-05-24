@@ -395,6 +395,9 @@ public class BettingManager {
             List<Player> allWinners = new ArrayList<>();
             Map<Player, Double> winningsMap = new HashMap<>();
             
+            // Store the best hand for each winner
+            Map<Player, HandEvaluator.HandResult> winnerHandResults = new HashMap<>();
+            
             for (int potIndex = 0; potIndex < allPots.size(); potIndex++) {
                 Pot pot = allPots.get(potIndex);
                 double potAmount = pot.getAmount();
@@ -432,6 +435,8 @@ public class BettingManager {
                     HandEvaluator.HandResult result = playerResults.get(player);
                     if (compareHandResults(result, bestResult) == 0) {
                         potWinners.add(player);
+                        // Store the hand result for this winner
+                        winnerHandResults.put(player, result);
                     }
                 }
                 
@@ -458,6 +463,13 @@ public class BettingManager {
                 Player winner = entry.getKey();
                 double winAmount = entry.getValue();
                 winner.awardPot(winAmount);
+                
+                // Set the amount won in the player object for UI display
+                winner.setLastWinAmount(winAmount);
+                
+                // Attach the best hand result to each winner
+                winner.setBestHand(winnerHandResults.get(winner));
+                
                 logger.debug("Player {} awarded total of {}", winner.getUsername(), winAmount);
             }
 
@@ -466,7 +478,7 @@ public class BettingManager {
                     game.getId(),
                     new Game(game),
                     allWinners,
-                    null // We don't have a single best result anymore
+                    null // We don't have a single best result anymore, each winner has their own
             ));
 
         } catch (Exception e) {

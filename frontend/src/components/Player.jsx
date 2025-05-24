@@ -37,15 +37,9 @@ const Player = memo(({
       return;
     }
     
-    console.log('Action deadline:', actionDeadline);
-    console.log('Total duration:', totalDuration);
-    
     const updateBorderProgress = () => {
       const now = new Date().getTime();
       const remaining = deadline - now;
-      
-      // Log for debugging
-      console.log('Time remaining:', remaining);
       
       if (remaining <= 0) {
         setBorderProgress(0);
@@ -54,7 +48,6 @@ const Player = memo(({
       
       // Calculate percentage of time remaining
       const remainingPercentage = Math.max(0, Math.min(100, (remaining / totalDuration) * 100));
-      console.log('Border progress:', remainingPercentage);
       setBorderProgress(remainingPercentage);
     };
     
@@ -106,19 +99,32 @@ const Player = memo(({
           <div className="opponent-bet-display current-player-bet">${playerBet}</div>
         )}
         
-        <div className="player-avatar">
-          <div className="player-name">{player.username}</div>
-        </div>
-        
-        <div className="player-info-container">
-          <div className="chips">${player.chips}</div>
+        <div className="current-player-content">
+          <div className="player-avatar">
+            <div className="player-name">{player.username}</div>
+          </div>
+          
+          <div className="player-info-container">
+            <div className="chips">${player.chips}</div>
+          </div>
         </div>
         
         <div className="player-cards-container">
           <div className="player-cards">
-            {currentHand?.map((card, idx) => (
-              <Card key={`player-card-${idx}`} card={card} cardContext="player" />
-            ))}
+            {currentHand && currentHand.length > 0 ? (
+              currentHand.map((card, idx) => (
+                <Card 
+                  key={`player-card-${idx}-${card.suit}-${card.rank}`} 
+                  card={card} 
+                  cardContext="player" 
+                />
+              ))
+            ) : (
+              <>
+                <Card hidden={true} cardContext="player" />
+                <Card hidden={true} cardContext="player" />
+              </>
+            )}
           </div>
         </div>
         
