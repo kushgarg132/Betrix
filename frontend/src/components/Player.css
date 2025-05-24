@@ -1,29 +1,29 @@
 .player {
   position: absolute !important; /* Force absolute positioning */
-  width: 150px; /* Increased from 130px */
+  width: 9.375rem; /* Converted from 150px */
   height: auto;
-  min-height: 150px; /* Increased from 130px */
-  border-radius: 12px; /* Increased from 10px */
+  min-height: 9.375rem; /* Converted from 150px */
+  border-radius: 0.75rem; /* Converted from 12px */
   background: rgba(0, 0, 0, 0.7);
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.6), 0 0 15px rgba(52, 152, 219, 0.4);
+  box-shadow: 0 0 1.25rem rgba(0, 0, 0, 0.6), 0 0 0.9375rem rgba(52, 152, 219, 0.4); /* Converted from 0 0 20px, 0 0 15px */
   display: flex !important;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   color: white;
-  padding: 10px;
-  border: 2px solid rgba(52, 152, 219, 0.4);
+  padding: 0.625rem; /* Converted from 10px */
+  border: 0.125rem solid rgba(52, 152, 219, 0.4); /* Converted from 2px */
   overflow: visible;
-  backdrop-filter: blur(3px);
+  backdrop-filter: blur(0.1875rem); /* Converted from 3px */
   z-index: 20;
   transition: all 0.2s ease, border-image 0.1s linear;
   transform-origin: center center; /* Fixed transform origin */
   border-style: solid;
-  border-width: 2px;
+  border-width: 0.125rem; /* Converted from 2px */
 }
 
 .player.current-turn {
-  box-shadow: 0 0 25px rgba(241, 196, 15, 0.7);
+  box-shadow: 0 0 1.5625rem rgba(241, 196, 15, 0.7); /* Converted from 0 0 25px */
   border-color: #f1c40f;
   z-index: 25;
   /* The border-image property will be set dynamically in JS */
@@ -31,17 +31,17 @@
 
 .player.current-player {
   background: rgba(0, 20, 40, 0.8);
-  border: 2px solid rgba(52, 152, 219, 0.7);
+  border: 0.125rem solid rgba(52, 152, 219, 0.7); /* Converted from 2px */
   z-index: 25;
-  padding: 12px;
+  padding: 0.75rem; /* Converted from 12px */
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
   justify-content: space-between !important;
   width: auto !important;
-  min-width: 350px !important;
-  max-width: 420px !important;
-  gap: 20px;
+  min-width: 21.875rem !important; /* Converted from 350px */
+  max-width: 26.25rem !important; /* Converted from 420px */
+  gap: 1.25rem; /* Converted from 20px */
 }
 
 /* Fixed, clear positions for all players - with !important flags to ensure visibility */
@@ -49,9 +49,9 @@
   bottom: 5% !important;
   left: 50% !important;
   transform: translateX(-50%) !important;
-  width: 130px !important;
+  width: 8.125rem !important; /* Converted from 130px */
   height: auto !important;
-  max-height: 140px !important;
+  max-height: 8.75rem !important; /* Converted from 140px */
   z-index: 24 !important;
 }
 
@@ -102,17 +102,17 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 5px;
+  margin-bottom: 0.3125rem; /* Converted from 5px */
 }
 
 .player-name {
   font-size: 1rem;
   font-weight: bold;
   color: #ffffff;
-  text-shadow: 0 0 5px rgba(0, 229, 255, 0.4);
-  padding: 3px 8px;
+  text-shadow: 0 0 0.3125rem rgba(0, 229, 255, 0.4); /* Converted from 0 0 5px */
+  padding: 0.1875rem 0.5rem; /* Converted from 3px 8px */
   background: rgba(0, 0, 0, 0.3);
-  border-radius: 12px;
+  border-radius: 0.75rem; /* Converted from 12px */
   z-index: 3;
   display: inline-block;
 }
@@ -122,14 +122,14 @@
   width: 100%;
   display: flex;
   justify-content: center;
-  margin: 5px 0;
-  min-height: 50px;
+  margin: 0.3125rem 0; /* Converted from 5px 0 */
+  min-height: 3.125rem; /* Converted from 50px */
 }
 
 .player-cards {
   display: flex;
   justify-content: center;
-  gap: 5px;
+  gap: 0.3125rem; /* Converted from 5px */
   position: relative;
   z-index: 2;
 }
@@ -139,12 +139,12 @@
   gap: 0;
   position: relative;
   z-index: 2;
-  margin-top: 8px;
-  perspective: 800px;
+  margin-top: 0.5rem; /* Converted from 8px */
+  perspective: 50rem; /* Converted from 800px */
 }
 
 .opponent-cards .card.hidden {
-  margin: 0 -30px 0 0; /* Increased overlap from -25px */
+  margin: 0 -1.875rem 0 0; /* Converted from -30px */
   transform: rotate(-5deg);
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
@@ -155,7 +155,7 @@
 }
 
 .opponent-cards .card.hidden:hover {
-  transform: translateY(-10px) rotate(0);
+  transform: translateY(-0.625rem) rotate(0); /* Converted from -10px */
   z-index: 3;
   margin-right: 0; /* Remove overlap on hover */
 }
@@ -171,7 +171,7 @@
   flex-direction: column;
   align-items: center;
   width: 100%;
-  margin-top: 5px;
+  margin-top: 0.3125rem; /* Converted from 5px */
   position: relative;
 }
 
@@ -179,94 +179,95 @@
   font-size: 1rem;
   color: #ffffff;
   background: rgba(0, 0, 0, 0.4);
-  padding: 3px 8px;
-  border-radius: 12px;
+  padding: 0.1875rem 0.5rem; /* Converted from 3px 8px */
+  border-radius: 0.75rem; /* Converted from 12px */
   font-weight: bold;
   display: inline-block;
-  text-shadow: 0 0 3px rgba(0, 229, 255, 0.4);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-  border: 1px solid rgba(0, 229, 255, 0.2);
+  text-shadow: 0 0 0.1875rem rgba(0, 229, 255, 0.4); /* Converted from 0 0 3px */
+  box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.3); /* Converted from 0 2px 4px */
+  border: 0.0625rem solid rgba(0, 229, 255, 0.2); /* Converted from 1px */
 }
 
 .player-bet {
   font-size: 0.8rem;
   color: #ffffff;
   background: rgba(0, 0, 0, 0.3);
-  padding: 2px 6px;
-  border-radius: 10px;
+  padding: 0.125rem 0.375rem; /* Converted from 2px 6px */
+  border-radius: 0.625rem; /* Converted from 10px */
   font-weight: 500;
   display: inline-block;
-  margin-top: 3px;
+  margin-top: 0.1875rem; /* Converted from 3px */
 }
 
 /* Opponent bet display - smaller and more compact */
 .opponent-bet-display {
   position: absolute;
-  top: -10px;
-  right: -10px;
+  top: -0.625rem; /* Converted from -10px */
+  right: -0.625rem; /* Converted from -10px */
   background: radial-gradient(circle at center, rgba(0, 229, 255, 0.8) 0%, rgba(30, 144, 255, 0.8) 100%);
   color: white;
   border-radius: 50%;
-  padding: 3px;
-  min-width: 24px;
-  min-height: 24px;
+  padding: 0.1875rem; /* Converted from 3px */
+  min-width: 1.5rem; /* Converted from 24px */
+  min-height: 1.5rem; /* Converted from 24px */
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
   font-size: 0.75rem;
-  box-shadow: 0 0 10px rgba(0, 229, 255, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 0.625rem rgba(0, 229, 255, 0.4); /* Converted from 0 0 10px */
+  border: 0.0625rem solid rgba(255, 255, 255, 0.8); /* Converted from 1px */
   transform: scale(0.9);
   animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   z-index: 30; /* Increased z-index to ensure visibility */
-  text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 0 0.3125rem rgba(0, 0, 0, 0.5); /* Converted from 0 0 5px */
 }
 
 /* Special styling for current player bet display */
 .current-player-bet {
-  top: -8px;
-  right: -8px;
+  top: -0.5rem; /* Converted from -8px */
+  right: -0.5rem; /* Converted from -8px */
   z-index: 30; /* Higher z-index to ensure visibility */
   font-weight: 700;
-  min-width: 26px;
-  min-height: 26px;
+  min-width: 1.625rem; /* Converted from 26px */
+  min-height: 1.625rem; /* Converted from 26px */
   font-size: 0.8rem;
 }
 
 .blind-indicator {
   position: absolute;
-  top: -25px;
-  right: -10px;
+  top: -1.5625rem; /* Converted from -25px */
+  right: -0.625rem; /* Converted from -10px */
   background: rgba(0, 0, 0, 0.7);
   font-size: 0.8rem;
   font-weight: bold;
-  padding: 4px;
+  padding: 0.25rem; /* Converted from 4px */
   border-radius: 50%;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.4); /* Converted from 0 0 8px */
   z-index: 10;
-  width: 20px;
-  height: 20px;
+  width: 1.25rem; /* Converted from 20px */
+  height: 1.25rem; /* Converted from 20px */
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .big-blind .blind-indicator {
-  color: #e74c3c;
-  border: 1px solid rgba(231, 76, 60, 0.6);
+  background: #f1c40f;
+  color: #000;
 }
 
 .small-blind .blind-indicator {
-  color: #f1c40f;
-  border: 1px solid rgba(241, 196, 15, 0.6);
+  background: #3498db;
+  color: #fff;
 }
 
 .bet-chips {
   position: absolute;
-  top: -35px;
+  top: 100%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
+  z-index: 5;
 }
 
 /* New container for player info and avatar */
@@ -333,94 +334,101 @@
 /* Responsive styles */
 @media (max-width: 768px) {
   .player {
-    width: 130px;
-    min-height: 130px;
-    padding: 8px;
+    width: 7.5rem; /* Converted from 120px */
+    min-height: 7.5rem; /* Converted from 120px */
+    padding: 0.5rem; /* Converted from 8px */
+    border-radius: 0.625rem; /* Converted from 10px */
   }
   
   .player[data-position="0"] {
-    width: 120px !important;
-    max-height: 130px !important;
+    width: 6.875rem !important; /* Converted from 110px */
+    max-height: 6.875rem !important; /* Converted from 110px */
   }
   
   .player.current-player {
-    padding: 10px;
-    min-width: 280px !important;
-    max-width: 350px !important;
-    gap: 15px;
+    min-width: 18.75rem !important; /* Converted from 300px */
+    max-width: 21.875rem !important; /* Converted from 350px */
+    padding: 0.5rem; /* Converted from 8px */
+    gap: 0.625rem; /* Converted from 10px */
   }
   
   .player.current-player .player-cards-container {
-    min-width: 140px;
+    margin-right: 0.3125rem; /* Converted from 5px */
   }
   
   .player.current-player .player-cards .card {
-    width: 90px;
-    margin: 0 -25px 0 0;
+    width: 5rem; /* Converted from 80px */
   }
   
   .opponent-cards .card.hidden {
-    margin: 0 -20px 0 0;
+    margin: 0 -1.5625rem 0 0; /* Converted from -25px */
   }
   
   .player-name {
-    font-size: 0.9rem;
+    font-size: 0.875rem; /* Converted from 14px */
   }
   
   .chips {
-    font-size: 0.9rem;
-    padding: 2px 6px;
+    font-size: 0.8125rem; /* Converted from 13px */
+    padding: 0.125rem 0.375rem; /* Converted from 2px 6px */
+    border-radius: 0.5rem; /* Converted from 8px */
   }
   
-  /* Adjust bet display for mobile */
   .opponent-bet-display {
-    min-width: 20px;
-    min-height: 20px;
-    font-size: 0.7rem;
-    top: -6px;
-    right: -6px;
-    padding: 2px;
+    min-width: 1.375rem; /* Converted from 22px */
+    min-height: 1.375rem; /* Converted from 22px */
+    font-size: 0.6875rem; /* Converted from 11px */
+    padding: 0.125rem; /* Converted from 2px */
+    top: -0.5rem; /* Converted from -8px */
+    right: -0.5rem; /* Converted from -8px */
   }
   
   .current-player-bet {
-    min-width: 22px;
-    min-height: 22px;
-    font-size: 0.75rem;
+    min-width: 1.5rem; /* Converted from 24px */
+    min-height: 1.5rem; /* Converted from 24px */
+    font-size: 0.75rem; /* Converted from 12px */
   }
   
   .winner-badge {
-    font-size: 9px;
-    padding: 2px 8px;
-    top: -25px;
+    font-size: 0.625rem; /* Converted from 10px */
+    padding: 0.1875rem 0.375rem; /* Converted from 3px 6px */
   }
   
   .player.current-player .winner-badge {
-    top: -20px;
+    top: -0.75rem; /* Converted from -12px */
+    right: -0.75rem; /* Converted from -12px */
   }
 }
 
 @media (max-height: 600px) {
   .player {
-    min-height: 100px;
+    min-height: 6.875rem; /* Converted from 110px */
+    width: 6.875rem; /* Converted from 110px */
   }
   
   .player-cards-container {
-    min-height: 40px;
+    min-height: 2.5rem; /* Converted from 40px */
   }
   
   .winner-badge {
-    font-size: 8px;
-    padding: 2px 6px;
-    top: -20px;
+    font-size: 0.5625rem; /* Converted from 9px */
+    padding: 0.125rem 0.3125rem; /* Converted from 2px 5px */
+    top: -0.5rem; /* Converted from -8px */
+    right: -0.5rem; /* Converted from -8px */
   }
 }
 
 /* Hide bet text on normal screens but show on mobile */
 .player-bet-small-screen {
   display: none;
-  font-size: 0.8rem;
-  color: #00e5ff;
-  margin-top: 2px;
+  position: absolute;
+  top: -1.25rem; /* Converted from -20px */
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.6);
+  padding: 0.125rem 0.375rem; /* Converted from 2px 6px */
+  border-radius: 0.625rem; /* Converted from 10px */
+  font-size: 0.75rem; /* Converted from 12px */
 }
 
 /* Media query to show bet text on small screens */
@@ -432,53 +440,60 @@
   /* On mobile, hide the opponent-bet-display when in landscape to save space */
   @media (max-height: 500px) {
     .opponent-bet-display {
-      min-width: 18px;
-      min-height: 18px;
-      font-size: 0.65rem;
-      padding: 1px;
+      position: absolute;
+      top: 50%;
+      right: -1.25rem; /* Converted from -20px */
+      transform: translateY(-50%);
+      min-width: 1.25rem; /* Converted from 20px */
+      min-height: 1.25rem; /* Converted from 20px */
+      font-size: 0.625rem; /* Converted from 10px */
     }
   }
 }
 
 /* Modify the animation for bet display to avoid layout shifts */
 @keyframes popIn {
-  0% { transform: scale(0.5); opacity: 0; }
-  100% { transform: scale(0.9); opacity: 1; }
+  0% { transform: scale(0); opacity: 0; }
+  80% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 /* Animation for the ticking border - not used anymore as we're using dynamic JS-based animation */
 @keyframes borderTick {
-  from { border-image-source: conic-gradient(from 0deg at 50% 50%, transparent 0deg, #f1c40f 0deg 360deg); }
-  to { border-image-source: conic-gradient(from 0deg at 50% 50%, transparent 0deg 360deg, #f1c40f 360deg); }
+  0% { border-color: rgba(241, 196, 15, 0.7); }
+  50% { border-color: rgba(241, 196, 15, 1); }
+  100% { border-color: rgba(241, 196, 15, 0.7); }
 }
 
 /* Winner badge styling */
 .winner-badge {
   position: absolute;
-  top: -30px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: linear-gradient(to right, #f1c40f, #f39c12);
-  color: #333;
-  padding: 3px 10px;
-  border-radius: 20px;
-  font-size: 11px;
+  top: -0.625rem; /* Converted from -10px */
+  right: -0.625rem; /* Converted from -10px */
+  background: linear-gradient(135deg, gold, #ffdd57);
+  color: #000;
+  padding: 0.25rem 0.5rem; /* Converted from 4px 8px */
+  border-radius: 0.625rem; /* Converted from 10px */
+  font-size: 0.75rem; /* Converted from 12px */
   font-weight: bold;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
-  z-index: 100;
+  box-shadow: 0 0.3125rem 0.625rem rgba(0, 0, 0, 0.3); /* Converted from 0 5px 10px */
+  z-index: 50;
+  border: 0.0625rem solid rgba(255, 255, 255, 0.6); /* Converted from 1px */
   white-space: nowrap;
-  text-transform: capitalize;
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  max-width: 140px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  pointer-events: none;
+  transform: scale(0);
+  animation: badgeAppear 0.5s 0.5s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes badgeAppear {
+  0% { transform: scale(0); opacity: 0; }
+  70% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 /* Current player winner badge positioning */
 .player.current-player .winner-badge {
-  top: -25px;
-  right: auto;
-  left: 50%;
-  max-width: 200px;
+  top: -1rem; /* Converted from -16px */
+  right: -1rem; /* Converted from -16px */
+  padding: 0.3125rem 0.625rem; /* Converted from 5px 10px */
+  font-size: 0.875rem; /* Converted from 14px */
 }

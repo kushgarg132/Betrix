@@ -6,7 +6,7 @@
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(0.5rem);
   z-index: 2000;
   display: flex;
   justify-content: center;
@@ -20,16 +20,16 @@
 }
 
 .raise-controls {
-  width: 350px;
+  width: 21.875rem;
   max-width: 90%;
   background: linear-gradient(145deg, #0f172a, #1e293b);
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 229, 255, 0.2);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  box-shadow: 0 1.5625rem 3.125rem rgba(0, 0, 0, 0.5), 0 0 0.9375rem rgba(0, 229, 255, 0.2);
   position: relative;
   z-index: 2001;
   animation: scaleIn 0.3s ease-out;
-  border: 1px solid rgba(0, 229, 255, 0.4);
+  border: 0.0625rem solid rgba(0, 229, 255, 0.4);
 }
 
 @keyframes scaleIn {
@@ -41,15 +41,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 25px;
+  margin-bottom: 1.5625rem;
   color: #ecf0f1;
   font-weight: 600;
   font-size: 1.2rem;
 }
 
 .close-button {
-  width: 30px;
-  height: 30px;
+  width: 1.875rem;
+  height: 1.875rem;
   background: rgba(255, 255, 255, 0.1);
   border: none;
   border-radius: 50%;
@@ -69,8 +69,8 @@
 
 .raise-slider-container {
   position: relative;
-  margin: 30px 0;
-  padding: 0 10px;
+  margin: 1.875rem 0;
+  padding: 0 0.625rem;
 }
 
 .slider-track {
@@ -78,18 +78,18 @@
   top: 50%;
   left: 0;
   right: 0;
-  height: 10px;
+  height: 0.625rem;
   background: linear-gradient(to right, #2980b9, #f39c12);
   transform: translateY(-50%);
-  border-radius: 5px;
+  border-radius: 0.3125rem;
   z-index: 0;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 0.125rem 0.25rem rgba(0, 0, 0, 0.3);
 }
 
 .raise-slider {
   -webkit-appearance: none;
   width: 100%;
-  height: 10px;
+  height: 0.625rem;
   background: transparent;
   outline: none;
   position: relative;
@@ -99,13 +99,13 @@
 
 .raise-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 30px;
-  height: 30px;
+  width: 1.875rem;
+  height: 1.875rem;
   border-radius: 50%;
   background: linear-gradient(135deg, #f1c40f, #f39c12);
   cursor: pointer;
-  border: 2px solid #fff;
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+  border: 0.125rem solid #fff;
+  box-shadow: 0 0.3125rem 0.625rem rgba(0, 0, 0, 0.3);
   transition: all 0.2s ease;
   position: relative;
   z-index: 2;
@@ -113,17 +113,17 @@
 
 .raise-slider::-webkit-slider-thumb:hover {
   transform: scale(1.1);
-  box-shadow: 0 8px 15px rgba(241, 196, 15, 0.5);
+  box-shadow: 0 0.5rem 0.9375rem rgba(241, 196, 15, 0.5);
 }
 
 .raise-slider::-moz-range-thumb {
-  width: 30px;
-  height: 30px;
+  width: 1.875rem;
+  height: 1.875rem;
   border-radius: 50%;
   background: linear-gradient(135deg, #f1c40f, #f39c12);
   cursor: pointer;
-  border: 2px solid #fff;
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+  border: 0.125rem solid #fff;
+  box-shadow: 0 0.3125rem 0.625rem rgba(0, 0, 0, 0.3);
   transition: all 0.2s ease;
 }
 
@@ -132,7 +132,7 @@
   justify-content: space-between;
   color: #ecf0f1;
   font-size: 0.9rem;
-  margin: 15px 0 15px;
+  margin: 0.9375rem 0 0.9375rem;
 }
 
 .raise-amount {
@@ -141,28 +141,28 @@
   font-size: 2rem;
   font-weight: 700;
   color: #f1c40f;
-  text-shadow: 0 0 10px rgba(241, 196, 15, 0.4);
-  margin: 15px 0 25px;
+  text-shadow: 0 0 0.625rem rgba(241, 196, 15, 0.4);
+  margin: 0.9375rem 0 1.5625rem;
   text-align: center;
   font-family: 'Orbitron', sans-serif;
   background: rgba(0, 0, 0, 0.2);
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid rgba(241, 196, 15, 0.3);
+  padding: 0.625rem;
+  border-radius: 0.5rem;
+  border: 0.0625rem solid rgba(241, 196, 15, 0.3);
 }
 
 .raise-buttons {
   display: flex;
-  gap: 15px;
+  gap: 0.9375rem;
 }
 
 .confirm-raise-button {
   flex: 2;
-  height: 50px;
+  height: 3.125rem;
   background: linear-gradient(to bottom, #f39c12, #e67e22);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   font-weight: 600;
   font-size: 1rem;
   cursor: pointer;
@@ -171,14 +171,14 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 0 #d35400;
+  box-shadow: 0 0.25rem 0 #d35400;
 }
 
 .confirm-raise-button .action-text {
   font-size: 0.9rem;
   font-weight: 700;
   text-transform: uppercase;
-  margin-bottom: 2px;
+  margin-bottom: 0.125rem;
 }
 
 .confirm-raise-button .action-amount {
@@ -187,86 +187,87 @@
   padding: 0;
   background: transparent;
   border: none;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 0.0625rem 0.125rem rgba(0, 0, 0, 0.3);
 }
 
 .confirm-raise-button:hover {
   background: linear-gradient(to bottom, #e67e22, #d35400);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 0 #d35400;
+  transform: translateY(-0.125rem);
+  box-shadow: 0 0.375rem 0 #d35400;
 }
 
 .confirm-raise-button:active {
-  transform: translateY(2px);
-  box-shadow: 0 2px 0 #d35400;
+  transform: translateY(0.125rem);
+  box-shadow: 0 0.125rem 0 #d35400;
 }
 
 .cancel-raise-button {
   flex: 1;
-  height: 50px;
+  height: 3.125rem;
   background: linear-gradient(to bottom, #95a5a6, #7f8c8d);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   font-weight: 600;
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 0 #616a6b;
+  box-shadow: 0 0.25rem 0 #616a6b;
 }
 
 .cancel-raise-button:hover {
   background: linear-gradient(to bottom, #7f8c8d, #616a6b);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 0 #616a6b;
+  transform: translateY(-0.125rem);
+  box-shadow: 0 0.375rem 0 #616a6b;
 }
 
 .cancel-raise-button:active {
-  transform: translateY(2px);
-  box-shadow: 0 2px 0 #616a6b;
+  transform: translateY(0.125rem);
+  box-shadow: 0 0.125rem 0 #616a6b;
 }
 
 /* Responsive design for raise slider */
 @media (max-width: 768px) {
   .raise-controls {
-    width: 320px;
-    padding: 15px;
+    width: 20rem;
+    padding: 0.9375rem;
   }
   
   .raise-header {
     font-size: 1.1rem;
-    margin-bottom: 15px;
+    margin-bottom: 0.9375rem;
   }
   
   .raise-amount {
     font-size: 1.6rem;
-    margin: 10px 0 20px;
+    margin: 0.625rem 0 1.25rem;
   }
   
   .confirm-raise-button,
   .cancel-raise-button {
-    height: 45px;
+    height: 2.8125rem;
     font-size: 0.9rem;
   }
 }
 
 @media (max-height: 600px) {
   .raise-controls {
-    padding: 12px;
+    padding: 0.75rem;
+    margin: 0.625rem;
   }
   
   .raise-slider-container {
-    margin: 20px 0;
+    margin: 0.9375rem 0;
   }
   
   .raise-amount {
     font-size: 1.4rem;
-    margin: 8px 0 15px;
-    padding: 5px;
+    margin: 0.625rem 0;
+    padding: 0.5rem;
   }
   
   .confirm-raise-button,
   .cancel-raise-button {
-    height: 40px;
+    height: 2.5rem;
   }
 } 

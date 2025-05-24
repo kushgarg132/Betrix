@@ -26,14 +26,14 @@
 
 /* 3D Table Elements */
 .table-felt {
-  width: 95%;
-  max-width: 1000px;
-  height: 520px;
+  width: 85%;
+  max-width: 1200px; /* Match Table.css */
+  height: 580px; /* Match Table.css */
   perspective: 1000px;
-  margin: 30px auto;
+  margin: 0 auto;
   position: relative;
   transform-style: preserve-3d;
-  transform: rotateX(15deg); /* Tilt the table a bit */
+  transform: rotateX(8deg); /* Match Table.css */
   transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), height 0.3s ease;
 }
 
@@ -151,27 +151,29 @@
 }
 
 .community-cards {
-  position: absolute;
-  top: 50%; /* Centered vertically */
-  left: 50%;
-  transform: translate(-50%, -50%);
   display: flex;
-  gap: 12px; /* Increased gap between cards */
-  z-index: 6; /* Higher z-index than player components */
-  margin-top: 20px; /* Adjusted position to be more visible */
+  gap: 0.625rem; /* 10px - match Table.css */
+  justify-content: center;
+  align-items: center;
+  z-index: 5;
+  width: max-content; /* Match Table.css */
+  max-width: 80%; /* Match Table.css */
+  padding: 0.25rem; /* Match Table.css - 4px */
+  position: relative;
+  top: -10%; /* Adjust for relative positioning in PokerTable.css */
 }
 
 /* Realistic card styles */
 .card.realistic {
-  width: 60px; /* Slightly larger */
-  height: 90px;
+  width: 7.5rem; /* Increased from 6.25rem (100px) to 120px */
+  height: 10.5rem; /* Increased proportionally to 168px */
   background-color: #ffffff;
   border-radius: 5px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   padding: 5px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5), 0 0 10px rgba(0, 229, 255, 0.2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6), 0 0 12px rgba(0, 229, 255, 0.3); /* Enhanced shadow */
   position: relative;
   font-family: 'Poppins', sans-serif;
   transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
@@ -201,8 +203,8 @@
 }
 
 .card.realistic:hover {
-  transform: scale(1.15) translateZ(20px) rotateY(5deg);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 229, 255, 0.4);
+  transform: translateY(-6px) translateZ(10px) scale(1.1); /* Enhanced hover effect */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 229, 255, 0.4); /* Enhanced shadow */
   z-index: 10;
 }
 
@@ -1041,26 +1043,15 @@ tr:nth-child(10) .mini-card-container::before {
 /* Responsive styles */
 @media (max-width: 768px) {
   .table-felt {
-    height: 400px;
-    transform: rotateX(10deg); /* Less tilt on mobile */
+    width: 95%;
+    height: 90vh; /* Match Table.css */
+    max-height: 480px; /* Match Table.css */
+    transform: rotateX(5deg); /* Match Table.css */
   }
   
-  .table-felt.my-turn {
-    transform: rotateX(8deg) scale(0.9);
-    height: 420px;
-  }
-  
-  .circular-table {
-    width: calc(100% - 30px);
-    height: calc(100% - 30px);
-    top: 15px;
-    left: 15px;
-    border-radius: 60px;
-  }
-
-  .card {
-    width: 45px;
-    height: 70px;
+  .player {
+    width: 110px;
+    height: 110px;
   }
   
   .card-center {
@@ -1182,6 +1173,27 @@ tr:nth-child(10) .mini-card-container::before {
   
   .game-status-bar {
     display: block; /* Show on mobile */
+  }
+  
+  .community-cards {
+    gap: 0.375rem; /* Match Table.css - 6px */
+    padding: 0.125rem; /* Match Table.css - 2px */
+    max-width: 85%; /* Match Table.css */
+    top: -15%; /* Adjusted for relative positioning */
+  }
+}
+
+@media (max-width: 480px) {
+  .table-felt {
+    height: 80vh; /* Match Table.css */
+    max-height: 440px; /* Match Table.css */
+  }
+  
+  .community-cards {
+    padding: 0; /* Match Table.css */
+    gap: 0.125rem; /* Match Table.css - 2px */
+    max-width: 90%; /* Match Table.css */
+    top: -20%; /* Adjusted for relative positioning */
   }
 }
 
@@ -1910,8 +1922,8 @@ tr:nth-child(10) .mini-card-container::before {
 
 /* Optimize existing animations for better performance */
 .card.realistic:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  transform: translateY(-6px) translateZ(10px) scale(1.1); /* Enhanced hover effect */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 229, 255, 0.4); /* Enhanced shadow */
   z-index: 10;
 }
 
@@ -1922,10 +1934,10 @@ tr:nth-child(10) .mini-card-container::before {
 /* Make table size more responsive */
 .table-felt {
   width: 85%;
-  max-width: 900px;
-  height: 480px;
+  max-width: 1200px; /* Match Table.css */
+  height: 580px; /* Match Table.css */
   margin: 0 auto;
-  transform: rotateX(10deg);
+  transform: rotateX(8deg); /* Match Table.css */
 }
 
 /* Better positioning for players */
@@ -1965,8 +1977,9 @@ tr:nth-child(10) .mini-card-container::before {
 @media (max-width: 768px) {
   .table-felt {
     width: 95%;
-    height: 380px;
-    transform: rotateX(5deg);
+    height: 90vh; /* Match Table.css */
+    max-height: 480px; /* Match Table.css */
+    transform: rotateX(5deg); /* Match Table.css */
   }
   
   .player {
@@ -2059,11 +2072,15 @@ tr:nth-child(10) .mini-card-container::before {
 /* Community cards positioning */
 .community-cards {
   display: flex;
-  gap: 8px;
+  gap: 0.625rem; /* 10px - match Table.css */
   justify-content: center;
   align-items: center;
-  margin-top: 20px;
   z-index: 5;
+  width: max-content; /* Match Table.css */
+  max-width: 80%; /* Match Table.css */
+  padding: 0.25rem; /* Match Table.css - 4px */
+  position: relative;
+  top: -10%; /* Adjust for relative positioning in PokerTable.css */
 }
 
 /* Specific styling to ensure current player UI is not too large */
@@ -2269,4 +2286,31 @@ tr:nth-child(10) .mini-card-container::before {
 @keyframes pulseButton {
   0% { box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); }
   100% { box-shadow: 0 5px 20px rgba(52, 152, 219, 0.6); }
+}
+
+@media (max-width: 480px) {
+  .table-felt {
+    height: 70vh;
+    max-height: 400px;
+  }
+  
+  .winning-hand-display {
+    top: 16%;
+    font-size: 0.65rem;
+    padding: 0.2em 0.4em;
+  }
+  
+  .community-cards {
+    transform: translate(-50%, -10%);
+    padding: 0; /* Match Table.css - no padding */
+    gap: 0.125rem; /* Match Table.css - 2px */
+    top: 60%;
+    max-width: 90%; /* Match Table.css */
+  }
+  
+  /* Make sure there are no width constraints */
+  .community-cards .card {
+    /* No fixed width - will use the Card.css values */
+    width: auto;
+  }
 }

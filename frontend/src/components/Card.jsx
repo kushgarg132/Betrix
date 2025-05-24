@@ -36,11 +36,13 @@ const Card = ({ card, hidden, cardContext }) => {
         className={cardClasses.join(' ')} 
         data-context={cardContext || 'default'}
       >
-        <img 
-          src="/cards/back.svg" 
-          alt="Card Back" 
-          className="card-img"
-        />
+        <div className="card-inner">
+          <img 
+            src="/cards/back.svg" 
+            alt="Card Back" 
+            className="card-img"
+          />
+        </div>
       </div>
     );
   }
@@ -57,11 +59,13 @@ const Card = ({ card, hidden, cardContext }) => {
       className={cardClasses.join(' ')}
       data-context={cardContext || 'default'}
     >
-      <img 
-        src={cardImage} 
-        alt={`${cardRank} of ${suit}`} 
-        className="card-img"
-      />
+      <div className="card-inner">
+        <img 
+          src={cardImage} 
+          alt={`${cardRank} of ${suit}`} 
+          className="card-img"
+        />
+      </div>
     </div>
   );
 };
