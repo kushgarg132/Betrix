@@ -158,6 +158,8 @@ public class GameServiceImpl implements GameService {
                 if (player.isActive()) {
                     player.addCard(game.getDeck().drawCard());
                     player.addCard(game.getDeck().drawCard());
+                    // Add active players to the main pot's eligible players
+                    game.getMainPot().addEligiblePlayer(player.getId());
                 }
             }
 
@@ -198,7 +200,7 @@ public class GameServiceImpl implements GameService {
                 logger.error("Player not found in game: {}", playerId);
                 throw new RuntimeException("Player not found in game");
             }
-            
+            gameValidatorService.validatePlayerBetAmount(game , player , amount);
             // Perform bet logic
             bettingManager.placeBet(game, player, amount, null);
             // Publish player action event

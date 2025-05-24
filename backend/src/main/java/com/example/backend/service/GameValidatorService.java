@@ -72,10 +72,18 @@ public class GameValidatorService {
         }
     }
 
-    public void validateBetAmount(double amount) {
+    public void validatePlayerBetAmount(Game game, Player player, double amount) {
+        double betPlacedAmount = game.getCurrentBettingRound().getPlayerBets().getOrDefault(player.getUsername(), 0.0);
+        double betPlacedTotal = betPlacedAmount + amount;
         if (amount < 0) {
             logger.error("Bet amount cannot be negative");
             throw new IllegalArgumentException("Bet amount cannot be negative");
+        }else if(amount > player.getChips()){
+            logger.error("Bet amount cannot be greater than Balance");
+            throw new IllegalArgumentException("Bet amount cannot be greater than Balance");
+        }else if(betPlacedTotal < game.getCurrentBet() && player.getChips() > amount) {
+            logger.error("Bet amount cannot be greater than Balance");
+            throw new IllegalArgumentException("Bet amount cannot be greater than Balance");
         }
     }
 }

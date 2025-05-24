@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import './Table.css';
 import Card from './Card';
-import { ChipStack } from './PokerChip';
+import PotDisplay from './PotDisplay';
 
 // Using memo to prevent unnecessary re-renders
 const Table = memo(({ isMyTurn, game, communityCards, animatingChips }) => {
@@ -9,10 +9,7 @@ const Table = memo(({ isMyTurn, game, communityCards, animatingChips }) => {
     <div className={`table-felt ${isMyTurn ? 'my-turn' : ''}`}>
       <div className="wood-border">
         <div className="circular-table">
-          <div className="pot-area">
-            <ChipStack amount={game.pot} />
-            <div className="pot-label">Pot: ${game.pot}</div>
-          </div>
+          <PotDisplay game={game} />
 
           <div className="community-cards">
             {communityCards.map((card, index) => (

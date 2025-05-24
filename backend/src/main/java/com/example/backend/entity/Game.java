@@ -4,6 +4,7 @@ import com.example.backend.model.BettingRound;
 import com.example.backend.model.Card;
 import com.example.backend.model.Deck;
 import com.example.backend.model.Player;
+import com.example.backend.model.Pot;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.Id;
@@ -33,7 +34,8 @@ public class Game {
     private List<Player> players;
     private Deck deck;
     private List<Card> communityCards;
-    private double pot;
+    private double pot; // Total pot (sum of all pots)
+    private List<Pot> pots; // Multiple pots for side pots
     private GameStatus status;
     private BettingRound currentBettingRound;
     private int dealerPosition;
@@ -70,6 +72,8 @@ public class Game {
         this.deck = new Deck();
         this.communityCards = new ArrayList<>();
         this.pot = 0;
+        this.pots = new ArrayList<>();
+        this.pots.add(new Pot(0)); // Main pot
         this.status = GameStatus.WAITING;
         this.currentBettingRound = new BettingRound();
         this.dealerPosition = 0;
@@ -90,6 +94,10 @@ public class Game {
         this.deck = new Deck();
         this.communityCards = game.getCommunityCards() != null ? new ArrayList<>(game.getCommunityCards()) : new ArrayList<>();
         this.pot = game.getPot();
+        this.pots = game.getPots() != null ? new ArrayList<>(game.getPots()) : new ArrayList<>();
+        if (this.pots.isEmpty()) {
+            this.pots.add(new Pot(0)); // Main pot
+        }
         this.status = game.getStatus() != null ? game.getStatus() : GameStatus.WAITING;
         this.currentBettingRound = game.getCurrentBettingRound();
         this.dealerPosition = game.getDealerPosition();
@@ -109,6 +117,48 @@ public class Game {
         this.playerActionTimeoutSeconds = game.getPlayerActionTimeoutSeconds();
         this.gameIdleTimeoutMinutes = game.getGameIdleTimeoutMinutes();
         this.autoStart = game.isAutoStart();
+    }
+
+    // Add a bet amount to the appropriate pot
+    public void addToPot(double amount) {
+        this.pot += amount;
+        
+        // Add to the main pot by default
+        if (!pots.isEmpty()) {
+            pots.get(0).addAmount(amount);
+        } else {
+            Pot mainPot = new Pot(amount);
+            // Add all active players to the main pot
+            players.stream()
+                .filter(Player::isActive)
+                .forEach(p -> mainPot.addEligiblePlayer(p.getId()));
+            pots.add(mainPot);
+        }
+    }
+    
+    // Create a side pot when a player goes all-in
+    public void createSidePot(double amount, List<Player> eligiblePlayers) {
+        Pot sidePot = new Pot(amount);
+        eligiblePlayers.forEach(p -> sidePot.addEligiblePlayer(p.getId()));
+        pots.add(sidePot);
+    }
+    
+    // Get the main pot
+    public Pot getMainPot() {
+        if (pots.isEmpty()) {
+            Pot mainPot = new Pot(0);
+            pots.add(mainPot);
+            return mainPot;
+        }
+        return pots.get(0);
+    }
+    
+    // Get all side pots
+    public List<Pot> getSidePots() {
+        if (pots.size() <= 1) {
+            return new ArrayList<>();
+        }
+        return pots.subList(1, pots.size());
     }
 
     public boolean isPlayersTurn(String playerId) {
@@ -188,6 +238,8 @@ public class Game {
         deck = new Deck();
         communityCards.clear();
         pot = 0;
+        pots.clear();
+        pots.add(new Pot(0)); // Reset with a fresh main pot
         currentBettingRound = new BettingRound();
         currentBet = 0;
         lastActions.clear();

@@ -2,7 +2,6 @@ package com.example.backend.model;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,5 +76,13 @@ public class Player {
             throw new IllegalArgumentException("Award amount cannot be negative");
         }
         chips += amount;
+    }
+    
+    /**
+     * Check if the player is all-in (has no chips left)
+     * @return true if player has no chips left
+     */
+    public boolean isAllIn() {
+        return isActive() && !hasFolded && chips == 0;
     }
 }

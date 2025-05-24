@@ -145,7 +145,8 @@ const PokerTable = () => {
               ...payload,
               communityCards: payload.communityCards || [],
               players: payload.players || [],
-              winners: []
+              winners: [],
+              pots: payload.pots || [{ amount: payload.pot || 0, eligiblePlayerIds: [] }]
             };
             break;
 
@@ -153,7 +154,8 @@ const PokerTable = () => {
             newGameState = {
               ...payload,
               communityCards: payload.communityCards || [],
-              players: payload.players || []
+              players: payload.players || [],
+              pots: payload.pots || [{ amount: payload.pot || 0, eligiblePlayerIds: [] }]
             };
             break;
 
@@ -184,7 +186,8 @@ const PokerTable = () => {
               }) || [],
               status: 'ENDED',
               communityCards: payload.game.communityCards || [],
-              players: payload.game.players || []
+              players: payload.game.players || [],
+              pots: payload.game.pots || [{ amount: payload.game.pot || 0, eligiblePlayerIds: [] }]
             };
             console.log("Updated game state:", newGameState);
             break;

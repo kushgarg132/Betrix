@@ -14,18 +14,29 @@ const BettingControls = memo(({
   const [raiseAmountColor, setRaiseAmountColor] = useState('#ffb300');
 
   // Calculate values using useMemo to prevent recalculations on every render
-  const { callAmount, canCheck, minRaise, maxRaise } = useMemo(() => {
+  const { callAmount, canCheck, minRaise, maxRaise, isCallAllIn, isForceAllIn } = useMemo(() => {
     if (!game || !currentPlayer) {
-      return { currentPlayerBet: 0, callAmount: 0, canCheck: true, minRaise: 1, maxRaise: 1000, totalBalance: 1000 };
+      return { 
+        currentPlayerBet: 0, 
+        callAmount: 0, 
+        canCheck: true, 
+        minRaise: 1, 
+        maxRaise: 1000, 
+        isCallAllIn: false,
+        isForceAllIn: false 
+      };
     }
     
     const currentPlayerBet = game.currentBettingRound?.playerBets[currentPlayer.username] || 0;
     const callAmount = game.currentBet - currentPlayerBet;
+    const playerChips = game.players[currentPlayer.index].chips;
     const canCheck = callAmount === 0;
+    const isCallAllIn = callAmount >= playerChips;
+    const isForceAllIn = game.currentBet > playerChips; // Force all-in when current bet exceeds chips
     const minRaise = Math.max(callAmount + 1, 1);
-    const maxRaise = game.players[currentPlayer.index].chips;
+    const maxRaise = playerChips;
     
-    return { callAmount, canCheck, minRaise, maxRaise };
+    return { callAmount, canCheck, minRaise, maxRaise, isCallAllIn, isForceAllIn };
   }, [game, currentPlayer]);
 
   // Set initial raise amount when min/max changes or when opening the slider
@@ -90,38 +101,74 @@ const BettingControls = memo(({
     <>
       <div className="betting-controls-wrapper">
         <div className="betting-controls-container">
-          {canCheck && (
-            <button className="check-button" onClick={check}>
-              <span className="action-text">Check</span>
-            </button>
-          )}
-          
-          {!canCheck && (
-            <button 
-              className="call-button" 
-              onClick={() => placeBet(callAmount)}
-            >
-              <span className="action-text">Call</span>
-              <span className="action-amount">
-                ${formatNumber(callAmount)}
-              </span>
-            </button>
-          )}
+          {/* If forced all-in, show only all-in and fold options */}
+          {isForceAllIn ? (
+            <>
+              <button 
+                className="all-in-button call-all-in" 
+                onClick={() => placeBet(maxRaise)}
+              >
+                <span className="action-text">All-In</span>
+                <span className="action-amount">
+                  ${formatNumber(maxRaise)}
+                </span>
+              </button>
+              
+              <button className="fold-button" onClick={fold}>
+                <span className="action-text">Fold</span>
+              </button>
+            </>
+          ) : (
+            <>
+              {/* Normal betting controls when not forced all-in */}
+              {canCheck && (
+                <button className="check-button" onClick={check}>
+                  <span className="action-text">Check</span>
+                </button>
+              )}
+              
+              {!canCheck && !isCallAllIn && (
+                <button 
+                  className="call-button" 
+                  onClick={() => placeBet(callAmount)}
+                >
+                  <span className="action-text">Call</span>
+                  <span className="action-amount">
+                    ${formatNumber(callAmount)}
+                  </span>
+                </button>
+              )}
+              
+              {!canCheck && isCallAllIn && (
+                <button 
+                  className="all-in-button call-all-in" 
+                  onClick={() => placeBet(maxRaise)}
+                >
+                  <span className="action-text">All-In</span>
+                  <span className="action-amount">
+                    ${formatNumber(maxRaise)}
+                  </span>
+                </button>
+              )}
 
-          <button 
-            className="raise-button" 
-            onClick={handleOpenRaiseSlider}
-          >
-            <span className="action-text">Raise</span>
-          </button>
+              {!isCallAllIn && (
+                <button 
+                  className="raise-button" 
+                  onClick={handleOpenRaiseSlider}
+                >
+                  <span className="action-text">Raise</span>
+                </button>
+              )}
 
-          <button className="fold-button" onClick={fold}>
-            <span className="action-text">Fold</span>
-          </button>
+              <button className="fold-button" onClick={fold}>
+                <span className="action-text">Fold</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
 
-      {showRaiseSlider && (
+      {showRaiseSlider && !isForceAllIn && (
         <div className="raise-slider-overlay" onClick={handleCloseRaiseSlider}>
           <div className="raise-controls" onClick={(e) => e.stopPropagation()}>
             <div className="raise-header">
@@ -162,7 +209,6 @@ const BettingControls = memo(({
               <button 
                 className="all-in-button" 
                 onClick={() => {
-                  // Use the player's total account balance instead of just table chips
                   placeBet(maxRaise);
                   setShowRaiseSlider(false);
                 }}
