@@ -221,8 +221,13 @@ public class BettingManager {
 
         // If there are players with higher bets or who can bet more, create a side pot
         if (!playersWithHigherBets.isEmpty()) {
-            // Calculate how much of the bet goes to the main pot (that all-in player is eligible for)
+            // Add the all-in amount to the main pot
             game.addToPot(amount);
+            
+            // Make sure the all-in player is eligible for the main pot
+            if (!game.getMainPot().getEligiblePlayerIds().contains(allInPlayer.getId())) {
+                game.getMainPot().addEligiblePlayer(allInPlayer.getId());
+            }
 
             // Create a side pot for the remaining players
             // The side pot starts with 0 because future bets will go into it
@@ -286,6 +291,11 @@ public class BettingManager {
         } else {
             // If no players have bet more or can bet more, just add to the main pot
             game.addToPot(amount);
+            
+            // Make sure the all-in player is eligible for the main pot
+            if (!game.getMainPot().getEligiblePlayerIds().contains(allInPlayer.getId())) {
+                game.getMainPot().addEligiblePlayer(allInPlayer.getId());
+            }
         }
     }
 
@@ -343,7 +353,7 @@ public class BettingManager {
         
         // Only evaluate if there are players still in the hand
         List<Player> activePlayers = game.getPlayers().stream()
-                .filter(p -> p.isActive() && !p.isHasFolded())
+                .filter(p -> (p.isActive() || p.isAllIn()) && !p.isHasFolded())
                 .toList();
 
         if (activePlayers.isEmpty()) {
@@ -377,22 +387,35 @@ public class BettingManager {
                         game.getCommunityCards()
                 );
                 playerResults.put(player, result);
+                logger.debug("Player {} hand evaluated as: {}", player.getUsername(), result.getRank());
             }
 
             // Process each pot separately
             List<Pot> allPots = new ArrayList<>(game.getPots());
             List<Player> allWinners = new ArrayList<>();
+            Map<Player, Double> winningsMap = new HashMap<>();
             
-            for (Pot pot : allPots) {
+            for (int potIndex = 0; potIndex < allPots.size(); potIndex++) {
+                Pot pot = allPots.get(potIndex);
+                double potAmount = pot.getAmount();
+                
+                if (potAmount <= 0) {
+                    logger.debug("Skipping pot {} with zero amount", potIndex);
+                    continue;
+                }
+                
                 // Find eligible players for this pot
                 List<Player> eligiblePlayers = activePlayers.stream()
-                        .filter(p -> pot.isPlayerEligible(p.getId()) || pot.getEligiblePlayerIds().isEmpty())
+                        .filter(p -> pot.getEligiblePlayerIds().isEmpty() || pot.isPlayerEligible(p.getId()))
                         .toList();
                 
                 if (eligiblePlayers.isEmpty()) {
-                    logger.warn("No eligible players for pot, unusual case");
+                    logger.warn("No eligible players for pot {}, unusual case", potIndex);
                     continue;
                 }
+                
+                logger.debug("Pot {} has {} eligible players and amount {}", 
+                        potIndex, eligiblePlayers.size(), potAmount);
                 
                 // Find the best hand among eligible players
                 HandEvaluator.HandResult bestResult = null;
@@ -413,17 +436,29 @@ public class BettingManager {
                 }
                 
                 // Split pot among winners
-                double winAmount = pot.getAmount() / potWinners.size();
+                double winAmount = potAmount / potWinners.size();
                 for (Player winner : potWinners) {
-                    winner.awardPot(winAmount);
+                    // Track winnings before awarding to avoid modifying player state
+                    winningsMap.merge(winner, winAmount, Double::sum);
+                    
                     if (!allWinners.contains(winner)) {
                         allWinners.add(winner);
                     }
                 }
                 
-                logger.debug("Pot {} split among winners: {}", 
-                        allPots.indexOf(pot), 
+                logger.debug("Pot {} ({}) split among {} winners: {}", 
+                        potIndex, 
+                        potAmount,
+                        potWinners.size(), 
                         potWinners.stream().map(Player::getUsername).collect(Collectors.joining(", ")));
+            }
+            
+            // Now award all accumulated winnings to players
+            for (Map.Entry<Player, Double> entry : winningsMap.entrySet()) {
+                Player winner = entry.getKey();
+                double winAmount = entry.getValue();
+                winner.awardPot(winAmount);
+                logger.debug("Player {} awarded total of {}", winner.getUsername(), winAmount);
             }
 
             // Publish game ended event with all winners
@@ -435,6 +470,8 @@ public class BettingManager {
             ));
 
         } catch (Exception e) {
+            logger.error("Error during hand evaluation: {}", e.getMessage(), e);
+            
             // If there's any error in hand evaluation, split the pot equally among all active players
             double splitAmount = game.getPot() / activePlayers.size();
             for (Player player : activePlayers) {
@@ -448,8 +485,6 @@ public class BettingManager {
                     new ArrayList<>(activePlayers),
                     null
             ));
-
-            logger.error("Error during hand evaluation: {}", e.getMessage());
         }
     }
 
@@ -501,7 +536,7 @@ public class BettingManager {
         
         // Get all players who are still active in the hand
         List<Player> activePlayers = game.getPlayers().stream()
-                .filter(p -> p.isActive() && !p.isHasFolded())
+                .filter(p -> p.isActive() || (p.isAllIn() && !p.isHasFolded()))
                 .toList();
         
         // If there's only one active player, no need to update pots
@@ -509,112 +544,89 @@ public class BettingManager {
             return;
         }
         
-        // Get all-in players sorted by their bet amount (lowest to highest)
-        List<Player> allInPlayers = activePlayers.stream()
-                .filter(Player::isAllIn)
+        // Reset pot structure - we'll rebuild it correctly
+        double totalPotAmount = game.getPot();
+        game.setPots(new ArrayList<>());
+        game.getPots().add(new Pot(0)); // Start with an empty main pot
+        
+        // Add all active players to the main pot's eligible players
+        activePlayers.forEach(p -> game.getMainPot().addEligiblePlayer(p.getId()));
+        
+        // Get all players sorted by their bet amount (lowest to highest)
+        Map<String, Double> playerBets = new HashMap<>(game.getCurrentBettingRound().getPlayerBets());
+        List<Player> sortedPlayers = activePlayers.stream()
                 .sorted((p1, p2) -> {
-                    double bet1 = game.getCurrentBettingRound().getPlayerBets()
-                            .getOrDefault(p1.getUsername(), 0.0);
-                    double bet2 = game.getCurrentBettingRound().getPlayerBets()
-                            .getOrDefault(p2.getUsername(), 0.0);
+                    double bet1 = playerBets.getOrDefault(p1.getUsername(), 0.0);
+                    double bet2 = playerBets.getOrDefault(p2.getUsername(), 0.0);
                     return Double.compare(bet1, bet2);
                 })
                 .toList();
         
-        // If there are no all-in players, all bets go to the main pot
-        if (allInPlayers.isEmpty()) {
-            logger.debug("No all-in players, all bets go to the main pot");
+        // If all players bet the same amount, just put everything in the main pot
+        if (sortedPlayers.stream().map(p -> playerBets.getOrDefault(p.getUsername(), 0.0)).distinct().count() == 1) {
+            game.getMainPot().addAmount(totalPotAmount);
+            logger.debug("All players bet the same amount, all in main pot: {}", totalPotAmount);
             return;
         }
         
-        // Process each all-in player to ensure side pots are correctly allocated
+        // Process players from lowest bet to highest, creating side pots as needed
         double previousBetLevel = 0;
-        for (Player allInPlayer : allInPlayers) {
-            double allInBet = game.getCurrentBettingRound().getPlayerBets()
-                    .getOrDefault(allInPlayer.getUsername(), 0.0);
+        
+        for (int i = 0; i < sortedPlayers.size(); i++) {
+            Player currentPlayer = sortedPlayers.get(i);
+            double currentBet = playerBets.getOrDefault(currentPlayer.getUsername(), 0.0);
             
-            // If this all-in bet is higher than the previous level, create a new side pot
-            if (allInBet > previousBetLevel) {
-                // Players eligible for this pot level (bet at least as much as the all-in player)
-                List<Player> eligiblePlayers = activePlayers.stream()
-                        .filter(p -> {
-                            double playerBet = game.getCurrentBettingRound().getPlayerBets()
-                                    .getOrDefault(p.getUsername(), 0.0);
-                            return playerBet >= allInBet;
-                        })
-                        .toList();
+            // Skip players who didn't bet
+            if (currentBet <= 0) {
+                continue;
+            }
+            
+            // If this bet is higher than the previous level, create a pot level
+            if (currentBet > previousBetLevel) {
+                // Calculate contribution to this pot level from each player
+                double levelContribution = currentBet - previousBetLevel;
+                double potLevelAmount = 0;
                 
-                // Calculate the amount that goes into this pot level
-                double potLevelAmount = (allInBet - previousBetLevel) * eligiblePlayers.size();
+                // Calculate eligible players for this pot level
+                List<Player> eligiblePlayers = new ArrayList<>();
                 
-                // Find or create the appropriate pot for this level
-                final Pot[] targetPotRef = {null};
-                
-                // Check if we already have a pot for this player
-                for (Pot pot : game.getPots()) {
-                    if (pot.getEligiblePlayerIds().contains(allInPlayer.getId()) && 
-                        pot.getEligiblePlayerIds().size() == eligiblePlayers.size()) {
-                        // This pot might be the right one, check if all eligible players are included
-                        boolean allEligibleIncluded = true;
-                        for (Player p : eligiblePlayers) {
-                            if (!pot.getEligiblePlayerIds().contains(p.getId())) {
-                                allEligibleIncluded = false;
-                                break;
-                            }
-                        }
-                        
-                        if (allEligibleIncluded) {
-                            targetPotRef[0] = pot;
-                            break;
-                        }
+                for (Player player : sortedPlayers) {
+                    double playerBet = playerBets.getOrDefault(player.getUsername(), 0.0);
+                    
+                    if (playerBet >= currentBet) {
+                        eligiblePlayers.add(player);
+                        potLevelAmount += levelContribution;
+                    } else if (playerBet > previousBetLevel) {
+                        // Player contributed partially to this level
+                        potLevelAmount += (playerBet - previousBetLevel);
                     }
                 }
                 
-                // If no existing pot was found, create a new one
-                if (targetPotRef[0] == null) {
-                    Pot newPot = new Pot(potLevelAmount);
-                    eligiblePlayers.forEach(p -> newPot.addEligiblePlayer(p.getId()));
-                    game.getPots().add(newPot);
-                    logger.debug("Created new pot level of {} for {} players at bet level {}", 
-                            potLevelAmount, eligiblePlayers.size(), allInBet);
+                // Determine which pot to add this amount to
+                if (i == 0) {
+                    // First level goes to main pot
+                    game.getMainPot().addAmount(potLevelAmount);
+                    logger.debug("Added {} to main pot at bet level {}", potLevelAmount, currentBet);
                 } else {
-                    // Add to existing pot
-                    targetPotRef[0].addAmount(potLevelAmount);
-                    logger.debug("Added {} to existing pot for bet level {}", 
-                            potLevelAmount, allInBet);
+                    // Create a side pot for this level
+                    Pot sidePot = new Pot(potLevelAmount);
+                    eligiblePlayers.forEach(p -> sidePot.addEligiblePlayer(p.getId()));
+                    game.getPots().add(sidePot);
+                    logger.debug("Created side pot of {} for {} players at bet level {}", 
+                            potLevelAmount, eligiblePlayers.size(), currentBet);
                 }
                 
-                previousBetLevel = allInBet;
+                previousBetLevel = currentBet;
             }
         }
         
-        // Any remaining bets above the highest all-in go to the main pot or a final side pot
-        double highestAllInBet = previousBetLevel;
-        List<Player> playersAboveHighestAllIn = activePlayers.stream()
-                .filter(p -> {
-                    double playerBet = game.getCurrentBettingRound().getPlayerBets()
-                            .getOrDefault(p.getUsername(), 0.0);
-                    return playerBet > highestAllInBet;
-                })
-                .toList();
-        
-        if (!playersAboveHighestAllIn.isEmpty()) {
-            // Calculate the excess amount above the highest all-in
-            double excessAmount = 0;
-            for (Player p : playersAboveHighestAllIn) {
-                double playerBet = game.getCurrentBettingRound().getPlayerBets()
-                        .getOrDefault(p.getUsername(), 0.0);
-                excessAmount += (playerBet - highestAllInBet);
-            }
-            
-            // Create a final side pot for players who bet above the highest all-in
-            if (excessAmount > 0) {
-                Pot finalPot = new Pot(excessAmount);
-                playersAboveHighestAllIn.forEach(p -> finalPot.addEligiblePlayer(p.getId()));
-                game.getPots().add(finalPot);
-                logger.debug("Created final side pot of {} for {} players who bet above highest all-in", 
-                        excessAmount, playersAboveHighestAllIn.size());
-            }
+        // Verify total pot amount is preserved
+        double sumOfPots = game.getPots().stream().mapToDouble(Pot::getAmount).sum();
+        if (Math.abs(sumOfPots - totalPotAmount) > 0.01) {
+            logger.warn("Pot amount discrepancy detected. Original: {}, Sum of pots: {}", totalPotAmount, sumOfPots);
+            // Adjust main pot to ensure total is correct
+            double adjustment = totalPotAmount - sumOfPots;
+            game.getMainPot().addAmount(adjustment);
         }
         
         logger.debug("Updated pot distribution. Total pot: {}, Number of pots: {}", 

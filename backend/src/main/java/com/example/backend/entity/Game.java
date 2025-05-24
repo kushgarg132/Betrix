@@ -121,16 +121,25 @@ public class Game {
 
     // Add a bet amount to the appropriate pot
     public void addToPot(double amount) {
+        if (amount <= 0) {
+            return; // Ignore zero or negative amounts
+        }
+        
         this.pot += amount;
         
         // Add to the main pot by default
         if (!pots.isEmpty()) {
             pots.get(0).addAmount(amount);
+            
+            // Make sure all active players are eligible for the main pot
+            players.stream()
+                .filter(p -> p.isActive() && !p.isHasFolded())
+                .forEach(p -> pots.get(0).addEligiblePlayer(p.getId()));
         } else {
             Pot mainPot = new Pot(amount);
             // Add all active players to the main pot
             players.stream()
-                .filter(Player::isActive)
+                .filter(p -> p.isActive() && !p.isHasFolded())
                 .forEach(p -> mainPot.addEligiblePlayer(p.getId()));
             pots.add(mainPot);
         }

@@ -37,7 +37,8 @@
 .check-button,
 .call-button,
 .raise-button,
-.fold-button {
+.fold-button,
+.all-in-button {
   height: 50px;
   min-width: 90px;
   border: none;
@@ -61,7 +62,8 @@
 .check-button::before,
 .call-button::before,
 .raise-button::before,
-.fold-button::before {
+.fold-button::before,
+.all-in-button::before {
   content: '';
   position: absolute;
   top: 0;
@@ -77,7 +79,8 @@
 .check-button:hover::before,
 .call-button:hover::before,
 .raise-button:hover::before,
-.fold-button:hover::before {
+.fold-button:hover::before,
+.all-in-button:hover::before {
   opacity: 1;
 }
 
@@ -131,6 +134,30 @@
   transform: translateY(2px);
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.4);
   border-bottom-width: 1px;
+}
+
+.all-in-button {
+  background: linear-gradient(to bottom, #9b59b6, #8e44ad);
+  color: white;
+  border-bottom: 3px solid #6c3483;
+  position: relative;
+  overflow: hidden;
+}
+
+.all-in-button:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.4);
+  border-bottom-width: 1px;
+}
+
+.call-all-in {
+  background: linear-gradient(to bottom, #9b59b6, #8e44ad);
+  animation: pulseAllIn 2s infinite alternate;
+}
+
+@keyframes pulseAllIn {
+  0% { box-shadow: 0 0 10px rgba(155, 89, 182, 0.5); }
+  100% { box-shadow: 0 0 20px rgba(155, 89, 182, 0.8); }
 }
 
 .action-text {
@@ -367,50 +394,6 @@
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
 
-.all-in-button {
-  background: linear-gradient(to bottom, #d32f2f, #b71c1c);
-  color: white;
-  flex: 1;
-  height: 50px;
-  border: none;
-  border-radius: 8px;
-  font-weight: 700;
-  font-size: 1.1rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  margin: 0 5px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-  position: relative;
-  overflow: hidden;
-}
-
-.all-in-button::after {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%);
-  opacity: 0;
-  transform: scale(0.5);
-  transition: transform 0.3s ease, opacity 0.3s ease;
-}
-
-.all-in-button:hover {
-  background: linear-gradient(to bottom, #f44336, #c62828);
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 0, 0, 0.2);
-}
-
-.all-in-button:hover::after {
-  opacity: 1;
-  transform: scale(1);
-}
-
 .cancel-raise-button {
   background: linear-gradient(to bottom, #78909c, #546e7a);
   color: white;
@@ -435,6 +418,52 @@
   box-shadow: 0 2px 0 #616a6b;
 }
 
+/* All-in button in the raise slider */
+.raise-buttons .all-in-button {
+  background: linear-gradient(to bottom, #d32f2f, #b71c1c);
+  color: white;
+  flex: 1;
+  height: 50px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  margin: 0 5px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  position: relative;
+  overflow: hidden;
+  border-bottom: none;
+}
+
+.raise-buttons .all-in-button::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%);
+  opacity: 0;
+  transform: scale(0.5);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.raise-buttons .all-in-button:hover {
+  background: linear-gradient(to bottom, #f44336, #c62828);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 0, 0, 0.2);
+}
+
+.raise-buttons .all-in-button:hover::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
 /* Responsive design for betting controls */
 @media (max-width: 768px) {
   .betting-controls-container {
@@ -446,7 +475,8 @@
   .check-button,
   .call-button,
   .raise-button,
-  .fold-button {
+  .fold-button,
+  .all-in-button {
     height: 40px;
     min-width: 70px;
     padding: 0 8px;
@@ -469,7 +499,8 @@
   .check-button,
   .call-button,
   .raise-button,
-  .fold-button {
+  .fold-button,
+  .all-in-button {
     height: 35px;
     min-width: 60px;
   }
