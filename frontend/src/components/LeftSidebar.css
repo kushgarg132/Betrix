@@ -5,7 +5,8 @@
   left: 0;
   height: calc(100vh - 80px);
   z-index: 100;
-  position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 .left-sidebar {
@@ -17,11 +18,12 @@
   border-bottom-right-radius: 10px;
   box-shadow: 5px 0 20px rgba(0, 0, 0, 0.5);
   border-right: 1px solid rgba(52, 152, 219, 0.3);
-  transform-style: preserve-3d;
-  height: 100%;
+  height: auto;
+  max-height: 400px;
   position: absolute;
-  left: 0;
   top: 0;
+  left: 0;
+  z-index: 150;
 }
 
 .left-sidebar.expanded {
@@ -32,6 +34,7 @@
   transform: translateX(-100%);
 }
 
+/* Toggle button styled to match right sidebar toggle */
 .sidebar-toggle.left {
   width: 40px;
   height: 60px;
@@ -42,339 +45,24 @@
   cursor: pointer;
   position: absolute;
   left: 200px;
-  top: 80px;
+  top: 0 !important;
   border: 2px solid rgba(52, 152, 219, 0.5);
   border-left: none;
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  z-index: 1000;
-  color: white;
-  overflow: hidden;
-  animation: leftSidebarPulse 3s infinite ease-in-out;
-  clip-path: polygon(
-    0% 0%,     /* top left */
-    50% 0%,    /* top middle */
-    100% 50%,  /* right middle (arrow point) */
-    50% 100%,  /* bottom middle */
-    0% 100%    /* bottom left */
-  );
-  box-shadow: 3px 0 15px rgba(0, 0, 0, 0.4);
-}
-
-.sidebar-toggle.left::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  transform: translateX(-100%);
-  transition: transform 0.6s ease;
-}
-
-.sidebar-toggle.left.collapsed {
-  left: 0;
-  z-index: 201;
-  background: linear-gradient(145deg, #1c5681, #3498db);
-  transform: scaleX(-1);
-}
-
-.sidebar-toggle.left.expanded {
-  left: 200px;
-}
-
-.sidebar-toggle.left:hover {
-  background: linear-gradient(145deg, #3498db, #2873a8);
-  box-shadow: 3px 0 20px rgba(52, 152, 219, 0.8);
-  filter: brightness(1.2);
-}
-
-.sidebar-toggle.left:hover::before {
-  transform: translateX(100%);
-}
-
-.sidebar-toggle.left:active {
-  transform: scale(0.95);
-}
-
-.sidebar-toggle.left.collapsed:active {
-  transform: scaleX(-1) scale(0.95);
-}
-
-/* Make the arrow more highlighted with a subtle gradient */
-.sidebar-toggle.left::after {
-  content: '';
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  background: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0.1) 100%);
-  opacity: 0.7;
-  pointer-events: none;
-}
-
-@keyframes leftSidebarPulse {
-  0% {
-    box-shadow: 3px 0 15px rgba(0, 0, 0, 0.4);
-  }
-  50% {
-    box-shadow: 3px 0 20px rgba(52, 152, 219, 0.5);
-  }
-  100% {
-    box-shadow: 3px 0 15px rgba(0, 0, 0, 0.4);
-  }
-}
-
-@keyframes leftSidebarGlow {
-  0% { filter: brightness(1); }
-  50% { filter: brightness(1.3); }
-  100% { filter: brightness(1); }
-}
-
-.sidebar-toggle.left:hover::after {
-  animation: leftSidebarGlow 1.5s infinite;
-}
-
-.sidebar-toggle.left.collapsed:hover {
-  transform: scaleX(-1) translateX(3px);
-}
-
-.sidebar-toggle.left.expanded:hover {
-  transform: translateX(3px);
-}
-
-/* Left Sidebar */
-.left-sidebar {
-  width: 200px;
-  background: linear-gradient(145deg, #132639, #1e3c5a);
-  color: white;
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  border-top-right-radius: 10px;
-  border-bottom-right-radius: 10px;
-  box-shadow: 5px 0 20px rgba(0, 0, 0, 0.5);
-  border-right: 1px solid rgba(52, 152, 219, 0.3);
-  transform-style: preserve-3d;
-  height: 100%;
-  position: absolute;
-  left: 0;
-  top: 0;
-}
-
-.left-sidebar.expanded {
-  transform: translateX(0);
-}
-
-.left-sidebar.collapsed {
-  transform: translateX(-100%);
-}
-
-/* Toggle button styled like the right sidebar toggle */
-.sidebar-toggle {
-  width: 40px;
-  height: 60px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: linear-gradient(145deg, #216396, #2980b9);
-  cursor: pointer;
-  position: absolute;
-  left: 200px;
-  top: 80px;
-  border: 2px solid rgba(52, 152, 219, 0.5);
-  border-left: none;
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  z-index: 200;
-  color: white;
-  font-size: 1.2rem;
-  clip-path: polygon(
-    100% 0%,     /* top right */
-    50% 0%,      /* top middle */
-    0% 50%,      /* left middle (arrow point) */
-    50% 100%,    /* bottom middle */
-    100% 100%    /* bottom right */
-  );
-  box-shadow: 3px 0 15px rgba(0, 0, 0, 0.4);
-}
-
-/* When sidebar is collapsed, move toggle button to the left edge */
-.left-sidebar.collapsed + .sidebar-toggle {
-  left: 0;
-  transform: scaleX(-1);
-  background: linear-gradient(145deg, #1c5681, #3498db);
-}
-
-/* Hover and active states */
-.sidebar-toggle:hover {
-  background: linear-gradient(145deg, #3498db, #2873a8);
-  box-shadow: 3px 0 20px rgba(52, 152, 219, 0.8);
-  filter: brightness(1.2);
-}
-
-.sidebar-toggle:active {
-  transform: scale(0.95);
-}
-
-.left-sidebar.collapsed + .sidebar-toggle:active {
-  transform: scaleX(-1) scale(0.95);
-}
-
-/* Add subtle animation */
-.sidebar-toggle::after {
-  content: '';
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  background: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0.1) 100%);
-  opacity: 0.7;
-  pointer-events: none;
-}
-
-@keyframes glow {
-  0% { filter: brightness(1); }
-  50% { filter: brightness(1.3); }
-  100% { filter: brightness(1); }
-}
-
-.sidebar-toggle:hover::after {
-  animation: glow 1.5s infinite;
-}
-
-.sidebar-toggle-left::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  transform: translateX(-100%);
-  transition: transform 0.6s ease;
-}
-
-.sidebar-toggle-left.collapsed {
-  left: 0;
-  z-index: 201;
-  background: linear-gradient(145deg, #1c5681, #3498db);
-  transform: scaleX(-1);
-}
-
-.sidebar-toggle-left.expanded {
-  left: 200px;
-}
-
-.sidebar-toggle-left:hover {
-  background: linear-gradient(145deg, #3498db, #2873a8);
-  box-shadow: 3px 0 20px rgba(52, 152, 219, 0.8);
-  filter: brightness(1.2);
-}
-
-.sidebar-toggle-left:hover::before {
-  transform: translateX(100%);
-}
-
-.sidebar-toggle-left:active {
-  transform: scale(0.95);
-}
-
-.sidebar-toggle-left.collapsed:active {
-  transform: scaleX(-1) scale(0.95);
-}
-
-/* Make the arrow more highlighted with a subtle gradient */
-.sidebar-toggle-left::after {
-  content: '';
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  background: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0.1) 100%);
-  opacity: 0.7;
-  pointer-events: none;
-}
-
-@keyframes subtlePulse {
-  0% {
-    box-shadow: 3px 0 15px rgba(0, 0, 0, 0.4);
-  }
-  50% {
-    box-shadow: 3px 0 20px rgba(52, 152, 219, 0.5);
-  }
-  100% {
-    box-shadow: 3px 0 15px rgba(0, 0, 0, 0.4);
-  }
-}
-
-@keyframes glow {
-  0% { filter: brightness(1); }
-  50% { filter: brightness(1.3); }
-  100% { filter: brightness(1); }
-}
-
-.sidebar-toggle-left:hover::after {
-  animation: glow 1.5s infinite;
-}
-
-.sidebar-toggle-left.collapsed:hover {
-  transform: scaleX(-1) translateX(3px);
-}
-
-.sidebar-toggle-left.expanded:hover {
-  transform: translateX(3px);
-}
-
-.left-sidebar {
-  width: 200px;
-  background: linear-gradient(145deg, #132639, #1e3c5a);
-  color: white;
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  border-top-right-radius: 10px;
-  border-bottom-right-radius: 10px;
-  box-shadow: 5px 0 20px rgba(0, 0, 0, 0.5);
-  border-right: 1px solid rgba(52, 152, 219, 0.3);
-  transform-style: preserve-3d;
-  height: 100%;
-}
-
-.left-sidebar.expanded {
-  transform: translateX(0);
-}
-
-.left-sidebar.collapsed {
-  transform: translateX(-100%);
-}
-
-/* Arrow-shaped toggle button for left sidebar */
-.sidebar-toggle.left {
-  width: 40px;
-  height: 60px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: linear-gradient(145deg, #216396, #2980b9);
-  cursor: pointer;
-  position: absolute;
-  left: 200px; /* Position at the edge of the expanded sidebar */
-  top: 80px;
-  border: 2px solid rgba(52, 152, 219, 0.5);
-  border-right: none;
-  border-left: 2px solid rgba(52, 152, 219, 0.5);
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   z-index: 200;
   color: white;
   overflow: hidden;
   animation: subtlePulse 3s infinite ease-in-out;
   clip-path: polygon(
-    100% 50%,  /* right middle (arrow point) */
-    50% 0%,    /* top middle */
-    0% 0%,     /* top left */
-    0% 100%,   /* bottom left */
-    50% 100%   /* bottom middle */
+    50% 0%,     /* top middle */
+    100% 0%,    /* top right */
+    100% 100%,  /* bottom right */
+    50% 100%,   /* bottom middle */
+    0% 50%      /* left middle (arrow point) */
   );
-  box-shadow: -3px 0 15px rgba(0, 0, 0, 0.4);
+  box-shadow: 3px 0 15px rgba(0, 0, 0, 0.4);
+  font-size: 1.2rem;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
 .sidebar-toggle.left::before {
@@ -391,6 +79,7 @@
 
 .sidebar-toggle.left.collapsed {
   left: 0;
+  top: 0 !important;
   z-index: 201;
   background: linear-gradient(145deg, #1c5681, #3498db);
   transform: scaleX(-1);
@@ -398,6 +87,7 @@
 
 .sidebar-toggle.left.expanded {
   left: 200px;
+  top: 0 !important;
 }
 
 .sidebar-toggle.left:hover {
@@ -412,10 +102,12 @@
 
 .sidebar-toggle.left:active {
   transform: scale(0.95);
+  top: 0;
 }
 
 .sidebar-toggle.left.collapsed:active {
   transform: scaleX(-1) scale(0.95);
+  top: 0;
 }
 
 /* Make the arrow more highlighted with a subtle gradient */
@@ -454,19 +146,22 @@
 }
 
 .sidebar-toggle.left.collapsed:hover {
-  transform: scaleX(-1) translateX(-3px);
+  transform: scaleX(-1) translateX(3px);
+  top: 0;
 }
 
 .sidebar-toggle.left.expanded:hover {
   transform: translateX(-3px);
+  top: 0;
 }
 
 .sidebar-content {
   padding: 20px;
-  height: 100%;
+  overflow-y: auto;
+  max-height: 360px;
 }
 
-.left-sidebar h3 {
+.sidebar-header {
   margin-top: 0;
   margin-bottom: 20px;
   font-size: 1.4rem;
@@ -490,26 +185,102 @@
   margin-top: 20px;
   font-weight: bold;
   cursor: pointer;
-  transition: all 0.3s ease;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
   position: relative;
   overflow: hidden;
   font-size: 1rem;
   border: 1px solid rgba(231, 76, 60, 0.5);
+  transition: all 0.3s ease;
 }
 
 .leave-table-button:hover {
   background: linear-gradient(145deg, #e74c3c, #c0392b);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5), 0 0 15px rgba(231, 76, 60, 0.3);
   transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
 }
 
 .leave-table-button:active {
-  transform: translateY(0);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  transform: translateY(1px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
-.leave-table-button .button-icon {
+.button-icon {
   margin-right: 10px;
   font-size: 1.2rem;
+}
+
+.toggle-icon {
+  font-size: 1.5rem;
+  color: #ecf0f1;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s ease;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .left-sidebar {
+    width: 180px;
+    max-height: 350px;
+  }
+  
+  .sidebar-toggle.left.expanded {
+    left: 180px;
+    top: 0 !important;
+  }
+  
+  .sidebar-content {
+    padding: 15px;
+    max-height: 310px;
+  }
+  
+  .sidebar-header {
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+  }
+  
+  .leave-table-button {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .left-sidebar {
+    width: 160px;
+    max-height: 300px;
+  }
+  
+  .sidebar-toggle.left.expanded {
+    left: 160px;
+    top: 0 !important;
+  }
+  
+  .sidebar-toggle.left.collapsed {
+    top: 0 !important;
+  }
+  
+  .sidebar-content {
+    padding: 10px;
+    max-height: 260px;
+  }
+  
+  .sidebar-toggle.left {
+    width: 35px;
+    height: 50px;
+    top: 0 !important;
+  }
+}
+
+/* iPhone X and newer specific fixes */
+@supports (padding: max(0px)) {
+  .left-sidebar-wrapper {
+    padding-bottom: max(0px, env(safe-area-inset-bottom, 0px));
+  }
 } 
