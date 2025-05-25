@@ -55,8 +55,8 @@ public class GameServiceImpl implements GameService {
     @Override
     @Transactional
     public void createGame(BlindPayload payload) {
-        logger.info("Creating a new game with small blind: {} and big blind: {}", payload.getSmallBlind(), payload.getBigBlind());
-        Game game = new Game(payload.getSmallBlind(), payload.getBigBlind());
+        logger.info("Creating a new game with small blind: {} and big blind: {}", payload.getSmallBlindAmount(), payload.getBigBlindAmount());
+        Game game = new Game(payload.getSmallBlindAmount(), payload.getBigBlindAmount());
         gameRepository.save(game);
         logger.debug("Game created with ID: {}", game.getId());
     }

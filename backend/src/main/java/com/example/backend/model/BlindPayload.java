@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class BlindPayload {
-    private int smallBlind;
-    private int bigBlind;
+    private int smallBlindAmount;
+    private int bigBlindAmount;
 }
