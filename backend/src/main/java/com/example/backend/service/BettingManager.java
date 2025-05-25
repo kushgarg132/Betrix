@@ -6,6 +6,7 @@ import com.example.backend.event.GameEndedEvent;
 import com.example.backend.model.*;
 import com.example.backend.publisher.GameEventPublisher;
 import com.example.backend.event.RoundStartedEvent;
+import com.example.backend.scheduler.GameScheduler;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,7 @@ public class BettingManager {
 
     private final GameEventPublisher eventPublisher;
     private final HandEvaluator handEvaluator;
+    private final GameScheduler gameScheduler;
     private final List<Game.PlayerAction> notAllowedStatus = List.of(Game.PlayerAction.NONE, Game.PlayerAction.SMALL_BLIND, Game.PlayerAction.BIG_BLIND);
 
     public void startNewBettingRound(Game game) {
@@ -305,7 +307,8 @@ public class BettingManager {
             if (getActivePlayerCount(game) <= 1 || game.getStatus() == Game.GameStatus.RIVER_BETTING) {
                 // Game will be ended by the service that calls this method
                 evaluateHandAndAwardPot(game);
-                game.setStatus(Game.GameStatus.WAITING);
+                // Instead of immediately setting status to WAITING, the game will be scheduled for restart
+                // after a delay in evaluateHandAndAwardPot
             } else if (areAllActivePlayersAllIn(game)) {
                 // If all active players are all-in, skip to river or showdown
                 skipToRiver(game);
@@ -379,6 +382,10 @@ public class BettingManager {
                     List.of(winner),
                     winner.getBestHand() // Use the winner's best hand
             ));
+
+            // Set game status to WAITING and schedule next hand after delay
+            game.setStatus(Game.GameStatus.WAITING);
+            gameScheduler.scheduleNextHand(game.getId());
 
             logger.debug("Single player awarded pot: {}", winner);
             return;
@@ -486,37 +493,15 @@ public class BettingManager {
                     allWinners,
                     bestOverallHand // Use the best overall hand for display
             ));
+            
+            // Set game status to WAITING and schedule next hand after delay
+            game.setStatus(Game.GameStatus.WAITING);
+            gameScheduler.scheduleNextHand(game.getId());
 
         } catch (Exception e) {
-            logger.error("Error during hand evaluation: {}", e.getMessage(), e);
-            
-            // If there's any error in hand evaluation, split the pot equally among all active players
-            double splitAmount = game.getPot() / activePlayers.size();
-            for (Player player : activePlayers) {
-                player.awardPot(splitAmount);
-                
-                // Try to evaluate the hand even in error case
-                try {
-                    if (!player.getHand().isEmpty() && !game.getCommunityCards().isEmpty()) {
-                        HandResult result = handEvaluator.evaluateHand(
-                            player.getHand(),
-                            game.getCommunityCards()
-                        );
-                        player.setBestHand(result);
-                    }
-                } catch (Exception ex) {
-                    logger.warn("Could not evaluate hand for player {} in error recovery: {}", 
-                        player.getUsername(), ex.getMessage());
-                }
-            }
-
-            // Publish game ended event with error information
-            eventPublisher.publishEvent(new GameEndedEvent(
-                    game.getId(),
-                    new Game(game),
-                    new ArrayList<>(activePlayers),
-                    null
-            ));
+            logger.error("Error evaluating hands: {}", e.getMessage(), e);
+            // In case of error, still set the game to WAITING but don't schedule next hand
+            game.setStatus(Game.GameStatus.WAITING);
         }
     }
 
