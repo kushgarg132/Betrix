@@ -9,9 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.annotation.SchedulingConfigurer;
-import org.springframework.scheduling.config.ScheduledTaskRegistrar;
-import org.springframework.scheduling.support.PeriodicTrigger;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
@@ -26,7 +24,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Component
-public class GameScheduler implements SchedulingConfigurer {
+public class GameScheduler {
     private static final Logger logger = LoggerFactory.getLogger(GameScheduler.class);
 
     @Value("${game.scheduler.round-end-delay:5000}")
@@ -71,29 +69,75 @@ public class GameScheduler implements SchedulingConfigurer {
             taskErrorCounts.put(task, new AtomicLong(0));
             taskLastExecutions.put(task, Instant.now());
         }
+        
+        logger.info("GameScheduler initialized with roundEndDelay={}, playerTimeoutDelay={}, currentGameStartInterval={}",
+                roundEndDelay, playerTimeoutDelay, currentGameStartInterval.get());
     }
     
-    @Override
-    public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
-        taskRegistrar.setTaskScheduler(taskScheduler);
+    /**
+     * This method runs at a fixed rate to start waiting games
+     * Using Spring's @Scheduled annotation for better reliability on cloud platforms
+     */
+    @Scheduled(fixedRate = 8000)
+    public void startWaitingGames() {
+        logger.info("Checking for waiting games to start...");
+        String taskName = "startWaitingGames";
+        Instant start = Instant.now();
+        taskLastExecutions.put(taskName, start);
+        
+        try {
+            // Try the alternative method first
+            List<Game> waitingGames = gameRepository.findWaitingGamesWithAutoStart();
+            
+            logger.info("Found {} waiting games with auto-start enabled", waitingGames.size());
+            
+            // Filter games that can auto-start (using the canAutoStart method)
+            List<Game> readyToStartGames = waitingGames.stream()
+                .filter(game -> {
+                    boolean canStart = game.canAutoStart();
+                    int playerCount = game.getPlayers().size();
+                    logger.info("Game {} has {} players, canAutoStart={}", 
+                                game.getId(), playerCount, canStart);
+                    return canStart;
+                })
+                .toList();
+            
+            logger.info("After filtering, {} games are ready to auto-start", readyToStartGames.size());
+            
+            if (!readyToStartGames.isEmpty()) {
+                readyToStartGames.forEach(game -> {
+                    try {
+                        // Skip games that already have a scheduled start
+                        if (scheduledGameStarts.containsKey(game.getId())) {
+                            logger.info("Skipping game {} as it already has a scheduled start", game.getId());
+                            return;
+                        }
 
-        taskScheduler.schedule(
-                this::startWaitingGames,
-                triggerContext -> new PeriodicTrigger(currentGameStartInterval.get(), TimeUnit.MILLISECONDS)
-                        .nextExecutionTime(triggerContext).toInstant()
-        );
-
-        // Schedule metrics logging
-        taskScheduler.schedule(
-            this::logMetrics,
-            triggerContext -> new PeriodicTrigger(60000, TimeUnit.MILLISECONDS).nextExecutionTime(triggerContext).toInstant()
-        );
+                        gameService.startNewHand(game.getId());
+                        logger.info("Auto-started game: {}", game.getId());
+                    } catch (Exception e) {
+                        logger.error("Failed to auto-start game {}: {}", game.getId(), e.getMessage(), e);
+                    }
+                });
+            } else {
+                logger.info("No games are ready to auto-start");
+            }
+            
+            // Update metrics
+            taskExecutionCounts.get(taskName).incrementAndGet();
+            taskExecutionTimes.get(taskName).addAndGet(Duration.between(start, Instant.now()).toMillis());
+        } catch (Exception e) {
+            logger.error("Error in startWaitingGames scheduler: {}", e.getMessage(), e);
+            taskErrorCounts.get(taskName).incrementAndGet();
+        }
     }
     
     /**
      * Logs performance metrics
+     * Using Spring's @Scheduled annotation for better reliability
      */
-    private void logMetrics() {
+    @Scheduled(fixedRate = 60000)
+    public void logMetrics() {
         StringBuilder sb = new StringBuilder("Scheduler Metrics:\n");
         
         // Format each task's metrics
@@ -240,65 +284,6 @@ public class GameScheduler implements SchedulingConfigurer {
         if (existingTask != null && !existingTask.isDone()) {
             existingTask.cancel(false);
             logger.debug("Cancelled scheduled timeout for {}", timeoutKey);
-        }
-    }
-
-    /**
-     * Start waiting games that are ready for auto-start
-     */
-    private void startWaitingGames() {
-        logger.info("Checking for waiting games to start...");
-        String taskName = "startWaitingGames";
-        Instant start = Instant.now();
-        taskLastExecutions.put(taskName, start);
-        
-        try {
-            // Get all waiting games with autoStart=true
-            List<Game> waitingGames = gameRepository.findWaitingGamesWithAutoStart();
-            
-            logger.info("Found {} waiting games with auto-start enabled", waitingGames.size());
-            
-            if (waitingGames.isEmpty()) {
-                logger.info("No waiting games found with auto-start enabled");
-                return;
-            }
-            
-            // Filter games that can auto-start (using the canAutoStart method)
-            List<Game> readyToStartGames = waitingGames.stream()
-                .filter(game -> {
-                    boolean canStart = game.canAutoStart();
-                    int playerCount = game.getPlayers().size();
-                    logger.info("Game {} has {} players, canAutoStart={}", 
-                                game.getId(), playerCount, canStart);
-                    return canStart;
-                })
-                .toList();
-            
-            logger.info("After filtering, {} games are ready to auto-start", readyToStartGames.size());
-            
-            if (!readyToStartGames.isEmpty()) {
-                readyToStartGames.forEach(game -> {
-                    try {
-                        // Skip games that already have a scheduled start
-                        if (scheduledGameStarts.containsKey(game.getId())) {
-                            logger.info("Skipping game {} as it already has a scheduled start", game.getId());
-                            return;
-                        }
-
-                        gameService.startNewHand(game.getId());
-                        logger.info("Auto-started game: {}", game.getId());
-                    } catch (Exception e) {
-                        logger.error("Failed to auto-start game {}: {}", game.getId(), e.getMessage(), e);
-                    }
-                });
-            }
-            
-            // Update metrics
-            taskExecutionCounts.get(taskName).incrementAndGet();
-            taskExecutionTimes.get(taskName).addAndGet(Duration.between(start, Instant.now()).toMillis());
-        } catch (Exception e) {
-            logger.error("Error in startWaitingGames scheduler: {}", e.getMessage(), e);
-            taskErrorCounts.get(taskName).incrementAndGet();
         }
     }
 }

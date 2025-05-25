@@ -194,6 +194,7 @@ public class GameServiceImpl implements GameService {
                 logger.error("Player not found in game: {}", playerId);
                 throw new RuntimeException("Player not found in game");
             }
+            gameValidatorService.validatePlayerTurn(game, playerId);
             gameValidatorService.validatePlayerBetAmount(game, player, amount);
 
             // Cancel any scheduled timeout for this player
@@ -217,7 +218,6 @@ public class GameServiceImpl implements GameService {
             bettingManager.handleCurrentBettingRound(game , playerId);
 
             game.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
-            game.setLastActivityTime(LocalDateTime.now(ZoneOffset.UTC));
             gameRepository.save(game);
 
             logger.debug("Player '{}' placed bet: {}", playerId, amount);
@@ -239,7 +239,8 @@ public class GameServiceImpl implements GameService {
                 logger.error("Player not found in game: {}", playerId);
                 throw new RuntimeException("Player not found in game");
             }
-            
+
+            gameValidatorService.validatePlayerTurn(game, playerId);
             // Cancel any scheduled timeout for this player
             gameScheduler.cancelPlayerTimeout(gameId , playerId);
             
@@ -248,6 +249,7 @@ public class GameServiceImpl implements GameService {
             // Start TimeOut scheduler
             String currentPlayerId = game.getPlayers().get(game.getCurrentPlayerIndex()).getId();
             gameScheduler.schedulePlayerTimeout(game.getId(), currentPlayerId);
+
             // Publish player action event
             eventPublisher.publishEvent(new PlayerActionEvent(
                     gameId,
@@ -260,7 +262,6 @@ public class GameServiceImpl implements GameService {
             bettingManager.handleCurrentBettingRound(game,playerId);
 
             game.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
-            game.setLastActivityTime(LocalDateTime.now(ZoneOffset.UTC));
             gameRepository.save(game);
 
             logger.debug("Player '{}' checked", playerId);
@@ -282,7 +283,8 @@ public class GameServiceImpl implements GameService {
                 logger.error("Player not found in game: {}", playerId);
                 throw new RuntimeException("Player not found in game");
             }
-            
+
+            gameValidatorService.validatePlayerTurn(game, playerId);
             // Cancel any scheduled timeout for this player
             gameScheduler.cancelPlayerTimeout(gameId , playerId);
             // Perform fold logic
@@ -303,7 +305,6 @@ public class GameServiceImpl implements GameService {
             bettingManager.handleCurrentBettingRound(game, playerId);
 
             game.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
-            game.setLastActivityTime(LocalDateTime.now(ZoneOffset.UTC));
             gameRepository.save(game);
 
             logger.debug("Player '{}' folded", playerId);
@@ -332,8 +333,7 @@ public class GameServiceImpl implements GameService {
             }
 
             // Mark player as inactive
-            player.setActive(false);
-            player.setHasFolded(true);
+            game.getPlayers().remove(player);
 
             // Publish player action event
             eventPublisher.publishEvent(new PlayerActionEvent(
@@ -343,9 +343,8 @@ public class GameServiceImpl implements GameService {
                     null,
                     new Game(game)
             ));
-            
+
             game.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
-            game.setLastActivityTime(LocalDateTime.now(ZoneOffset.UTC));
             
             // If no players left, delete the game
             if (game.getPlayers().isEmpty()) {
@@ -355,15 +354,6 @@ public class GameServiceImpl implements GameService {
             }
 
             gameRepository.save(game);
-
-            // Publish player action event for leaving
-            eventPublisher.publishEvent(new PlayerActionEvent(
-                gameId, 
-                player,
-                PlayerActionEvent.ActionType.LEAVE,
-                null,
-                new Game(game)
-            ));
             
             logger.debug("Player '{}' left game", playerId);
         } catch (Exception e) {

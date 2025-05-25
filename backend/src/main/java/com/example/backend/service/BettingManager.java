@@ -36,7 +36,6 @@ public class BettingManager {
         switch (game.getStatus()) {
             case STARTING:
                 setupPreFlopBetting(game);
-                roundType = BettingRound.RoundType.PRE_FLOP;
                 break;
             case PRE_FLOP_BETTING:
                 setupFlopBetting(game);
