@@ -26,7 +26,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Component
-@RequiredArgsConstructor
 public class GameScheduler implements SchedulingConfigurer {
     private static final Logger logger = LoggerFactory.getLogger(GameScheduler.class);
 
@@ -54,6 +53,12 @@ public class GameScheduler implements SchedulingConfigurer {
     private final Map<String, AtomicLong> taskExecutionTimes = new ConcurrentHashMap<>();
     private final Map<String, AtomicLong> taskErrorCounts = new ConcurrentHashMap<>();
     private final Map<String, Instant> taskLastExecutions = new ConcurrentHashMap<>();
+    
+    public GameScheduler(GameRepository gameRepository, @Lazy GameService gameService, TaskScheduler taskScheduler) {
+        this.gameRepository = gameRepository;
+        this.gameService = gameService;
+        this.taskScheduler = taskScheduler;
+    }
     
     @PostConstruct
     public void initMetrics() {
@@ -228,7 +233,7 @@ public class GameScheduler implements SchedulingConfigurer {
         }
     }
 
-    public void cancelPlayerTimeout(String gameId , String playerId) {
+    public void cancelPlayerTimeout(String gameId, String playerId) {
         // Create a unique key for this timeout
         String timeoutKey = gameId + ":" + playerId;
         ScheduledFuture<?> existingTask = scheduledPlayerTimeouts.remove(timeoutKey);
