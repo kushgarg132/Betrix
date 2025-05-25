@@ -189,12 +189,15 @@ public class Game {
     }
     
     public void moveToNextPlayer() {
+        int itr = 0;
         do {
             currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
-        } while (!players.get(currentPlayerIndex).isActive() || 
-                 players.get(currentPlayerIndex).isHasFolded() || 
-                 players.get(currentPlayerIndex).isAllIn());
-                 
+        } while (++itr < players.size() && (
+                !players.get(currentPlayerIndex).isActive() ||
+                 players.get(currentPlayerIndex).isHasFolded() ||
+                 players.get(currentPlayerIndex).isAllIn())
+        );
+
         // Just update the last activity time, but don't set the deadline
         // as we'll do that separately when needed
         updateCurrentPlayerActionDeadline();
@@ -296,10 +299,12 @@ public class Game {
         
         // Set first player to act (after dealer in post-flop rounds)
         int firstToActIdx = (dealerPosition + 1) % players.size();
-        while (!players.get(firstToActIdx).isActive() || 
+        int idx=0;
+        while (idx < players.size() && (!players.get(firstToActIdx).isActive() ||
                players.get(firstToActIdx).isHasFolded() || 
-               players.get(firstToActIdx).isAllIn()) {
+               players.get(firstToActIdx).isAllIn())) {
             firstToActIdx = (firstToActIdx + 1) % players.size();
+            idx++;
         }
         currentPlayerIndex = firstToActIdx;
         

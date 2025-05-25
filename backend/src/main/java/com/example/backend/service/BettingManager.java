@@ -131,6 +131,8 @@ public class BettingManager {
         logger.info("All active players are all-in. Skipping to river for game with ID: {}", game.getId());
 
         while(game.getStatus() != Game.GameStatus.RIVER_BETTING){
+            String playerId = game.getPlayers().get(game.getCurrentPlayerIndex()).getId();
+            gameScheduler.cancelPlayerTimeout(game.getId() , playerId);
             startNewBettingRound(game);
         }
         // Proceed directly to showdown
