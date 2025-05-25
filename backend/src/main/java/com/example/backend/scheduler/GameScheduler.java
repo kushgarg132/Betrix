@@ -32,7 +32,7 @@ public class GameScheduler implements SchedulingConfigurer {
     @Value("${game.scheduler.round-end-delay:5000}")
     private long roundEndDelay; // milliseconds to wait after round end before starting new hand
     
-    @Value("${game.scheduler.player-timeout-delay:3000}")
+    @Value("${game.scheduler.player-timeout-delay:30000}")
     private long playerTimeoutDelay; // milliseconds to wait before auto-folding a player
     
     private final GameRepository gameRepository;
