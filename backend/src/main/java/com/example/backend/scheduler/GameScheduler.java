@@ -3,6 +3,7 @@ package com.example.backend.scheduler;
 import com.example.backend.entity.Game;
 import com.example.backend.repository.GameRepository;
 import com.example.backend.service.GameService;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,24 +26,19 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Component
+@RequiredArgsConstructor
 public class GameScheduler implements SchedulingConfigurer {
     private static final Logger logger = LoggerFactory.getLogger(GameScheduler.class);
-    
-    @Value("${game.scheduler.min-player-timeout-check:1000}")
-    private long minPlayerTimeoutCheck; // minimum milliseconds to check for player timeouts
-    
-    @Value("${game.scheduler.max-player-timeout-check:5000}")
-    private long maxPlayerTimeoutCheck; // maximum milliseconds to check for player timeouts
-    
+
     @Value("${game.scheduler.round-end-delay:5000}")
     private long roundEndDelay; // milliseconds to wait after round end before starting new hand
+    
+    @Value("${game.scheduler.player-timeout-delay:3000}")
+    private long playerTimeoutDelay; // milliseconds to wait before auto-folding a player
     
     private final GameRepository gameRepository;
     private final GameService gameService;
     private final TaskScheduler taskScheduler;
-
-    private ScheduledFuture<?> playerTimeoutTask;
-    private ScheduledFuture<?> startGamesTask;
     
     private final AtomicReference<Long> currentPlayerTimeoutInterval = new AtomicReference<>(5000L);
     private final AtomicReference<Long> currentGameStartInterval = new AtomicReference<>(10000L);
@@ -50,23 +46,21 @@ public class GameScheduler implements SchedulingConfigurer {
     // Track games with scheduled next hand starts
     private final Map<String, ScheduledFuture<?>> scheduledGameStarts = new ConcurrentHashMap<>();
     
+    // Track players with scheduled timeout actions
+    private final Map<String, ScheduledFuture<?>> scheduledPlayerTimeouts = new ConcurrentHashMap<>();
+    
     // Performance metrics
     private final Map<String, AtomicLong> taskExecutionCounts = new ConcurrentHashMap<>();
     private final Map<String, AtomicLong> taskExecutionTimes = new ConcurrentHashMap<>();
     private final Map<String, AtomicLong> taskErrorCounts = new ConcurrentHashMap<>();
     private final Map<String, Instant> taskLastExecutions = new ConcurrentHashMap<>();
     
-    public GameScheduler(GameRepository gameRepository, @Lazy GameService gameService, TaskScheduler taskScheduler) {
-        this.gameRepository = gameRepository;
-        this.gameService = gameService;
-        this.taskScheduler = taskScheduler;
-    }
-    
     @PostConstruct
     public void initMetrics() {
         // Initialize metrics for each task
         for (String task : List.of("startWaitingGames", "handlePlayerTimeouts", 
-                                   "cleanupIdleGames", "updateActionDeadlines", "scheduleNextHand")) {
+                                   "cleanupIdleGames", "updateActionDeadlines", 
+                                   "scheduleNextHand", "schedulePlayerTimeout")) {
             taskExecutionCounts.put(task, new AtomicLong(0));
             taskExecutionTimes.put(task, new AtomicLong(0));
             taskErrorCounts.put(task, new AtomicLong(0));
@@ -77,15 +71,11 @@ public class GameScheduler implements SchedulingConfigurer {
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
         taskRegistrar.setTaskScheduler(taskScheduler);
-        
-        // Schedule the dynamic tasks
-        schedulePlayerTimeoutTask();
-        scheduleGameStartTask();
 
-        // Schedule a task to adjust dynamic scheduler intervals
-        taskRegistrar.addTriggerTask(
-            this::adjustSchedulerIntervals,
-            triggerContext -> new PeriodicTrigger(30000, TimeUnit.MILLISECONDS).nextExecutionTime(triggerContext).toInstant()
+        taskScheduler.schedule(
+                this::startWaitingGames,
+                triggerContext -> new PeriodicTrigger(currentGameStartInterval.get(), TimeUnit.MILLISECONDS)
+                        .nextExecutionTime(triggerContext).toInstant()
         );
         
         // Schedule metrics logging
@@ -115,43 +105,14 @@ public class GameScheduler implements SchedulingConfigurer {
         }
         
         // Add scheduler configuration
-        sb.append(String.format("Intervals: playerTimeout=%dms, gameStart=%dms, roundEndDelay=%dms\n",
-                currentPlayerTimeoutInterval.get(), currentGameStartInterval.get(), roundEndDelay));
+        sb.append(String.format("Intervals: playerTimeout=%dms, gameStart=%dms, roundEndDelay=%dms, playerTimeoutDelay=%dms\n",
+                currentPlayerTimeoutInterval.get(), currentGameStartInterval.get(), roundEndDelay, playerTimeoutDelay));
         
-        // Add info about scheduled game starts
-        sb.append(String.format("Scheduled game starts: %d\n", scheduledGameStarts.size()));
+        // Add info about scheduled game starts and player timeouts
+        sb.append(String.format("Scheduled game starts: %d, Scheduled player timeouts: %d\n", 
+                scheduledGameStarts.size(), scheduledPlayerTimeouts.size()));
         
         logger.info(sb.toString());
-    }
-    
-    /**
-     * Dynamically schedule player timeout checks based on game activity
-     */
-    private void schedulePlayerTimeoutTask() {
-        if (playerTimeoutTask != null && !playerTimeoutTask.isDone()) {
-            playerTimeoutTask.cancel(false);
-        }
-        
-        playerTimeoutTask = taskScheduler.schedule(
-            this::handlePlayerTimeouts,
-            triggerContext -> new PeriodicTrigger(currentPlayerTimeoutInterval.get(), TimeUnit.MILLISECONDS)
-                .nextExecutionTime(triggerContext).toInstant()
-        );
-    }
-    
-    /**
-     * Dynamically schedule game start checks based on waiting games
-     */
-    private void scheduleGameStartTask() {
-        if (startGamesTask != null && !startGamesTask.isDone()) {
-            startGamesTask.cancel(false);
-        }
-        
-        startGamesTask = taskScheduler.schedule(
-            this::startWaitingGames,
-            triggerContext -> new PeriodicTrigger(currentGameStartInterval.get(), TimeUnit.MILLISECONDS)
-                .nextExecutionTime(triggerContext).toInstant()
-        );
     }
     
     /**
@@ -201,88 +162,79 @@ public class GameScheduler implements SchedulingConfigurer {
             taskErrorCounts.get(taskName).incrementAndGet();
         }
     }
-    
+
     /**
-     * Adjust scheduler intervals based on current game activity
+     * Schedule a player timeout action with delay
+     * @param gameId The ID of the game
+     * @param playerId The ID of the player who timed out
      */
-    private void adjustSchedulerIntervals() {
+    public void schedulePlayerTimeout(String gameId, String playerId) {
+        String taskName = "schedulePlayerTimeout";
+        Instant start = Instant.now();
+        taskLastExecutions.put(taskName, start);
+
         try {
-            // Check active games count
-            List<Game> activeGames = gameRepository.findActiveGames();
-            int activeGamesCount = activeGames.size();
-            
-            // Find games with imminent player timeouts
-            Instant now = Instant.now();
-            List<Game> timeoutGames = gameRepository.findGamesWithImminentPlayerActionTimeout(
-                    now, now.plusSeconds(10)); // Games with timeout in next 10 seconds
-            int imminentTimeouts = timeoutGames.size();
-            
-            // Find waiting games
-            List<Game> waitingGames = gameRepository.findGamesReadyForAutoStart();
-            int waitingGamesCount = waitingGames.size();
-            
-            // Get counts by status for better metrics
-            long waitingCount = gameRepository.countGamesByStatus(Game.GameStatus.WAITING);
-            long preFlopCount = gameRepository.countGamesByStatus(Game.GameStatus.PRE_FLOP_BETTING);
-            long flopCount = gameRepository.countGamesByStatus(Game.GameStatus.FLOP_BETTING);
-            long turnCount = gameRepository.countGamesByStatus(Game.GameStatus.TURN_BETTING);
-            long riverCount = gameRepository.countGamesByStatus(Game.GameStatus.RIVER_BETTING);
-            
-            // Adjust player timeout check interval - faster checks if there are active games with imminent timeouts
-            long newTimeoutInterval;
-            if (imminentTimeouts > 0) {
-                // More imminent timeouts = more frequent checks
-                newTimeoutInterval = Math.max(minPlayerTimeoutCheck, 
-                                     Math.min(maxPlayerTimeoutCheck, 5000 / (imminentTimeouts + 1)));
-            } else if (activeGamesCount > 0) {
-                // If we have active games but no imminent timeouts, check at a moderate pace
-                newTimeoutInterval = Math.max(minPlayerTimeoutCheck, 
-                                     Math.min(maxPlayerTimeoutCheck, 3000));
-            } else {
-                // No active games, check less frequently
-                newTimeoutInterval = maxPlayerTimeoutCheck;
+            logger.info("Scheduling timeout for player {} in game {} after {}ms delay", playerId, gameId, playerTimeoutDelay);
+
+            // Create a unique key for this timeout
+            String timeoutKey = gameId + ":" + playerId;
+
+            // Cancel any existing scheduled timeout for this player in this game
+            ScheduledFuture<?> existingTask = scheduledPlayerTimeouts.remove(timeoutKey);
+            if (existingTask != null && !existingTask.isDone()) {
+                existingTask.cancel(false);
+                logger.debug("Cancelled existing timeout task for player {} in game {}", playerId, gameId);
             }
-            
-            // Adjust game start interval - faster checks if there are waiting games ready to start
-            long newGameStartInterval;
-            if (waitingGamesCount > 5) {
-                // Many waiting games, check very frequently
-                newGameStartInterval = 1000;
-            } else if (waitingGamesCount > 0) {
-                // Some waiting games, check frequently
-                newGameStartInterval = 2000;
-            } else if (waitingCount > 0) {
-                // Games waiting but not enough players yet, check occasionally
-                newGameStartInterval = 5000;
-            } else {
-                // No waiting games at all, check infrequently
-                newGameStartInterval = 10000;
-            }
-            
-            // Only reschedule if intervals have changed significantly (more than 20%)
-            if (Math.abs(newTimeoutInterval - currentPlayerTimeoutInterval.get()) > 
-                    (currentPlayerTimeoutInterval.get() * 0.2)) {
-                currentPlayerTimeoutInterval.set(newTimeoutInterval);
-                schedulePlayerTimeoutTask();
-                logger.debug("Adjusted player timeout check interval to {}ms", newTimeoutInterval);
-            }
-            
-            if (Math.abs(newGameStartInterval - currentGameStartInterval.get()) > 
-                    (currentGameStartInterval.get() * 0.2)) {
-                currentGameStartInterval.set(newGameStartInterval);
-                scheduleGameStartTask();
-                logger.debug("Adjusted game start check interval to {}ms", newGameStartInterval);
-            }
-            
-            logger.debug("Scheduler status: activeGames={}, imminentTimeouts={}, waitingGames={}, " +
-                         "gamesByStatus=[waiting={}, preFlop={}, flop={}, turn={}, river={}], " +
-                         "timeoutInterval={}ms, startInterval={}ms",
-                         activeGamesCount, imminentTimeouts, waitingGamesCount,
-                         waitingCount, preFlopCount, flopCount, turnCount, riverCount,
-                         currentPlayerTimeoutInterval.get(), currentGameStartInterval.get());
-            
+
+            // Schedule the player timeout after delay
+            ScheduledFuture<?> future = taskScheduler.schedule(() -> {
+                handlePlayerTimeOut(gameId, playerId);
+            }, Instant.now().plusMillis(playerTimeoutDelay));
+
+            // Store the future for potential cancellation
+            scheduledPlayerTimeouts.put(timeoutKey, future);
+
+            // Update metrics
+            taskExecutionCounts.get(taskName).incrementAndGet();
+            taskExecutionTimes.get(taskName).addAndGet(Duration.between(start, Instant.now()).toMillis());
         } catch (Exception e) {
-            logger.error("Error adjusting scheduler intervals: {}", e.getMessage(), e);
+            logger.error("Error scheduling timeout for player {} in game {}: {}", playerId, gameId, e.getMessage(), e);
+            taskErrorCounts.get(taskName).incrementAndGet();
+        }
+    }
+
+    private void handlePlayerTimeOut(String gameId, String playerId) {
+        // Create a unique key for this timeout
+        String timeoutKey = gameId + ":" + playerId;
+        try {
+            Game game = gameRepository.findById(gameId).orElse(null);
+            if (game != null && game.getStatus() != Game.GameStatus.WAITING) {
+                // Double check that this player is still the current player
+                if (game.isPlayersTurn(playerId)) {
+                    // Auto-fold the player
+                    gameService.fold(gameId, playerId);
+                    logger.info("Auto-folded player {} in game {} after timeout delay", playerId, gameId);
+                } else {
+                    logger.debug("Skipping timeout for player {} in game {}: no longer their turn", playerId, gameId);
+                }
+            } else {
+                logger.debug("Skipping timeout for player {} in game {}: game not found or in WAITING status", playerId, gameId);
+            }
+        } catch (Exception e) {
+            logger.error("Error handling timeout for player {} in game {}: {}", playerId, gameId, e.getMessage(), e);
+        } finally {
+            // Remove from tracking map when done
+            scheduledPlayerTimeouts.remove(timeoutKey);
+        }
+    }
+
+    public void cancelPlayerTimeout(String gameId , String playerId) {
+        // Create a unique key for this timeout
+        String timeoutKey = gameId + ":" + playerId;
+        ScheduledFuture<?> existingTask = scheduledPlayerTimeouts.remove(timeoutKey);
+        if (existingTask != null && !existingTask.isDone()) {
+            existingTask.cancel(false);
+            logger.debug("Cancelled scheduled timeout for {}", timeoutKey);
         }
     }
 
@@ -322,46 +274,6 @@ public class GameScheduler implements SchedulingConfigurer {
             taskExecutionTimes.get(taskName).addAndGet(Duration.between(start, Instant.now()).toMillis());
         } catch (Exception e) {
             logger.error("Error in startWaitingGames scheduler: {}", e.getMessage(), e);
-            taskErrorCounts.get(taskName).incrementAndGet();
-        }
-    }
-    
-    /**
-     * Handle player timeouts by auto-folding
-     */
-    private void handlePlayerTimeouts() {
-        logger.debug("Checking for player action timeouts...");
-        String taskName = "handlePlayerTimeouts";
-        Instant start = Instant.now();
-        taskLastExecutions.put(taskName, start);
-        
-        try {
-            List<Game> timeoutGames = gameRepository.findGamesWithPlayerActionTimeout(Instant.now());
-            
-            if (!timeoutGames.isEmpty()) {
-                logger.info("Found {} games with player action timeouts", timeoutGames.size());
-                
-                timeoutGames.forEach(game -> {
-                    try {
-                        // Find current player
-                        if (game.getCurrentPlayerIndex() >= 0 && 
-                            game.getCurrentPlayerIndex() < game.getPlayers().size()) {
-                            
-                            String playerId = game.getPlayers().get(game.getCurrentPlayerIndex()).getId();
-                            gameService.fold(game.getId(), playerId);
-                            logger.info("Auto-folded for player {} in game {}", playerId, game.getId());
-                        }
-                    } catch (Exception e) {
-                        logger.error("Failed to handle timeout for game {}: {}", game.getId(), e.getMessage(), e);
-                    }
-                });
-            }
-            
-            // Update metrics
-            taskExecutionCounts.get(taskName).incrementAndGet();
-            taskExecutionTimes.get(taskName).addAndGet(Duration.between(start, Instant.now()).toMillis());
-        } catch (Exception e) {
-            logger.error("Error in handlePlayerTimeouts scheduler: {}", e.getMessage(), e);
             taskErrorCounts.get(taskName).incrementAndGet();
         }
     }

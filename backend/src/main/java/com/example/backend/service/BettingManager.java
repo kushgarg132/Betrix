@@ -51,6 +51,9 @@ public class BettingManager {
                 roundType = BettingRound.RoundType.RIVER;
                 break;
         }
+
+        String currentPlayerId = game.getPlayers().get(game.getCurrentPlayerIndex()).getId();
+        gameScheduler.schedulePlayerTimeout(game.getId() , currentPlayerId);
         
         // Publish event for round started
         eventPublisher.publishEvent(new RoundStartedEvent(game.getId(), game, roundType));
@@ -298,9 +301,11 @@ public class BettingManager {
         }
     }
 
-    public void handleCurrentBettingRound(Game game) {
+    public void handleCurrentBettingRound(Game game , String playerId) {
         // Check if betting round is complete
         if (isBettingRoundComplete(game)) {
+            gameScheduler.cancelPlayerTimeout(game.getId() , playerId);
+
             // Update pot amounts before moving to the next round
             updatePotAmounts(game);
             

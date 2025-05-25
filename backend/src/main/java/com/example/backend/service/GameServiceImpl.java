@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.example.backend.scheduler.GameScheduler;
+
 @Service
 @RequiredArgsConstructor
 public class GameServiceImpl implements GameService {
@@ -30,6 +32,7 @@ public class GameServiceImpl implements GameService {
     private final BettingManager bettingManager;
     private final GameValidatorService gameValidatorService;
     private final GameEventPublisher eventPublisher;
+    private final GameScheduler gameScheduler;
 
     @Override
     public List<Game> getAllGames() {
@@ -52,15 +55,10 @@ public class GameServiceImpl implements GameService {
     @Override
     @Transactional
     public void createGame(BlindPayload payload) {
-        logger.info("Creating a new game");
-        try {
-            Game game = new Game(payload.getSmallBlindAmount() , payload.getBigBlindAmount());
-            Game savedGame = gameRepository.save(game);
-            logger.debug("Created game: {}", savedGame);
-        } catch (Exception e) {
-            logger.error("Error creating game: {}", e.getMessage());
-            throw new RuntimeException("Failed to create game", e);
-        }
+        logger.info("Creating a new game with small blind: {} and big blind: {}", payload.getSmallBlind(), payload.getBigBlind());
+        Game game = new Game(payload.getSmallBlind(), payload.getBigBlind());
+        gameRepository.save(game);
+        logger.debug("Game created with ID: {}", game.getId());
     }
 
     @Override
@@ -117,9 +115,6 @@ public class GameServiceImpl implements GameService {
             game.getPlayers().add(player);
             game.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
             gameRepository.save(game);
-
-            user.setBalance(0);
-            userRepository.save(user);
 
             // Publish player joined event
             eventPublisher.publishEvent(new PlayerJoinedEvent(gameId, player));
@@ -178,7 +173,6 @@ public class GameServiceImpl implements GameService {
             // Start betting round
             bettingManager.startNewBettingRound(game);
 
-            game.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
             gameRepository.save(game);
 
             logger.debug("New hand started for game: {}", game);
@@ -200,9 +194,16 @@ public class GameServiceImpl implements GameService {
                 logger.error("Player not found in game: {}", playerId);
                 throw new RuntimeException("Player not found in game");
             }
-            gameValidatorService.validatePlayerBetAmount(game , player , amount);
+            gameValidatorService.validatePlayerBetAmount(game, player, amount);
+
+            // Cancel any scheduled timeout for this player
+            gameScheduler.cancelPlayerTimeout(gameId , playerId);
             // Perform bet logic
             bettingManager.placeBet(game, player, amount, null);
+            // Start TimeOut scheduler
+            String currentPlayerId = game.getPlayers().get(game.getCurrentPlayerIndex()).getId();
+            gameScheduler.schedulePlayerTimeout(game.getId(), currentPlayerId);
+
             // Publish player action event
             eventPublisher.publishEvent(new PlayerActionEvent(
                     gameId,
@@ -213,7 +214,7 @@ public class GameServiceImpl implements GameService {
             ));
             
             // Check if betting round is complete
-            bettingManager.handleCurrentBettingRound(game);
+            bettingManager.handleCurrentBettingRound(game , playerId);
 
             game.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
             game.setLastActivityTime(LocalDateTime.now(ZoneOffset.UTC));
@@ -239,19 +240,24 @@ public class GameServiceImpl implements GameService {
                 throw new RuntimeException("Player not found in game");
             }
             
-            // Perform check logic - a check is essentially a bet of 0
-            bettingManager.placeBet(game, player, 0, Game.PlayerAction.CHECK);
+            // Cancel any scheduled timeout for this player
+            gameScheduler.cancelPlayerTimeout(gameId , playerId);
+            
+            // Perform check logic (which is a bet of 0)
+            bettingManager.placeBet(game, player, 0, null);
+            // Start TimeOut scheduler
+            String currentPlayerId = game.getPlayers().get(game.getCurrentPlayerIndex()).getId();
+            gameScheduler.schedulePlayerTimeout(game.getId(), currentPlayerId);
             // Publish player action event
             eventPublisher.publishEvent(new PlayerActionEvent(
                     gameId,
                     player,
                     PlayerActionEvent.ActionType.CHECK,
-                    null,
+                    0.0,
                     new Game(game)
             ));
 
-            // Check if betting round is complete
-            bettingManager.handleCurrentBettingRound(game);
+            bettingManager.handleCurrentBettingRound(game,playerId);
 
             game.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
             game.setLastActivityTime(LocalDateTime.now(ZoneOffset.UTC));
@@ -276,9 +282,15 @@ public class GameServiceImpl implements GameService {
                 logger.error("Player not found in game: {}", playerId);
                 throw new RuntimeException("Player not found in game");
             }
-
+            
+            // Cancel any scheduled timeout for this player
+            gameScheduler.cancelPlayerTimeout(gameId , playerId);
             // Perform fold logic
             bettingManager.fold(game, player);
+            // Start TimeOut scheduler
+            String currentPlayerId = game.getPlayers().get(game.getCurrentPlayerIndex()).getId();
+            gameScheduler.schedulePlayerTimeout(game.getId(), currentPlayerId);
+
             // Publish player action event
             eventPublisher.publishEvent(new PlayerActionEvent(
                     gameId,
@@ -288,7 +300,7 @@ public class GameServiceImpl implements GameService {
                     new Game(game)
             ));
 
-            bettingManager.handleCurrentBettingRound(game);
+            bettingManager.handleCurrentBettingRound(game, playerId);
 
             game.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
             game.setLastActivityTime(LocalDateTime.now(ZoneOffset.UTC));
@@ -314,14 +326,24 @@ public class GameServiceImpl implements GameService {
                 throw new RuntimeException("Player not found in game");
             }
 
-            // Update user balance
-            User user = userRepository.findByUsername(player.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found: " + player.getUsername()));
-            user.setBalance((int)player.getChips());
-            userRepository.save(user);
+            // If player is current player, fold first
+            if (game.isPlayersTurn(playerId)) {
+                fold(game.getId(), playerId);
+            }
+
+            // Mark player as inactive
+            player.setActive(false);
+            player.setHasFolded(true);
+
+            // Publish player action event
+            eventPublisher.publishEvent(new PlayerActionEvent(
+                    gameId,
+                    player,
+                    PlayerActionEvent.ActionType.LEAVE,
+                    null,
+                    new Game(game)
+            ));
             
-            // Remove player from game
-            game.getPlayers().remove(player);
             game.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
             game.setLastActivityTime(LocalDateTime.now(ZoneOffset.UTC));
             
@@ -364,33 +386,6 @@ public class GameServiceImpl implements GameService {
         } catch (Exception e) {
             logger.error("Error deleting game: {}", e.getMessage());
             throw new RuntimeException("Failed to delete game", e);
-        }
-    }
-
-    /**
-     * Updates all active games to mark the current turn player's action deadline
-     */
-    @Override
-    @Transactional
-    public void updateAllGameActionDeadlines() {
-        try {
-            List<Game> activeGames = gameRepository.findActiveGames();
-            
-            for (Game game : activeGames) {
-                if (game.getCurrentPlayerActionDeadline() == null && 
-                    game.getCurrentPlayerIndex() >= 0 &&
-                    game.getCurrentPlayerIndex() < game.getPlayers().size()) {
-                    
-                    game.updateCurrentPlayerActionDeadline();
-                    gameRepository.save(game);
-                    
-                    logger.debug("Updated action deadline for game {}, player {}", 
-                                game.getId(), 
-                                game.getPlayers().get(game.getCurrentPlayerIndex()).getId());
-                }
-            }
-        } catch (Exception e) {
-            logger.error("Error updating game action deadlines: {}", e.getMessage(), e);
         }
     }
 

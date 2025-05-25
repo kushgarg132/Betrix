@@ -192,9 +192,11 @@ public class Game {
         do {
             currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
         } while (!players.get(currentPlayerIndex).isActive() || 
-                 players.get(currentPlayerIndex).isHasFolded());
+                 players.get(currentPlayerIndex).isHasFolded() || 
+                 players.get(currentPlayerIndex).isAllIn());
                  
-        // Set timeout for the next player's action
+        // Just update the last activity time, but don't set the deadline
+        // as we'll do that separately when needed
         updateCurrentPlayerActionDeadline();
         updateLastActivityTime();
     }
@@ -221,6 +223,19 @@ public class Game {
             return false;
         }
         return Instant.now().isAfter(this.currentPlayerActionDeadline);
+    }
+    
+    /**
+     * Checks if the current player is in the warning period before timeout
+     * @param warningSeconds seconds before timeout when warning should appear
+     * @return true if the player is in warning period
+     */
+    public boolean isCurrentPlayerInTimeoutWarningPeriod(int warningSeconds) {
+        if (this.currentPlayerActionDeadline == null) {
+            return false;
+        }
+        Instant warningThreshold = this.currentPlayerActionDeadline.minusSeconds(warningSeconds);
+        return Instant.now().isAfter(warningThreshold) && !isCurrentPlayerActionTimedOut();
     }
     
     /**
@@ -281,7 +296,9 @@ public class Game {
         
         // Set first player to act (after dealer in post-flop rounds)
         int firstToActIdx = (dealerPosition + 1) % players.size();
-        while (!players.get(firstToActIdx).isActive()) {
+        while (!players.get(firstToActIdx).isActive() || 
+               players.get(firstToActIdx).isHasFolded() || 
+               players.get(firstToActIdx).isAllIn()) {
             firstToActIdx = (firstToActIdx + 1) % players.size();
         }
         currentPlayerIndex = firstToActIdx;
