@@ -58,6 +58,7 @@ const styles = {
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     position: 'relative',
+    paddingBottom: 'env(safe-area-inset-bottom, 0)',
   },
   overlay: {
     position: 'absolute',
@@ -71,11 +72,14 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     padding: '20px',
+    paddingBottom: 'calc(20px + env(safe-area-inset-bottom, 0))',
+    overflowY: 'auto',
   },
   mainContent: {
     textAlign: 'center',
     maxWidth: '1000px',
     width: '100%',
+    paddingBottom: '20px',
   },
   title: {
     fontSize: '3.5rem',
@@ -84,6 +88,12 @@ const styles = {
     color: '#fff',
     textShadow: '0 3px 6px rgba(0, 0, 0, 0.5)',
     letterSpacing: '2px',
+    '@media (max-width: 768px)': {
+      fontSize: '2.5rem',
+    },
+    '@media (max-width: 480px)': {
+      fontSize: '2rem',
+    },
   },
   titleHighlight: {
     color: '#00aaff',
@@ -95,6 +105,14 @@ const styles = {
     color: '#e0e0e0',
     maxWidth: '800px',
     margin: '0 auto 40px',
+    '@media (max-width: 768px)': {
+      fontSize: '1.2rem',
+      marginBottom: '30px',
+    },
+    '@media (max-width: 480px)': {
+      fontSize: '1rem',
+      marginBottom: '20px',
+    },
   },
   buttonContainer: {
     display: 'flex',
@@ -102,6 +120,10 @@ const styles = {
     gap: '20px',
     marginBottom: '50px',
     flexWrap: 'wrap',
+    '@media (max-width: 480px)': {
+      marginBottom: '30px',
+      gap: '15px',
+    },
   },
   primaryButton: {
     padding: '15px 30px',
@@ -114,6 +136,10 @@ const styles = {
     cursor: 'pointer',
     boxShadow: '0 4px 15px rgba(0, 170, 255, 0.4)',
     transition: 'all 0.3s ease',
+    '@media (max-width: 480px)': {
+      padding: '12px 25px',
+      fontSize: '1rem',
+    },
   },
   secondaryButton: {
     padding: '15px 30px',
@@ -126,6 +152,10 @@ const styles = {
     cursor: 'pointer',
     boxShadow: '0 4px 15px rgba(0, 255, 204, 0.2)',
     transition: 'all 0.3s ease',
+    '@media (max-width: 480px)': {
+      padding: '12px 25px',
+      fontSize: '1rem',
+    },
   },
   featureGrid: {
     display: 'flex',
@@ -133,6 +163,9 @@ const styles = {
     flexWrap: 'wrap',
     gap: '30px',
     marginTop: '20px',
+    '@media (max-width: 480px)': {
+      gap: '15px',
+    },
   },
   featureCard: {
     backgroundColor: 'rgba(22, 33, 62, 0.7)',
@@ -142,21 +175,35 @@ const styles = {
     boxShadow: '0 8px 20px rgba(0, 0, 0, 0.2)',
     backdropFilter: 'blur(5px)',
     transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+    '@media (max-width: 480px)': {
+      padding: '20px 15px',
+      width: '100%',
+    },
   },
   featureIcon: {
     fontSize: '2.5rem',
     marginBottom: '15px',
+    '@media (max-width: 480px)': {
+      fontSize: '2rem',
+      marginBottom: '10px',
+    },
   },
   featureTitle: {
     fontSize: '1.3rem',
     color: '#00ffcc',
     marginBottom: '10px',
     fontWeight: 'bold',
+    '@media (max-width: 480px)': {
+      fontSize: '1.1rem',
+    },
   },
   featureText: {
     fontSize: '1rem',
     color: '#e0e0e0',
     lineHeight: '1.5',
+    '@media (max-width: 480px)': {
+      fontSize: '0.9rem',
+    },
   }
 };
 

@@ -1185,15 +1185,71 @@ tr:nth-child(10) .mini-card-container::before {
 
 @media (max-width: 480px) {
   .table-felt {
-    height: 80vh; /* Match Table.css */
-    max-height: 440px; /* Match Table.css */
+    height: 70vh;
+    max-height: 400px;
+    padding-bottom: 80px; /* Increase bottom padding */
+  }
+  
+  .winning-hand-display {
+    top: 16%;
+    font-size: 0.65rem;
+    padding: 0.2em 0.4em;
   }
   
   .community-cards {
-    padding: 0; /* Match Table.css */
+    transform: translate(-50%, -10%);
+    padding: 0; /* Match Table.css - no padding */
     gap: 0.125rem; /* Match Table.css - 2px */
+    top: 60%;
     max-width: 90%; /* Match Table.css */
-    top: -20%; /* Adjusted for relative positioning */
+  }
+  
+  /* Make sure there are no width constraints */
+  .community-cards .card {
+    /* No fixed width - will use the Card.css values */
+    width: auto;
+  }
+
+  /* Fix for bottom controls visibility */
+  .poker-table {
+    padding-bottom: 160px; /* Increased padding for controls */
+    min-height: 100vh;
+    height: auto;
+    overflow-y: auto;
+  }
+
+  /* Ensure betting controls stay visible */
+  .betting-controls-wrapper {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.8) 80%, rgba(0, 0, 0, 0.6) 100%);
+    padding: 15px 5px;
+  }
+
+  /* Ensure body doesn't get cut off */
+  body {
+    min-height: 100vh;
+    height: auto;
+    overflow-y: auto;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+}
+
+/* Add specific iPhone fix for notch/home indicator areas */
+@media screen and (max-width: 480px) and (min-height: 800px) {
+  .poker-table {
+    padding-bottom: 180px;
+  }
+  
+  body {
+    padding-bottom: env(safe-area-inset-bottom, 20px);
+  }
+  
+  .betting-controls-wrapper {
+    padding-bottom: calc(15px + env(safe-area-inset-bottom, 20px));
   }
 }
 

@@ -10,6 +10,12 @@
   --white: #ffffff;
   --box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
   --transition: all 0.3s ease;
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html {
+  height: 100%;
+  width: 100%;
 }
 
 body {
@@ -22,6 +28,9 @@ body {
   background-color: #0a0e17;
   color: #fff;
   overflow-x: hidden;
+  min-height: 100%;
+  position: relative;
+  padding-bottom: var(--safe-area-bottom);
 }
 
 code {
@@ -154,4 +163,40 @@ input, textarea, select {
 
 .animate-fadeIn {
   animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  body {
+    overflow-y: auto;
+  }
+  
+  /* Ensure content doesn't get cut off at the bottom */
+  .main-content, 
+  main, 
+  [class*="page-"], 
+  [class*="container-"] {
+    padding-bottom: max(20px, var(--safe-area-bottom));
+  }
+}
+
+/* iPhone X and newer notch/home indicator support */
+@supports (padding: max(0px)) {
+  body {
+    padding-bottom: max(0px, env(safe-area-inset-bottom, 0px));
+  }
+  
+  /* Fixed positioned elements at bottom of screen */
+  .fixed-bottom,
+  [class*="-controls-wrapper"],
+  [class*="bottom-bar"],
+  [class*="footer"] {
+    padding-bottom: max(10px, env(safe-area-inset-bottom, 10px));
+  }
+  
+  /* Modal overlays */
+  [class*="modal-"],
+  [class*="overlay"] {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
 }
