@@ -20,6 +20,17 @@ const Login = () => {
     }
   };
 
+  const handleGuestLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post('/auth/guest');
+      login(response.data.token);
+      navigate('/');
+    } catch (error) {
+      console.error('Guest Login failed:', error);
+    }
+  };
+
   return (
     <div style={styles.container}>
       <div style={styles.card}>
@@ -47,6 +58,9 @@ const Login = () => {
             Login
           </button>
         </form>
+        <button onClick={handleGuestLogin} style={{...styles.button, backgroundColor: '#6c63ff'}}>
+          Continue as Guest
+        </button>
         <p style={styles.footerText}>
           Don't have an account?{' '}
           <span

@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -27,6 +29,9 @@ public class AuthController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
@@ -53,6 +58,18 @@ public class AuthController {
         );
         
         return ResponseEntity.ok(user);
+    }
+
+    @PostMapping("/guest")
+    public ResponseEntity<JwtResponse> guestLogin() {
+        String username = "guest-" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
+        String token = jwtTokenProvider.generateGuestToken(username);
+
+        JwtResponse response = new JwtResponse(
+                token
+        );
+
+        return ResponseEntity.ok(response);
     }
 
     @Data

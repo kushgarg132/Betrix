@@ -8,6 +8,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   // Function to get initials from the user's name
   const getUserInitials = (name) => {
@@ -30,6 +31,11 @@ const Navbar = () => {
     setDropdownOpen(false);
   };
 
+  const handleNavigate = (path) => {
+    navigate(path);
+    setMobileOpen(false);
+  };
+
   return (
     <nav className="navbar">
       <div className="navLeft">
@@ -40,22 +46,22 @@ const Navbar = () => {
       
       <div className="navCenter">
         <div className="navLinks">
-          <div 
+          <div
             className={`navLink ${isActive('/') ? 'active' : ''}`} 
-            onClick={() => navigate('/')}
+            onClick={() => handleNavigate('/')}
           >
             Home
           </div>
           <div 
             className={`navLink ${isActive('/lobby') ? 'active' : ''}`} 
-            onClick={() => navigate('/lobby')}
+            onClick={() => handleNavigate('/lobby')}
           >
             Game Lobby
           </div>
           {isLoggedIn && (
             <div 
               className={`navLink ${isActive('/profile') ? 'active' : ''}`} 
-              onClick={() => navigate('/profile')}
+              onClick={() => handleNavigate('/profile')}
             >
               Profile
             </div>
@@ -67,7 +73,7 @@ const Navbar = () => {
         {isLoggedIn && user ? (
           <>
             <div className="userInfo">
-              <span className="userName">Welcome, {user.name}</span>
+              <span className="userName">{user.name}</span>
               <span className="userBalance">${user.balance || 0}</span>
             </div>
             <div className="userMenu">
@@ -76,7 +82,7 @@ const Navbar = () => {
               </div>
               <div className={`dropdown ${dropdownOpen ? 'show' : ''}`}>
                 <div className="dropdownItem" onClick={() => {
-                  navigate('/profile');
+                  handleNavigate('/profile');
                   closeDropdown();
                 }}>
                   <i className="fas fa-user-circle"></i> Profile
@@ -84,7 +90,7 @@ const Navbar = () => {
                 <div className="dropdownItem" onClick={() => {
                   logout();
                   closeDropdown();
-                  navigate('/login');
+                  handleNavigate('/login');
                 }}>
                   <i className="fas fa-sign-out-alt"></i> Logout
                 </div>
@@ -93,14 +99,78 @@ const Navbar = () => {
           </>
         ) : (
           <div className="authButtons">
-            <button className="navButton loginBtn" onClick={() => navigate('/login')}>
+            <button className="navButton loginBtn" onClick={() => handleNavigate('/login')}>
               Login
             </button>
-            <button className="navButton signupBtn" onClick={() => navigate('/register')}>
+            <button className="navButton signupBtn" onClick={() => handleNavigate('/register')}>
               Sign Up
             </button>
           </div>
         )}
+      </div>
+
+      {/* Hamburger for mobile */}
+      <button
+        className={`hamburger ${mobileOpen ? 'open' : ''}`}
+        aria-label="Toggle navigation menu"
+        aria-expanded={mobileOpen}
+        onClick={() => setMobileOpen((prev) => !prev)}
+      >
+        <span className="bar"></span>
+        <span className="bar"></span>
+        <span className="bar"></span>
+      </button>
+
+      {/* Mobile slide-down menu */}
+      <div className={`mobileMenu ${mobileOpen ? 'open' : ''}`}>
+        <div className="mobileSection">
+          <div
+            className={`navLink ${isActive('/') ? 'active' : ''}`}
+            onClick={() => handleNavigate('/')}
+          >
+            Home
+          </div>
+          <div
+            className={`navLink ${isActive('/lobby') ? 'active' : ''}`}
+            onClick={() => handleNavigate('/lobby')}
+          >
+            Game Lobby
+          </div>
+          {isLoggedIn && (
+            <div
+              className={`navLink ${isActive('/profile') ? 'active' : ''}`}
+              onClick={() => handleNavigate('/profile')}
+            >
+              Profile
+            </div>
+          )}
+        </div>
+
+        <div className="mobileSection">
+          {isLoggedIn && user ? (
+            <>
+              <div className="mobileUser">
+                <div className="initialsCircle small">{getUserInitials(user.name)}</div>
+                <div className="mobileUserInfo">
+                  <div className="userName">{user.name}</div>
+                  <div className="userBalance">${user.balance || 0}</div>
+                </div>
+              </div>
+              <div className="dropdownItem" onClick={() => { logout(); handleNavigate('/login'); }}>
+                <i className="fas fa-sign-out-alt"></i> Logout
+              </div>
+            </>
+          ) : (
+            <div className="authButtons column">
+              <button className="navButton loginBtn" onClick={() => handleNavigate('/login')}>
+                Login
+              </button>
+              <button className="navButton signupBtn" onClick={() => handleNavigate('/register')}>
+                Sign Up
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </nav>
   );

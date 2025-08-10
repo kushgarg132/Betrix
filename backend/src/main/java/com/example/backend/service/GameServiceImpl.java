@@ -94,10 +94,14 @@ public class GameServiceImpl implements GameService {
     @Transactional
     public Game joinGame(String gameId, String username) {
         try {
-            User user = userRepository.findByUsername(username).orElseThrow(() -> {
-                logger.error("User not found: {}", username);
-                return new RuntimeException("User not found: " + username);
-            });
+            boolean isGuest = username != null && username.startsWith("guest-");
+            User user = null;
+            if (!isGuest) {
+                user = userRepository.findByUsername(username).orElseThrow(() -> {
+                    logger.error("User not found: {}", username);
+                    return new RuntimeException("User not found: " + username);
+                });
+            }
 
             Game game = gameValidatorService.validateGameExists(gameId);
             gameValidatorService.validateGameNotFull(game);
@@ -107,11 +111,19 @@ public class GameServiceImpl implements GameService {
                 return getGameForPlayer(game, game.getPlayerByUsername(username).getId());
             }
 
-            // Add player to game with 1000 chips
-            Player player = new Player(user.getName(), user.getUsername(), user.getBalance());
-            if(game.getStatus() != Game.GameStatus.WAITING) {
+            Player player;
+            if (isGuest) {
+                // Create a transient guest player with default balance
+                int guestBalance = 10000;
+                player = new Player("Guest", username, guestBalance);
+            } else {
+                player = new Player(user.getName(), user.getUsername(), user.getBalance());
+            }
+
+            if (game.getStatus() != Game.GameStatus.WAITING) {
                 player.setActive(false);
             }
+
             game.getPlayers().add(player);
             game.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
             gameRepository.save(game);
