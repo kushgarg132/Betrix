@@ -13,7 +13,7 @@ Betrix is a full-stack online poker game platform. It features a robust backend 
 ## Tech Stack
 - **Backend:** Java, Spring Boot, Gradle
 - **Frontend:** React.js, Axios
-- **Database:** (Configure as needed in backend)
+- **Database:** MongoDB
 - **WebSocket:** Spring WebSocket
 
 ## Setup Instructions
