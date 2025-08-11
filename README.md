@@ -2,10 +2,14 @@
 
 Betrix is a full-stack online poker game platform. It features a robust backend for game logic and user management, and a modern frontend for an interactive user experience.
 
+## Live Demo
+- [betrix-b3c24.web.app](https://betrix-b3c24.web.app/)
+
 ## Features
 - Multiplayer online poker games
 - Real-time gameplay with WebSocket support
 - User authentication and profile management
+- Guest login
 - Game event logging and replay
 - Admin panel for game management
 - Responsive UI with card graphics
@@ -62,6 +66,7 @@ Betrix is a full-stack online poker game platform. It features a robust backend 
 - Ensure both backend and frontend servers are running.
 - Access the app at [http://localhost:3000](http://localhost:3000).
 - Register or log in to join a game.
+- Alternatively, use the guest login option on the login page.
 
 ## Folder Structure
 ```
