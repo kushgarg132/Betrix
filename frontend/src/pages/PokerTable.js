@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useCallback } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
@@ -9,7 +9,6 @@ import './PokerTable.css';
 
 // Components
 import Player from '../components/Player';
-import Card from '../components/Card';
 import Table from '../components/Table';
 import BettingControls from '../components/BettingControls';
 import RankingsModal from '../components/RankingsModal';

@@ -4,7 +4,7 @@ import { AuthContext } from '../context/AuthContext';
 import axios from '../api/axios'; // Import axios for API requests
 
 const Profile = () => {
-  const { user, logout, updateBalance, refreshUserData } = useContext(AuthContext);
+  const { user, logout, updateBalance } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleLogout = () => {
