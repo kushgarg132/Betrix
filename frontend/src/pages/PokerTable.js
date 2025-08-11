@@ -49,6 +49,16 @@ const initializeSocketConnection = (gameId, playerId, setUpdateActions, setError
   return client;
 };
 
+const GAME_STATUS = {
+  GAME_STARTED: 'GAME_STARTED',
+  PLAYER_JOINED: 'PLAYER_JOINED',
+  PLAYER_ACTION: 'PLAYER_ACTION',
+  CARDS_DEALT: 'CARDS_DEALT',
+  ROUND_STARTED: 'ROUND_STARTED',
+  COMMUNITY_CARDS: 'COMMUNITY_CARDS',
+  GAME_ENDED: 'GAME_ENDED',
+};
+
 const PokerTable = () => {
   const { gameId } = useParams();
   const { user } = useContext(AuthContext);
@@ -59,20 +69,10 @@ const PokerTable = () => {
   const [stompClient, setStompClient] = useState(null);
   const [currentPlayer, setCurrentPlayer] = useState({ id: null, username: null, hand: [], index: null });
   const [showRankingsModal, setShowRankingsModal] = useState(false);
-  const [animatingChips, setAnimatingChips] = useState(false);
+  const [animatingChips] = useState(false);
   const [isMyTurn, setIsMyTurn] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const [leftSidebarVisible, setLeftSidebarVisible] = useState(false);
-
-  const gameStatus = {
-    GAME_STARTED: 'GAME_STARTED',
-    PLAYER_JOINED: 'PLAYER_JOINED',
-    PLAYER_ACTION: 'PLAYER_ACTION',
-    CARDS_DEALT: 'CARDS_DEALT',
-    ROUND_STARTED: 'ROUND_STARTED',
-    COMMUNITY_CARDS: 'COMMUNITY_CARDS',
-    GAME_ENDED: 'GAME_ENDED'
-  };
 
   useEffect(() => {
     const joinGame = async () => {
@@ -138,8 +138,8 @@ const PokerTable = () => {
 
         let newGameState;
         switch (type) {
-          case gameStatus.GAME_STARTED:
-          case gameStatus.ROUND_STARTED:
+          case GAME_STATUS.GAME_STARTED:
+          case GAME_STATUS.ROUND_STARTED:
             newGameState = {
               ...payload,
               communityCards: payload.communityCards || [],
@@ -149,7 +149,7 @@ const PokerTable = () => {
             };
             break;
 
-          case gameStatus.PLAYER_ACTION:
+          case GAME_STATUS.PLAYER_ACTION:
             newGameState = {
               ...payload,
               communityCards: payload.communityCards || [],
@@ -158,21 +158,21 @@ const PokerTable = () => {
             };
             break;
 
-          case gameStatus.CARDS_DEALT:
+          case GAME_STATUS.CARDS_DEALT:
             setCurrentPlayer(prevPlayer => ({
               ...prevPlayer,
               hand: Array.isArray(payload) ? payload : (prevPlayer.hand || [])
             }));
             return prevGame;
 
-          case gameStatus.PLAYER_JOINED:
+          case GAME_STATUS.PLAYER_JOINED:
             newGameState = {
               ...prevGame,
               players: [...(prevGame?.players || []), payload]
             };
             break;
 
-          case gameStatus.GAME_ENDED:
+          case GAME_STATUS.GAME_ENDED:
             console.log("Game ended with payload:", payload);
             newGameState = {
               ...(payload.game),
@@ -193,7 +193,7 @@ const PokerTable = () => {
             console.log("Updated game state with winners:", newGameState);
             break;
 
-          case gameStatus.COMMUNITY_CARDS:
+          case GAME_STATUS.COMMUNITY_CARDS:
             newGameState = {
               ...prevGame,
               communityCards: Array.isArray(payload) ? payload : (prevGame?.communityCards || [])
@@ -209,7 +209,7 @@ const PokerTable = () => {
       });
       setUpdateActions(null);
     }
-  }, [updateAction, gameStatus]);
+  }, [updateAction]);
 
   // Set isMyTurn state when it's the current player's turn
   useEffect(() => {
