@@ -10,8 +10,6 @@ const Navbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [hoveredLink, setHoveredLink] = useState(null);
-  const [hoveredButton, setHoveredButton] = useState(null);
 
   useEffect(() => {
     setMounted(true);
@@ -43,13 +41,7 @@ const Navbar = () => {
     setMobileOpen(false);
   };
 
-  const getButtonStyle = (buttonType) => {
-    const isHovered = hoveredButton === buttonType;
-    return {
-      transform: isHovered ? 'translateY(-2px) scale(1.05)' : 'translateY(0) scale(1)',
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    };
-  };
+
 
   return (
     <nav className={`navbar ${mounted ? 'navbar-mounted' : ''}`}>
@@ -64,16 +56,12 @@ const Navbar = () => {
           <div
             className={`navLink ${isActive('/') ? 'active' : ''}`}
             onClick={() => handleNavigate('/')}
-            onMouseEnter={() => setHoveredLink('home')}
-            onMouseLeave={() => setHoveredLink(null)}
           >
             Home
           </div>
           <div
             className={`navLink ${isActive('/lobby') ? 'active' : ''}`}
             onClick={() => handleNavigate('/lobby')}
-            onMouseEnter={() => setHoveredLink('lobby')}
-            onMouseLeave={() => setHoveredLink(null)}
           >
             Game Lobby
           </div>
@@ -81,8 +69,6 @@ const Navbar = () => {
             <div
               className={`navLink ${isActive('/profile') ? 'active' : ''}`}
               onClick={() => handleNavigate('/profile')}
-              onMouseEnter={() => setHoveredLink('profile')}
-              onMouseLeave={() => setHoveredLink(null)}
             >
               Profile
             </div>
@@ -123,18 +109,12 @@ const Navbar = () => {
             <button
               className="btn-secondary"
               onClick={() => handleNavigate('/login')}
-              onMouseEnter={() => setHoveredButton('login')}
-              onMouseLeave={() => setHoveredButton(null)}
-              style={getButtonStyle('login')}
             >
               Login
             </button>
             <button
               className="btn-primary"
               onClick={() => handleNavigate('/register')}
-              onMouseEnter={() => setHoveredButton('register')}
-              onMouseLeave={() => setHoveredButton(null)}
-              style={getButtonStyle('register')}
             >
               Sign Up
             </button>

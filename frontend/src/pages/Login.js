@@ -8,7 +8,6 @@ const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [mounted, setMounted] = useState(false);
-  const [hoveredButton, setHoveredButton] = useState(null);
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
 
@@ -70,8 +69,6 @@ const Login = () => {
           <button
             type="submit"
             className="btn-primary w-full"
-            onMouseEnter={() => setHoveredButton('login')}
-            onMouseLeave={() => setHoveredButton(null)}
           >
             Login
           </button>
@@ -79,8 +76,6 @@ const Login = () => {
         <button
           onClick={handleGuestLogin}
           className="guest-btn"
-          onMouseEnter={() => setHoveredButton('guest')}
-          onMouseLeave={() => setHoveredButton(null)}
         >
           Continue as Guest
         </button>

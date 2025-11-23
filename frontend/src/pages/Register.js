@@ -9,7 +9,6 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
   const [mounted, setMounted] = useState(false);
-  const [hoveredButton, setHoveredButton] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -77,8 +76,6 @@ const Register = () => {
           <button
             type="submit"
             className="btn-primary w-full"
-            onMouseEnter={() => setHoveredButton('register')}
-            onMouseLeave={() => setHoveredButton(null)}
           >
             Register
           </button>
