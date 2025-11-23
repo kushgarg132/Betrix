@@ -1,13 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from '../api/axios';
 import { useNavigate } from 'react-router-dom';
+import './Auth.css';
 
 const Register = () => {
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
+  const [mounted, setMounted] = useState(false);
+  const [hoveredButton, setHoveredButton] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -21,54 +28,65 @@ const Register = () => {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>Create Account</h1>
-        <form onSubmit={handleRegister} style={styles.form}>
-          <div style={styles.inputContainer}>
+    <div className={`auth-container ${mounted ? 'mounted' : ''}`}>
+      {/* Floating poker chips */}
+      <div className="floating-suit floating-suit-1">♠</div>
+      <div className="floating-suit floating-suit-2">♥</div>
+      <div className="floating-suit floating-suit-3">♦</div>
+      <div className="floating-suit floating-suit-4">♣</div>
+
+      <div className="glass-card auth-card">
+        <h1 className="auth-title">Create Account</h1>
+        <form onSubmit={handleRegister} className="auth-form">
+          <div className="input-group">
             <input
               type="text"
               placeholder="Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              style={styles.input}
+              required
             />
           </div>
-          <div style={styles.inputContainer}>
+          <div className="input-group">
             <input
               type="text"
               placeholder="Username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              style={styles.input}
+              required
             />
           </div>
-          <div style={styles.inputContainer}>
+          <div className="input-group">
             <input
               type="password"
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              style={styles.input}
+              required
             />
           </div>
-          <div style={styles.inputContainer}>
+          <div className="input-group">
             <input
               type="email"
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              style={styles.input}
+              required
             />
           </div>
-          <button type="submit" style={styles.button}>
+          <button
+            type="submit"
+            className="btn-primary w-full"
+            onMouseEnter={() => setHoveredButton('register')}
+            onMouseLeave={() => setHoveredButton(null)}
+          >
             Register
           </button>
         </form>
-        <p style={styles.footerText}>
-          Already have an account?{' '}
+        <p className="auth-footer">
+          Already have an account?
           <span
-            style={styles.link}
+            className="auth-link"
             onClick={() => navigate('/login')}
           >
             Login
@@ -77,80 +95,6 @@ const Register = () => {
       </div>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    minHeight: '100vh',
-    backgroundColor: '#1a1a2e',
-    padding: '20px',
-  },
-  card: {
-    backgroundColor: '#16213e',
-    padding: '35px',
-    borderRadius: '15px',
-    boxShadow: '0 8px 20px rgba(0, 0, 0, 0.3)',
-    textAlign: 'center',
-    width: '100%',
-    maxWidth: '400px',
-    color: '#fff',
-  },
-  title: {
-    fontSize: '28px',
-    marginBottom: '30px',
-    color: '#00aaff',
-    fontWeight: 'bold',
-    textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  inputContainer: {
-    position: 'relative',
-    margin: '10px 0',
-  },
-  input: {
-    width: '100%',
-    padding: '12px 15px',
-    margin: '8px 0',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    color: '#fff',
-    border: '1px solid rgba(0, 170, 255, 0.3)',
-    borderRadius: '8px',
-    fontSize: '16px',
-    transition: 'all 0.3s ease',
-    boxSizing: 'border-box',
-    outline: 'none',
-  },
-  button: {
-    padding: '12px',
-    backgroundColor: '#00aaff',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '20px',
-    cursor: 'pointer',
-    fontSize: '16px',
-    fontWeight: 'bold',
-    marginTop: '20px',
-    transition: 'background-color 0.3s ease',
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-  },
-  footerText: {
-    marginTop: '25px',
-    fontSize: '15px',
-    color: '#e0e0e0',
-  },
-  link: {
-    color: '#00ffcc',
-    cursor: 'pointer',
-    fontWeight: 'bold',
-    textDecoration: 'none',
-    transition: 'color 0.3s ease',
-  },
 };
 
 export default Register;

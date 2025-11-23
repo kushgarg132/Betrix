@@ -1,0 +1,291 @@
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #0f2027, #203a43, #2c5364);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Floating poker suit symbols */
+.floating-suit {
+    position: absolute;
+    font-size: 3rem;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0.12;
+}
+
+.floating-suit-1 {
+    top: 15%;
+    left: 10%;
+    color: rgba(0, 170, 255, 0.3);
+    animation: float 6s ease-in-out infinite;
+    text-shadow: 0 0 20px rgba(0, 170, 255, 0.3);
+}
+
+.floating-suit-2 {
+    top: 65%;
+    right: 12%;
+    font-size: 2.5rem;
+    color: rgba(255, 0, 100, 0.3);
+    animation: float 7s ease-in-out infinite 1s;
+    text-shadow: 0 0 20px rgba(255, 0, 100, 0.3);
+}
+
+.floating-suit-3 {
+    bottom: 20%;
+    left: 15%;
+    font-size: 2.8rem;
+    color: rgba(0, 255, 204, 0.3);
+    animation: float 8s ease-in-out infinite 2s;
+    text-shadow: 0 0 20px rgba(0, 255, 204, 0.3);
+}
+
+.floating-suit-4 {
+    top: 40%;
+    right: 8%;
+    font-size: 3.2rem;
+    color: rgba(0, 170, 255, 0.3);
+    animation: float 9s ease-in-out infinite 3s;
+    text-shadow: 0 0 20px rgba(0, 170, 255, 0.3);
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 450px;
+    padding: 50px 40px;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+    animation: scaleIn 0.6s ease-out;
+    background: rgba(22, 33, 62, 0.85);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(0, 170, 255, 0.2);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 170, 255, 0.1);
+}
+
+.auth-title {
+    font-size: 2.5rem;
+    margin-bottom: 35px;
+    color: #00aaff;
+    text-shadow: 0 0 15px rgba(0, 170, 255, 0.5);
+    font-family: 'Orbitron', sans-serif;
+    background: linear-gradient(90deg, #00aaff, #00ffcc, #00aaff);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 3s linear infinite;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    animation: fadeInUp 0.6s ease-out 0.2s backwards;
+}
+
+.input-group {
+    position: relative;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 15px 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(0, 170, 255, 0.2);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-sizing: border-box;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 170, 255, 0.2);
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.input-group input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.btn-primary.w-full {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.1rem;
+    background: linear-gradient(135deg, #00aaff, #0088cc);
+    border: none;
+    border-radius: 25px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(0, 170, 255, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 10px;
+    box-sizing: border-box;
+}
+
+.btn-primary.w-full:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(0, 170, 255, 0.6), 0 0 40px rgba(0, 170, 255, 0.3);
+}
+
+.auth-footer {
+    margin-top: 30px;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    animation: fadeInUp 0.6s ease-out 0.4s backwards;
+}
+
+.auth-link {
+    color: var(--secondary-color);
+    cursor: pointer;
+    font-weight: 600;
+    margin-left: 8px;
+    transition: all 0.3s ease;
+    text-shadow: 0 0 5px rgba(0, 255, 204, 0.2);
+}
+
+.auth-link:hover {
+    text-shadow: 0 0 12px var(--secondary-glow);
+    text-decoration: underline;
+    color: #00ffcc;
+}
+
+.guest-btn {
+    margin-top: 20px;
+    width: 100%;
+    background: linear-gradient(135deg, #7a00ff, #5a00cc);
+    color: white;
+    padding: 15px;
+    border: none;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(122, 0, 255, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    animation: fadeInUp 0.6s ease-out 0.3s backwards;
+    box-sizing: border-box;
+}
+
+.guest-btn:hover {
+    box-shadow: 0 8px 25px rgba(122, 0, 255, 0.6), 0 0 40px rgba(122, 0, 255, 0.3);
+    transform: translateY(-2px) scale(1.02);
+}
+
+/* Keyframe Animations */
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .auth-card {
+        padding: 40px 30px;
+        max-width: 100%;
+    }
+
+    .auth-title {
+        font-size: 2rem;
+    }
+
+    .floating-suit {
+        font-size: 2rem;
+        opacity: 0.08;
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 30px 20px;
+    }
+
+    .auth-title {
+        font-size: 1.8rem;
+        margin-bottom: 25px;
+    }
+
+    .input-group input {
+        padding: 12px 15px;
+        font-size: 0.95rem;
+    }
+
+    .btn-primary.w-full,
+    .guest-btn {
+        padding: 12px;
+        font-size: 1rem;
+    }
+
+    .floating-suit {
+        display: none;
+    }
+}

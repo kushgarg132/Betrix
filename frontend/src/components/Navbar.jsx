@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import './Navbar.css';
@@ -9,6 +9,13 @@ const Navbar = () => {
   const location = useLocation();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [hoveredLink, setHoveredLink] = useState(null);
+  const [hoveredButton, setHoveredButton] = useState(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Function to get initials from the user's name
   const getUserInitials = (name) => {
@@ -36,39 +43,53 @@ const Navbar = () => {
     setMobileOpen(false);
   };
 
+  const getButtonStyle = (buttonType) => {
+    const isHovered = hoveredButton === buttonType;
+    return {
+      transform: isHovered ? 'translateY(-2px) scale(1.05)' : 'translateY(0) scale(1)',
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    };
+  };
+
   return (
-    <nav className="navbar">
+    <nav className={`navbar ${mounted ? 'navbar-mounted' : ''}`}>
       <div className="navLeft">
         <h1 className="logo" onClick={() => navigate('/')}>
           BETRIX<span className="logoAccent">POKER</span>
         </h1>
       </div>
-      
+
       <div className="navCenter">
         <div className="navLinks">
           <div
-            className={`navLink ${isActive('/') ? 'active' : ''}`} 
+            className={`navLink ${isActive('/') ? 'active' : ''}`}
             onClick={() => handleNavigate('/')}
+            onMouseEnter={() => setHoveredLink('home')}
+            onMouseLeave={() => setHoveredLink(null)}
           >
             Home
           </div>
-          <div 
-            className={`navLink ${isActive('/lobby') ? 'active' : ''}`} 
+          <div
+            className={`navLink ${isActive('/lobby') ? 'active' : ''}`}
             onClick={() => handleNavigate('/lobby')}
+            onMouseEnter={() => setHoveredLink('lobby')}
+            onMouseLeave={() => setHoveredLink(null)}
           >
             Game Lobby
           </div>
           {isLoggedIn && (
-            <div 
-              className={`navLink ${isActive('/profile') ? 'active' : ''}`} 
+            <div
+              className={`navLink ${isActive('/profile') ? 'active' : ''}`}
               onClick={() => handleNavigate('/profile')}
+              onMouseEnter={() => setHoveredLink('profile')}
+              onMouseLeave={() => setHoveredLink(null)}
             >
               Profile
             </div>
           )}
         </div>
       </div>
-      
+
       <div className="navRight">
         {isLoggedIn && user ? (
           <>
@@ -80,7 +101,7 @@ const Navbar = () => {
               <div className="userIcon" onClick={toggleDropdown}>
                 <div className="initialsCircle">{getUserInitials(user.name)}</div>
               </div>
-              <div className={`dropdown ${dropdownOpen ? 'show' : ''}`}>
+              <div className={`dropdown glass-panel ${dropdownOpen ? 'show' : ''}`}>
                 <div className="dropdownItem" onClick={() => {
                   handleNavigate('/profile');
                   closeDropdown();
@@ -99,10 +120,22 @@ const Navbar = () => {
           </>
         ) : (
           <div className="authButtons">
-            <button className="navButton loginBtn" onClick={() => handleNavigate('/login')}>
+            <button
+              className="btn-secondary"
+              onClick={() => handleNavigate('/login')}
+              onMouseEnter={() => setHoveredButton('login')}
+              onMouseLeave={() => setHoveredButton(null)}
+              style={getButtonStyle('login')}
+            >
               Login
             </button>
-            <button className="navButton signupBtn" onClick={() => handleNavigate('/register')}>
+            <button
+              className="btn-primary"
+              onClick={() => handleNavigate('/register')}
+              onMouseEnter={() => setHoveredButton('register')}
+              onMouseLeave={() => setHoveredButton(null)}
+              style={getButtonStyle('register')}
+            >
               Sign Up
             </button>
           </div>
@@ -122,7 +155,7 @@ const Navbar = () => {
       </button>
 
       {/* Mobile slide-down menu */}
-      <div className={`mobileMenu ${mobileOpen ? 'open' : ''}`}>
+      <div className={`mobileMenu glass-panel ${mobileOpen ? 'open' : ''}`}>
         <div className="mobileSection">
           <div
             className={`navLink ${isActive('/') ? 'active' : ''}`}
@@ -162,10 +195,10 @@ const Navbar = () => {
             </>
           ) : (
             <div className="authButtons column">
-              <button className="navButton loginBtn" onClick={() => handleNavigate('/login')}>
+              <button className="btn-secondary" onClick={() => handleNavigate('/login')}>
                 Login
               </button>
-              <button className="navButton signupBtn" onClick={() => handleNavigate('/register')}>
+              <button className="btn-primary" onClick={() => handleNavigate('/register')}>
                 Sign Up
               </button>
             </div>

@@ -1,11 +1,17 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import axios from '../api/axios'; // Import axios for API requests
+import axios from '../api/axios';
 
 const Profile = () => {
   const { user, logout, updateBalance } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [mounted, setMounted] = useState(false);
+  const [hoveredButton, setHoveredButton] = useState(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -22,16 +28,26 @@ const Profile = () => {
     try {
       const response = await axios.post(`/user/add-balance?amount=${parseInt(amount)}`);
       alert(`Balance updated successfully! New Balance: $${response.data.balance}`);
-      
+
       // Update the user balance in the context (this will update the navbar too)
       updateBalance(response.data.balance);
-      // refreshUserData();
-      // Alternatively, refresh all user data from the server
-      // await refreshUserData();
     } catch (error) {
       console.error('Error adding balance:', error);
       alert('Failed to add balance. Please try again.');
     }
+  };
+
+  const getButtonStyle = (buttonType, baseStyle) => {
+    const isHovered = hoveredButton === buttonType;
+    return {
+      ...baseStyle,
+      transform: isHovered ? 'translateY(-2px) scale(1.05)' : 'translateY(0) scale(1)',
+      boxShadow: isHovered
+        ? (buttonType === 'add'
+          ? '0 8px 25px rgba(0, 170, 255, 0.6), 0 0 40px rgba(0, 170, 255, 0.3)'
+          : '0 8px 25px rgba(231, 76, 60, 0.6), 0 0 40px rgba(231, 76, 60, 0.3)')
+        : baseStyle.boxShadow,
+    };
   };
 
   if (!user) {
@@ -40,9 +56,25 @@ const Profile = () => {
 
   return (
     <div style={styles.container}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>Profile</h1>
-        <div style={styles.infoContainer}>
+      {/* Floating poker chips */}
+      <div style={styles.floatingChip1}>♠</div>
+      <div style={styles.floatingChip2}>♥</div>
+      <div style={styles.floatingChip3}>♦</div>
+
+      <div style={{
+        ...styles.card,
+        animation: mounted ? 'scaleIn 0.6s ease-out' : 'none',
+      }}>
+        <h1 style={{
+          ...styles.title,
+          animation: mounted ? 'shimmer 3s linear infinite' : 'none',
+        }}>
+          Profile
+        </h1>
+        <div style={{
+          ...styles.infoContainer,
+          animation: mounted ? 'fadeInUp 0.6s ease-out 0.2s backwards' : 'none',
+        }}>
           <div style={styles.avatarContainer}>
             <div style={styles.avatar}>
               {user.name ? user.name.charAt(0).toUpperCase() : '?'}
@@ -61,16 +93,29 @@ const Profile = () => {
             <span style={styles.infoValue}>{user.email}</span>
           </div>
         </div>
-        <div style={styles.balanceContainer}>
+        <div style={{
+          ...styles.balanceContainer,
+          animation: mounted ? 'fadeInUp 0.6s ease-out 0.4s backwards' : 'none',
+        }}>
           <div style={styles.balanceInfo}>
             <span style={styles.balanceLabel}>Balance</span>
             <span style={styles.balanceValue}>${user.balance}</span>
           </div>
-          <button style={styles.addBalanceButton} onClick={handleAddBalance}>
+          <button
+            style={getButtonStyle('add', styles.addBalanceButton)}
+            onClick={handleAddBalance}
+            onMouseEnter={() => setHoveredButton('add')}
+            onMouseLeave={() => setHoveredButton(null)}
+          >
             Add Balance
           </button>
         </div>
-        <button style={styles.logoutButton} onClick={handleLogout}>
+        <button
+          style={getButtonStyle('logout', styles.logoutButton)}
+          onClick={handleLogout}
+          onMouseEnter={() => setHoveredButton('logout')}
+          onMouseLeave={() => setHoveredButton(null)}
+        >
           Logout
         </button>
       </div>
@@ -78,65 +123,174 @@ const Profile = () => {
   );
 };
 
+// Add keyframes for animations
+if (typeof document !== 'undefined') {
+  const styleSheet = document.styleSheets[0];
+  const animations = `
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes shimmer {
+    0% { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+  }
+  @keyframes pulse {
+    0%, 100% {
+      transform: scale(1);
+      box-shadow: 0 0 15px rgba(0, 170, 255, 0.3);
+    }
+    50% {
+      transform: scale(1.05);
+      box-shadow: 0 0 25px rgba(0, 170, 255, 0.5);
+    }
+  }
+  `;
+
+  try {
+    if (styleSheet && styleSheet.cssRules) {
+      styleSheet.insertRule(animations, styleSheet.cssRules.length);
+    }
+  } catch (e) {
+    // Animations already exist or error inserting
+  }
+}
+
 const styles = {
   container: {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     minHeight: '100vh',
-    backgroundColor: '#1a1a2e',
+    background: 'linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #0f2027, #203a43, #2c5364)',
+    backgroundSize: '400% 400%',
+    animation: 'gradientShift 15s ease infinite',
     padding: '20px',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  // Floating poker chips
+  floatingChip1: {
+    position: 'absolute',
+    top: '20%',
+    left: '10%',
+    fontSize: '3rem',
+    color: 'rgba(0, 170, 255, 0.15)',
+    animation: 'float 6s ease-in-out infinite',
+    zIndex: 1,
+    textShadow: '0 0 20px rgba(0, 170, 255, 0.3)',
+    pointerEvents: 'none',
+  },
+  floatingChip2: {
+    position: 'absolute',
+    top: '60%',
+    right: '15%',
+    fontSize: '2.5rem',
+    color: 'rgba(255, 0, 100, 0.15)',
+    animation: 'float 7s ease-in-out infinite 1s',
+    zIndex: 1,
+    textShadow: '0 0 20px rgba(255, 0, 100, 0.3)',
+    pointerEvents: 'none',
+  },
+  floatingChip3: {
+    position: 'absolute',
+    bottom: '15%',
+    left: '15%',
+    fontSize: '2.8rem',
+    color: 'rgba(0, 255, 204, 0.15)',
+    animation: 'float 8s ease-in-out infinite 2s',
+    zIndex: 1,
+    textShadow: '0 0 20px rgba(0, 255, 204, 0.3)',
+    pointerEvents: 'none',
   },
   card: {
-    backgroundColor: '#16213e',
-    padding: '30px',
-    borderRadius: '15px',
-    boxShadow: '0 8px 20px rgba(0, 0, 0, 0.3)',
+    backgroundColor: 'rgba(22, 33, 62, 0.85)',
+    backdropFilter: 'blur(15px)',
+    padding: '40px',
+    borderRadius: '20px',
+    boxShadow: '0 15px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 170, 255, 0.1)',
     textAlign: 'center',
     width: '100%',
     maxWidth: '500px',
     color: '#fff',
+    border: '1px solid rgba(0, 170, 255, 0.2)',
+    position: 'relative',
+    zIndex: 2,
   },
   title: {
-    fontSize: '28px',
-    marginBottom: '25px',
+    fontSize: '32px',
+    marginBottom: '30px',
     color: '#00aaff',
     fontWeight: 'bold',
-    textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+    textShadow: '0 0 15px rgba(0, 170, 255, 0.5)',
+    fontFamily: "'Orbitron', sans-serif",
+    background: 'linear-gradient(90deg, #00aaff, #00ffcc, #00aaff)',
+    backgroundSize: '200% auto',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
   },
   avatarContainer: {
     display: 'flex',
     justifyContent: 'center',
-    marginBottom: '20px',
+    marginBottom: '25px',
   },
   avatar: {
-    width: '80px',
-    height: '80px',
+    width: '100px',
+    height: '100px',
     borderRadius: '50%',
-    backgroundColor: '#00aaff',
+    background: 'linear-gradient(135deg, #00aaff, #0088cc)',
     color: '#fff',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: '36px',
+    fontSize: '42px',
     fontWeight: 'bold',
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
+    boxShadow: '0 8px 20px rgba(0, 170, 255, 0.4), 0 0 30px rgba(0, 170, 255, 0.2)',
+    animation: 'pulse 3s ease-in-out infinite',
   },
   infoContainer: {
-    marginBottom: '25px',
+    marginBottom: '30px',
   },
   infoItem: {
     display: 'flex',
     justifyContent: 'space-between',
     margin: '12px 0',
-    padding: '10px 15px',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: '8px',
-    transition: 'background-color 0.3s ease',
+    padding: '15px 20px',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: '10px',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    border: '1px solid rgba(255, 255, 255, 0.05)',
   },
   infoLabel: {
     fontWeight: 'bold',
     color: '#00ffcc',
+    textShadow: '0 0 8px rgba(0, 255, 204, 0.3)',
   },
   infoValue: {
     color: '#fff',
@@ -145,11 +299,12 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    margin: '25px 0',
-    padding: '15px',
-    backgroundColor: 'rgba(0, 170, 255, 0.15)',
-    borderRadius: '10px',
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+    margin: '30px 0',
+    padding: '20px',
+    background: 'rgba(0, 170, 255, 0.15)',
+    borderRadius: '15px',
+    boxShadow: '0 4px 15px rgba(0, 170, 255, 0.2)',
+    border: '1px solid rgba(0, 170, 255, 0.3)',
   },
   balanceInfo: {
     display: 'flex',
@@ -159,45 +314,51 @@ const styles = {
   balanceLabel: {
     fontSize: '14px',
     color: '#00ffcc',
-    marginBottom: '5px',
+    marginBottom: '8px',
+    textShadow: '0 0 8px rgba(0, 255, 204, 0.3)',
   },
   balanceValue: {
-    fontSize: '24px',
+    fontSize: '28px',
     fontWeight: 'bold',
     color: '#fff',
+    textShadow: '0 0 10px rgba(255, 255, 255, 0.3)',
   },
   addBalanceButton: {
-    padding: '10px 15px',
-    backgroundColor: '#00aaff',
+    padding: '12px 20px',
+    background: 'linear-gradient(135deg, #00aaff, #0088cc)',
     color: '#fff',
     border: 'none',
-    borderRadius: '20px',
+    borderRadius: '25px',
     cursor: 'pointer',
-    fontSize: '14px',
+    fontSize: '15px',
     fontWeight: 'bold',
-    transition: 'background-color 0.3s ease',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    boxShadow: '0 4px 15px rgba(0, 170, 255, 0.4)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
   },
   logoutButton: {
-    padding: '12px 20px',
-    backgroundColor: '#e63946',
+    padding: '14px 24px',
+    background: 'linear-gradient(135deg, #e63946, #c81d45)',
     color: '#fff',
     border: 'none',
-    borderRadius: '20px',
+    borderRadius: '25px',
     cursor: 'pointer',
     fontSize: '16px',
     fontWeight: 'bold',
     marginTop: '20px',
-    transition: 'background-color 0.3s ease',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    boxShadow: '0 4px 15px rgba(231, 76, 60, 0.4)',
     width: '100%',
+    textTransform: 'uppercase',
+    letterSpacing: '1px',
   },
   loading: {
     fontSize: '24px',
     color: '#00aaff',
     textAlign: 'center',
     margin: '100px auto',
-    textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)',
+    textShadow: '0 0 10px rgba(0, 170, 255, 0.5)',
   },
 };
 

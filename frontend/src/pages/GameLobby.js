@@ -12,6 +12,9 @@ const GameLobby = () => {
   const [bigBlind, setBigBlind] = useState('');
   const [showCustomOption, setShowCustomOption] = useState(false);
   const [error, setError] = useState('');
+  const [mounted, setMounted] = useState(false);
+  const [hoveredCard, setHoveredCard] = useState(null);
+  const [hoveredButton, setHoveredButton] = useState(null);
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -25,6 +28,7 @@ const GameLobby = () => {
 
   useEffect(() => {
     fetchGames();
+    setMounted(true);
     // Set up polling to refresh games list every 30 seconds
     const intervalId = setInterval(fetchGames, 30000);
     return () => clearInterval(intervalId);
@@ -106,7 +110,7 @@ const GameLobby = () => {
   };
 
   const getStatusClass = (status) => {
-    switch(status) {
+    switch (status) {
       case 'WAITING':
         return 'status-waiting';
       case 'ACTIVE':
@@ -124,6 +128,14 @@ const GameLobby = () => {
     return game.players.some(player => player.username === user.username);
   };
 
+  const getCardStyle = (index) => {
+    const isHovered = hoveredCard === index;
+    return {
+      transform: isHovered ? 'translateY(-10px) scale(1.02)' : 'translateY(0) scale(1)',
+      transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+    };
+  };
+
   if (loading) {
     return (
       <div className="lobby-loading">
@@ -134,20 +146,37 @@ const GameLobby = () => {
 
   return (
     <div className="game-lobby">
+      {/* Floating poker chips */}
+      <div className="floating-suit floating-suit-1">♠</div>
+      <div className="floating-suit floating-suit-2">♥</div>
+      <div className="floating-suit floating-suit-3">♦</div>
+      <div className="floating-suit floating-suit-4">♣</div>
+
       <div className="lobby-header">
         <h1 className="lobby-title">Game Lobby</h1>
         <button className="refresh-button" onClick={fetchGames}>
           <span className="refresh-icon">↻</span>
         </button>
       </div>
-      
+
       <div className="lobby-content">
         <div className="main-content">
-          <button className="create-game-button" onClick={openCreateGameModal}>
+          <button
+            className="create-game-button"
+            onClick={openCreateGameModal}
+            onMouseEnter={() => setHoveredButton('create')}
+            onMouseLeave={() => setHoveredButton(null)}
+            style={{
+              transform: hoveredButton === 'create' ? 'translateY(-3px) scale(1.02)' : 'translateY(0) scale(1)',
+              boxShadow: hoveredButton === 'create'
+                ? '0 8px 25px rgba(255, 0, 122, 0.6), 0 0 40px rgba(255, 0, 122, 0.3)'
+                : '0 4px 15px rgba(255, 0, 122, 0.3)',
+            }}
+          >
             <span className="create-icon">+</span>
             <span>Create New Game</span>
           </button>
-          
+
           {games.length === 0 ? (
             <div className="no-games-message">
               <div className="empty-state-icon">♠</div>
@@ -155,41 +184,50 @@ const GameLobby = () => {
             </div>
           ) : (
             <div className="games-list">
-              {games.map((game) => (
-                <div key={game.id} className="game-card">
+              {games.map((game, index) => (
+                <div
+                  key={game.id}
+                  className="game-card"
+                  style={{
+                    ...getCardStyle(index),
+                    animation: mounted ? `fadeInUp 0.6s ease-out ${0.1 * index}s backwards` : 'none',
+                  }}
+                  onMouseEnter={() => setHoveredCard(index)}
+                  onMouseLeave={() => setHoveredCard(null)}
+                >
                   <div className="game-card-header">
                     <span className={`game-status ${getStatusClass(game.status)}`}>
                       {game.status}
                     </span>
                     <span className="game-id">ID: {game.id.substring(0, 8)}...</span>
                   </div>
-                  
+
                   <div className="game-card-content">
                     <div className="game-info-grid">
                       <div className="info-item">
                         <span className="info-label">Players:</span>
                         <span className="info-value">{game.players.length}/{game.max_PLAYERS}</span>
                       </div>
-                      
+
                       <div className="info-item">
                         <span className="info-label">Small Blind:</span>
                         <span className="info-value">${game.smallBlindAmount}</span>
                       </div>
-                      
+
                       <div className="info-item">
                         <span className="info-label">Big Blind:</span>
                         <span className="info-value">${game.bigBlindAmount}</span>
                       </div>
                     </div>
-                    
+
                     <button
                       className="join-game-button"
                       onClick={() => navigate(`/game/${game.id}`)}
-                      // disabled={game.status !== 'WAITING' && game.status !== 'ACTIVE'}
+                    // disabled={game.status !== 'WAITING' && game.status !== 'ACTIVE'}
                     >
                       <span className="join-icon">→</span>
                       <span>
-                        {isPlayerInGame(game) ? 'Already Joined' : 
+                        {isPlayerInGame(game) ? 'Already Joined' :
                           game.status === 'WAITING' ? 'Join Game' : 'Spectate'}
                       </span>
                     </button>
@@ -211,15 +249,15 @@ const GameLobby = () => {
             </div>
             <div className="modal-body">
               {error && <div className="error-message">{error}</div>}
-              
+
               {!showCustomOption ? (
                 <div className="blind-options">
                   <h3>Select Blinds:</h3>
                   <div className="option-grid">
                     {blindOptions.map((option, index) => (
-                      <div 
-                        key={index} 
-                        className="blind-option" 
+                      <div
+                        key={index}
+                        className="blind-option"
                         onClick={() => handleSelectBlinds(option.small, option.big)}
                       >
                         <div className="blind-values">
@@ -229,8 +267,8 @@ const GameLobby = () => {
                         </div>
                       </div>
                     ))}
-                    <div 
-                      className="blind-option custom-option" 
+                    <div
+                      className="blind-option custom-option"
                       onClick={handleCustomOption}
                     >
                       <div className="blind-values">

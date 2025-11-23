@@ -8,12 +8,16 @@ const AdminPanel = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [deleteStatus, setDeleteStatus] = useState({ message: '', isError: false });
+  const [mounted, setMounted] = useState(false);
+  const [hoveredRow, setHoveredRow] = useState(null);
   const { user } = useContext(AuthContext);
 
   // Check if user is admin
   const isAdmin = user && user.roles && user.roles.includes('ADMIN');
 
   useEffect(() => {
+    setMounted(true);
+
     // Redirect non-admin users
     if (!isAdmin) {
       window.location.href = '/';
@@ -44,21 +48,21 @@ const AdminPanel = () => {
 
     try {
       await axios.delete(`/game/${gameId}`);
-      
+
       // Update games list
       setGames(games.filter(game => game.id !== gameId));
-      
+
       // Show success message
       setDeleteStatus({
         message: `Game ${gameId} successfully deleted`,
         isError: false
       });
-      
+
       // Clear status message after 3 seconds
       setTimeout(() => setDeleteStatus({ message: '', isError: false }), 3000);
     } catch (err) {
       console.error('Error deleting game:', err);
-      
+
       // Show error message
       setDeleteStatus({
         message: `Failed to delete game: ${err.response?.data?.message || err.message}`,
@@ -80,52 +84,72 @@ const AdminPanel = () => {
   }
 
   return (
-    <div className="admin-panel">
-      <h1>Admin Panel</h1>
-      
+    <div className={`admin-panel ${mounted ? 'mounted' : ''}`}>
+      {/* Floating poker chips */}
+      <div className="floating-suit floating-suit-1">♠</div>
+      <div className="floating-suit floating-suit-2">♥</div>
+      <div className="floating-suit floating-suit-3">♦</div>
+      <div className="floating-suit floating-suit-4">♣</div>
+
+      <h1 className="admin-title">Admin Panel</h1>
+
       {deleteStatus.message && (
         <div className={`status-message ${deleteStatus.isError ? 'error' : 'success'}`}>
           {deleteStatus.message}
         </div>
       )}
-      
+
       <div className="admin-section">
         <h2>Manage Games</h2>
-        
+
         {games.length === 0 ? (
-          <p>No games available.</p>
+          <p className="no-games">No games available.</p>
         ) : (
-          <table className="games-table">
-            <thead>
-              <tr>
-                <th>Game ID</th>
-                <th>Status</th>
-                <th>Players</th>
-                <th>Created</th>
-                <th>Last Activity</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {games.map(game => (
-                <tr key={game.id}>
-                  <td>{game.id}</td>
-                  <td>{game.status}</td>
-                  <td>{game.players?.length || 0}</td>
-                  <td>{new Date(game.createdAt).toLocaleString()}</td>
-                  <td>{new Date(game.updatedAt || game.createdAt).toLocaleString()}</td>
-                  <td>
-                    <button 
-                      className="delete-button"
-                      onClick={() => handleDeleteGame(game.id)}
-                    >
-                      Delete
-                    </button>
-                  </td>
+          <div className="table-container">
+            <table className="games-table">
+              <thead>
+                <tr>
+                  <th>Game ID</th>
+                  <th>Status</th>
+                  <th>Players</th>
+                  <th>Created</th>
+                  <th>Last Activity</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {games.map((game, index) => (
+                  <tr
+                    key={game.id}
+                    className={hoveredRow === index ? 'hovered' : ''}
+                    onMouseEnter={() => setHoveredRow(index)}
+                    onMouseLeave={() => setHoveredRow(null)}
+                    style={{
+                      animation: mounted ? `fadeInUp 0.4s ease-out ${0.05 * index}s backwards` : 'none',
+                    }}
+                  >
+                    <td className="game-id-cell">{game.id}</td>
+                    <td>
+                      <span className={`status-badge status-${game.status.toLowerCase()}`}>
+                        {game.status}
+                      </span>
+                    </td>
+                    <td>{game.players?.length || 0}</td>
+                    <td>{new Date(game.createdAt).toLocaleString()}</td>
+                    <td>{new Date(game.updatedAt || game.createdAt).toLocaleString()}</td>
+                    <td>
+                      <button
+                        className="delete-button"
+                        onClick={() => handleDeleteGame(game.id)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

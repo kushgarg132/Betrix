@@ -1,102 +1,431 @@
 .admin-panel {
-  max-width: 1200px;
-  margin: 2rem auto;
-  padding: 1.5rem;
-  background-color: #1a1a2e;
-  border-radius: 8px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  min-height: 100vh;
+  background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #0f2027, #203a43, #2c5364);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
   color: #e6e6e6;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow-x: hidden;
 }
 
-.admin-panel h1 {
-  color: #e94560;
-  margin-bottom: 1.5rem;
-  border-bottom: 2px solid #16213e;
-  padding-bottom: 0.5rem;
+/* Floating poker suit symbols */
+.floating-suit {
+  position: absolute;
+  font-size: 3rem;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.12;
+}
+
+.floating-suit-1 {
+  top: 12%;
+  left: 8%;
+  color: rgba(0, 170, 255, 0.3);
+  animation: float 6s ease-in-out infinite;
+  text-shadow: 0 0 20px rgba(0, 170, 255, 0.3);
+}
+
+.floating-suit-2 {
+  top: 30%;
+  right: 10%;
+  font-size: 2.5rem;
+  color: rgba(255, 0, 100, 0.3);
+  animation: float 7s ease-in-out infinite 1s;
+  text-shadow: 0 0 20px rgba(255, 0, 100, 0.3);
+}
+
+.floating-suit-3 {
+  bottom: 20%;
+  left: 12%;
+  font-size: 2.8rem;
+  color: rgba(0, 255, 204, 0.3);
+  animation: float 8s ease-in-out infinite 2s;
+  text-shadow: 0 0 20px rgba(0, 255, 204, 0.3);
+}
+
+.floating-suit-4 {
+  bottom: 40%;
+  right: 8%;
+  font-size: 3.2rem;
+  color: rgba(0, 170, 255, 0.3);
+  animation: float 9s ease-in-out infinite 3s;
+  text-shadow: 0 0 20px rgba(0, 170, 255, 0.3);
+}
+
+.admin-panel.mounted .admin-title {
+  animation: fadeInDown 0.6s ease-out;
+}
+
+.admin-title {
+  color: #00aaff;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid rgba(0, 170, 255, 0.3);
+  padding-bottom: 1rem;
+  font-size: 2.5rem;
+  font-family: 'Orbitron', sans-serif;
+  text-shadow: 0 0 15px rgba(0, 170, 255, 0.5);
+  background: linear-gradient(90deg, #00aaff, #00ffcc, #00aaff);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 3s linear infinite;
+  position: relative;
+  z-index: 2;
 }
 
 .admin-panel h2 {
-  color: #0f3460;
-  margin: 1rem 0;
-  font-size: 1.5rem;
+  color: #00ffcc;
+  margin: 1.5rem 0;
+  font-size: 1.8rem;
+  text-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
 }
 
 .admin-section {
   margin-bottom: 2rem;
-  background-color: #16213e;
-  padding: 1.5rem;
-  border-radius: 6px;
+  background: rgba(22, 33, 62, 0.85);
+  backdrop-filter: blur(15px);
+  padding: 2rem;
+  border-radius: 15px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 170, 255, 0.1);
+  border: 1px solid rgba(0, 170, 255, 0.2);
+  animation: scaleIn 0.6s ease-out 0.2s backwards;
+  position: relative;
+  z-index: 2;
+}
+
+.table-container {
+  overflow-x: auto;
+  border-radius: 10px;
+  margin-top: 1.5rem;
 }
 
 .games-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 1rem;
-  background-color: #0f3460;
-  border-radius: 4px;
+  background: rgba(15, 12, 41, 0.6);
+  border-radius: 10px;
   overflow: hidden;
 }
 
 .games-table th,
 .games-table td {
-  padding: 0.75rem 1rem;
+  padding: 1rem 1.25rem;
   text-align: left;
-  border-bottom: 1px solid #1a1a2e;
+  border-bottom: 1px solid rgba(0, 170, 255, 0.1);
 }
 
 .games-table th {
-  background-color: #1a1a2e;
-  color: #e94560;
+  background: rgba(0, 0, 0, 0.4);
+  color: #00aaff;
   font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+  text-shadow: 0 0 8px rgba(0, 170, 255, 0.3);
+}
+
+.games-table tbody tr {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.games-table tbody tr:hover,
+.games-table tbody tr.hovered {
+  background: rgba(0, 170, 255, 0.1);
+  transform: translateX(5px);
+  box-shadow: 0 4px 15px rgba(0, 170, 255, 0.2);
 }
 
 .games-table tr:last-child td {
   border-bottom: none;
 }
 
-.games-table tr:hover {
-  background-color: #0a2647;
+.game-id-cell {
+  font-family: monospace;
+  color: #00ffcc;
+  font-size: 0.9rem;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-waiting {
+  background: rgba(0, 170, 255, 0.2);
+  color: #00aaff;
+  border: 1px solid rgba(0, 170, 255, 0.4);
+  box-shadow: 0 0 10px rgba(0, 170, 255, 0.2);
+}
+
+.status-active {
+  background: rgba(0, 255, 204, 0.2);
+  color: #00ffcc;
+  border: 1px solid rgba(0, 255, 204, 0.4);
+  box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);
+}
+
+.status-completed {
+  background: rgba(113, 128, 150, 0.2);
+  color: #718096;
+  border: 1px solid rgba(113, 128, 150, 0.4);
 }
 
 .delete-button {
-  background-color: #e94560;
+  background: linear-gradient(135deg, #e63946, #c81d45);
   color: white;
   border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
+  padding: 8px 16px;
+  border-radius: 20px;
   cursor: pointer;
   font-weight: 600;
-  transition: background-color 0.2s;
+  font-size: 0.9rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .delete-button:hover {
-  background-color: #c81d45;
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 20px rgba(231, 76, 60, 0.5), 0 0 30px rgba(231, 76, 60, 0.3);
 }
 
 .status-message {
-  padding: 1rem;
+  padding: 1rem 1.5rem;
   margin-bottom: 1.5rem;
-  border-radius: 4px;
+  border-radius: 10px;
   font-weight: 500;
+  animation: slideDown 0.4s ease-out;
+  position: relative;
+  z-index: 2;
 }
 
 .status-message.success {
-  background-color: #2d6a4f;
+  background: rgba(45, 106, 79, 0.3);
   color: #d8f3dc;
+  border: 1px solid rgba(45, 106, 79, 0.5);
+  box-shadow: 0 4px 15px rgba(45, 106, 79, 0.2);
 }
 
 .status-message.error {
-  background-color: #9d0208;
+  background: rgba(157, 2, 8, 0.3);
   color: #ffccd5;
+  border: 1px solid rgba(157, 2, 8, 0.5);
+  box-shadow: 0 4px 15px rgba(157, 2, 8, 0.2);
+  animation: shake 0.4s ease;
+}
+
+.no-games {
+  text-align: center;
+  padding: 3rem;
+  font-size: 1.2rem;
+  color: #718096;
+  animation: fadeInUp 0.6s ease-out;
 }
 
 .admin-panel.loading,
 .admin-panel.error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   padding: 3rem;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
+}
+
+.admin-panel.loading {
+  color: #00aaff;
+  text-shadow: 0 0 15px rgba(0, 170, 255, 0.5);
 }
 
 .admin-panel.error {
-  color: #e94560;
+  color: #e63946;
+  text-shadow: 0 0 15px rgba(231, 76, 60, 0.5);
+}
+
+/* Keyframe Animations */
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes shake {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-5px);
+  }
+
+  75% {
+    transform: translateX(5px);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .admin-panel {
+    padding: 1.5rem;
+  }
+
+  .admin-title {
+    font-size: 2rem;
+  }
+
+  .games-table th,
+  .games-table td {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-panel {
+    padding: 1rem;
+  }
+
+  .admin-title {
+    font-size: 1.8rem;
+  }
+
+  .admin-section {
+    padding: 1.5rem;
+  }
+
+  .table-container {
+    overflow-x: scroll;
+  }
+
+  .games-table {
+    font-size: 0.85rem;
+  }
+
+  .games-table th,
+  .games-table td {
+    padding: 0.6rem 0.8rem;
+  }
+
+  .floating-suit {
+    font-size: 2rem;
+    opacity: 0.08;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-panel {
+    padding: 0.75rem;
+  }
+
+  .admin-title {
+    font-size: 1.5rem;
+  }
+
+  .admin-section h2 {
+    font-size: 1.3rem;
+  }
+
+  .delete-button {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+
+  .status-badge {
+    font-size: 0.75rem;
+    padding: 3px 8px;
+  }
+
+  .floating-suit {
+    display: none;
+  }
 }
