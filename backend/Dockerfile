@@ -1,5 +1,5 @@
 # Use lightweight OpenJDK image
-FROM openjdk:17-jdk-alpine
+FROM openjdk:17-jdk-slim
 
 # Set working directory
 WORKDIR /app
