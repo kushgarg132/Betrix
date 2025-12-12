@@ -216,7 +216,12 @@ const PokerTable = () => {
   // Set isMyTurn state when it's the current player's turn
   useEffect(() => {
     if (game && typeof game.currentPlayerIndex === 'number' && typeof currentPlayer.index === 'number') {
-      setIsMyTurn(game.currentPlayerIndex === currentPlayer.index);
+      const isTurn = game.currentPlayerIndex === currentPlayer.index;
+      // Ensure player hasn't folded and isn't sitting out
+      const player = game.players[currentPlayer.index];
+      const isActive = player && !player.hasFolded && !player.isSittingOut;
+      
+      setIsMyTurn(isTurn && isActive);
     } else {
       setIsMyTurn(false);
     }

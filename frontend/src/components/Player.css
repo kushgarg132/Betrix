@@ -1,9 +1,9 @@
 .player {
   position: absolute !important; /* Force absolute positioning */
-  width: 9.375rem; /* Converted from 150px */
+  width: 8rem; /* Reduced from 9.375rem */
   height: auto;
-  min-height: 9.375rem; /* Converted from 150px */
-  border-radius: 0.75rem; /* Converted from 12px */
+  min-height: 8rem; /* Reduced from 9.375rem */
+  border-radius: 0.625rem;
   background: rgba(0, 0, 0, 0.7);
   box-shadow: 0 0 1.25rem rgba(0, 0, 0, 0.6), 0 0 0.9375rem rgba(52, 152, 219, 0.4); /* Converted from 0 0 20px, 0 0 15px */
   display: flex !important;
@@ -39,14 +39,14 @@
   align-items: center !important;
   justify-content: space-between !important;
   width: auto !important;
-  min-width: 21.875rem !important; /* Converted from 350px */
-  max-width: 26.25rem !important; /* Converted from 420px */
-  gap: 1.25rem; /* Converted from 20px */
+  min-width: 18rem !important; /* Reduced */
+  max-width: 22rem !important; /* Reduced */
+  gap: 0.75rem;
 }
 
 /* Fixed, clear positions for all players - with !important flags to ensure visibility */
 .player[data-position="0"] {
-  bottom: 5% !important;
+  bottom: 160px !important; /* Raised to clear betting controls */
   left: 50% !important;
   transform: translateX(-50%) !important;
   width: 8.125rem !important; /* Converted from 130px */
@@ -56,8 +56,8 @@
 }
 
 .player[data-position="1"] {
-  bottom: 25% !important;
-  right: 10% !important;
+  bottom: 30% !important; /* Adjusted */
+  right: 5% !important;
   left: auto !important; /* Override any left values */
   top: auto !important; /* Override any top values */
   z-index: 21 !important;
@@ -80,8 +80,8 @@
 }
 
 .player[data-position="4"] {
-  bottom: 25% !important;
-  left: 10% !important;
+  bottom: 30% !important; /* Adjusted */
+  left: 5% !important;
   right: auto !important; /* Override any right values */
   top: auto !important; /* Override any top values */
   z-index: 21 !important;
@@ -106,7 +106,7 @@
 }
 
 .player-name {
-  font-size: 1rem;
+  font-size: 0.85rem; /* Reduced from 1rem */
   font-weight: bold;
   color: #ffffff;
   text-shadow: 0 0 0.3125rem rgba(0, 229, 255, 0.4); /* Converted from 0 0 5px */
