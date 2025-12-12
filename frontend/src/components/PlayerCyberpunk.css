@@ -1,0 +1,283 @@
+/* ============================================
+   NEON CYBERPUNK THEME FOR PLAYER COMPONENTS
+   Import this file in Player.jsx after the main CSS
+   ============================================ */
+
+/* ============================================
+   PLAYER CARDS - NEON GLOW & HOLOGRAPHIC
+   ============================================ */
+
+.player {
+    background: rgba(10, 0, 20, 0.85) !important;
+    border: 2px solid var(--neon-cyan) !important;
+    box-shadow:
+        0 0 20px rgba(0, 255, 255, 0.4),
+        0 0 40px rgba(0, 255, 255, 0.2),
+        inset 0 0 30px rgba(157, 0, 255, 0.2) !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+.player::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: inherit;
+    background: linear-gradient(45deg,
+            transparent 30%,
+            rgba(0, 255, 255, 0.1) 50%,
+            transparent 70%);
+    animation: holographicShimmer 3s linear infinite;
+    pointer-events: none;
+    z-index: -1;
+}
+
+@keyframes holographicShimmer {
+    0% {
+        transform: translateX(-100%) rotate(45deg);
+    }
+
+    100% {
+        transform: translateX(100%) rotate(45deg);
+    }
+}
+
+/* Current turn player - pulsing neon border */
+.player.current-turn {
+    border-color: var(--neon-magenta) !important;
+    box-shadow:
+        0 0 30px var(--neon-magenta),
+        0 0 60px rgba(255, 0, 255, 0.5),
+        inset 0 0 40px rgba(255, 0, 128, 0.3) !important;
+    animation: currentTurnPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes currentTurnPulse {
+
+    0%,
+    100% {
+        box-shadow:
+            0 0 30px var(--neon-magenta),
+            0 0 60px rgba(255, 0, 255, 0.5),
+            inset 0 0 40px rgba(255, 0, 128, 0.3);
+    }
+
+    50% {
+        box-shadow:
+            0 0 40px var(--neon-pink),
+            0 0 80px rgba(255, 0, 128, 0.7),
+            inset 0 0 50px rgba(255, 0, 255, 0.4);
+    }
+}
+
+/* Current player (you) - special cyan glow */
+.player.current-player {
+    background: rgba(0, 10, 20, 0.9) !important;
+    border: 3px solid var(--neon-cyan) !important;
+    box-shadow:
+        0 0 40px var(--neon-cyan),
+        0 0 80px rgba(0, 255, 255, 0.4),
+        inset 0 0 50px rgba(0, 255, 255, 0.2) !important;
+}
+
+/* Winner glow effect */
+.player.winner {
+    border-color: gold !important;
+    box-shadow:
+        0 0 40px gold,
+        0 0 80px rgba(255, 215, 0, 0.6),
+        inset 0 0 50px rgba(255, 215, 0, 0.3) !important;
+    animation: winnerGlow 2s ease-in-out infinite;
+}
+
+@keyframes winnerGlow {
+
+    0%,
+    100% {
+        box-shadow:
+            0 0 40px gold,
+            0 0 80px rgba(255, 215, 0, 0.6),
+            inset 0 0 50px rgba(255, 215, 0, 0.3);
+    }
+
+    50% {
+        box-shadow:
+            0 0 60px gold,
+            0 0 120px rgba(255, 215, 0, 0.8),
+            inset 0 0 70px rgba(255, 215, 0, 0.4);
+    }
+}
+
+/* ============================================
+   PLAYER NAME & INFO - GLOWING TEXT
+   ============================================ */
+
+.player-name {
+    background: rgba(0, 0, 0, 0.6) !important;
+    border: 1px solid var(--neon-cyan) !important;
+    color: var(--neon-cyan) !important;
+    text-shadow:
+        0 0 10px var(--neon-cyan),
+        0 0 20px rgba(0, 255, 255, 0.8),
+        0 0 30px rgba(0, 255, 255, 0.6) !important;
+    box-shadow:
+        0 0 15px rgba(0, 255, 255, 0.3),
+        inset 0 0 10px rgba(0, 255, 255, 0.1) !important;
+}
+
+.chips {
+    background: rgba(0, 0, 0, 0.7) !important;
+    border: 1px solid var(--neon-magenta) !important;
+    color: var(--neon-magenta) !important;
+    text-shadow:
+        0 0 10px var(--neon-magenta),
+        0 0 20px rgba(255, 0, 255, 0.8) !important;
+    box-shadow:
+        0 0 15px rgba(255, 0, 255, 0.3),
+        inset 0 0 10px rgba(255, 0, 255, 0.1) !important;
+}
+
+/* ============================================
+   BET DISPLAY - NEON BADGE
+   ============================================ */
+
+.opponent-bet-display {
+    background: radial-gradient(circle at center,
+            var(--neon-cyan) 0%,
+            rgba(0, 255, 255, 0.8) 100%) !important;
+    border: 2px solid var(--neon-pink) !important;
+    box-shadow:
+        0 0 20px var(--neon-cyan),
+        0 0 40px rgba(0, 255, 255, 0.6) !important;
+    color: #000 !important;
+    font-weight: 800 !important;
+    text-shadow: none !important;
+    animation: betPulse 1s ease-in-out infinite;
+}
+
+@keyframes betPulse {
+
+    0%,
+    100% {
+        transform: scale(0.9);
+        box-shadow:
+            0 0 20px var(--neon-cyan),
+            0 0 40px rgba(0, 255, 255, 0.6);
+    }
+
+    50% {
+        transform: scale(1);
+        box-shadow:
+            0 0 30px var(--neon-cyan),
+            0 0 60px rgba(0, 255, 255, 0.8);
+    }
+}
+
+.current-player-bet {
+    background: radial-gradient(circle at center,
+            var(--neon-magenta) 0%,
+            rgba(255, 0, 255, 0.8) 100%) !important;
+    border: 2px solid var(--neon-pink) !important;
+    box-shadow:
+        0 0 25px var(--neon-magenta),
+        0 0 50px rgba(255, 0, 255, 0.7) !important;
+}
+
+/* ============================================
+   BLIND INDICATORS - NEON BADGES
+   ============================================ */
+
+.blind-indicator {
+    background: rgba(0, 0, 0, 0.9) !important;
+    border: 2px solid var(--neon-cyan) !important;
+    box-shadow:
+        0 0 15px var(--neon-cyan),
+        0 0 30px rgba(0, 255, 255, 0.5) !important;
+    color: var(--neon-cyan) !important;
+    font-weight: 800 !important;
+    text-shadow:
+        0 0 10px var(--neon-cyan),
+        0 0 20px rgba(0, 255, 255, 0.8) !important;
+}
+
+.big-blind .blind-indicator {
+    border-color: var(--neon-magenta) !important;
+    color: var(--neon-magenta) !important;
+    box-shadow:
+        0 0 15px var(--neon-magenta),
+        0 0 30px rgba(255, 0, 255, 0.5) !important;
+    text-shadow:
+        0 0 10px var(--neon-magenta),
+        0 0 20px rgba(255, 0, 255, 0.8) !important;
+}
+
+.small-blind .blind-indicator {
+    border-color: var(--neon-mint) !important;
+    color: var(--neon-mint) !important;
+    box-shadow:
+        0 0 15px var(--neon-mint),
+        0 0 30px rgba(0, 255, 157, 0.5) !important;
+    text-shadow:
+        0 0 10px var(--neon-mint),
+        0 0 20px rgba(0, 255, 157, 0.8) !important;
+}
+
+/* ============================================
+   WINNER BADGE - HOLOGRAPHIC GOLD
+   ============================================ */
+
+.winner-badge {
+    background: linear-gradient(135deg, gold, #ffdd57, gold) !important;
+    border: 2px solid #fff !important;
+    box-shadow:
+        0 0 30px gold,
+        0 0 60px rgba(255, 215, 0, 0.8),
+        inset 0 0 20px rgba(255, 255, 255, 0.5) !important;
+    color: #000 !important;
+    font-weight: 900 !important;
+    text-shadow:
+        0 0 5px rgba(255, 255, 255, 0.8),
+        0 1px 2px rgba(0, 0, 0, 0.5) !important;
+    animation: badgeShine 2s ease-in-out infinite;
+}
+
+@keyframes badgeShine {
+
+    0%,
+    100% {
+        box-shadow:
+            0 0 30px gold,
+            0 0 60px rgba(255, 215, 0, 0.8),
+            inset 0 0 20px rgba(255, 255, 255, 0.5);
+    }
+
+    50% {
+        box-shadow:
+            0 0 40px gold,
+            0 0 80px rgba(255, 215, 0, 1),
+            inset 0 0 30px rgba(255, 255, 255, 0.7);
+    }
+}
+
+/* ============================================
+   SCAN LINE EFFECT ON PLAYERS
+   ============================================ */
+
+.player::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: inherit;
+    background: repeating-linear-gradient(0deg,
+            transparent,
+            transparent 2px,
+            rgba(0, 255, 255, 0.03) 2px,
+            rgba(0, 255, 255, 0.03) 4px);
+    pointer-events: none;
+    z-index: 1;
+}

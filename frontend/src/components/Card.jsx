@@ -1,5 +1,6 @@
 import React from 'react';
 import './Card.css';
+import './CardCyberpunk.css'; // Neon Cyberpunk theme
 
 const getCardRank = (rank) => {
   switch (rank) {
@@ -23,23 +24,23 @@ const getCardRank = (rank) => {
 const Card = ({ card, hidden, cardContext }) => {
   // Base card classes
   const cardClasses = ['card'];
-  
+
   // Add context-specific classes
   if (cardContext) {
     cardClasses.push(`card-${cardContext}`);
   }
-  
+
   if (hidden) {
     cardClasses.push('hidden');
     return (
-      <div 
-        className={cardClasses.join(' ')} 
+      <div
+        className={cardClasses.join(' ')}
         data-context={cardContext || 'default'}
       >
         <div className="card-inner">
-          <img 
-            src="/cards/back.svg" 
-            alt="Card Back" 
+          <img
+            src="/cards/back.svg"
+            alt="Card Back"
             className="card-img"
           />
         </div>
@@ -50,19 +51,19 @@ const Card = ({ card, hidden, cardContext }) => {
   const { rank, suit } = card;
   const cardRank = getCardRank(rank);
   const cardImage = `/cards/${cardRank}${suit.charAt(0).toUpperCase()}.svg`;
-  
+
   // Add suit class for styling
   cardClasses.push(suit.toLowerCase());
 
   return (
-    <div 
+    <div
       className={cardClasses.join(' ')}
       data-context={cardContext || 'default'}
     >
       <div className="card-inner">
-        <img 
-          src={cardImage} 
-          alt={`${cardRank} of ${suit}`} 
+        <img
+          src={cardImage}
+          alt={`${cardRank} of ${suit}`}
           className="card-img"
         />
       </div>

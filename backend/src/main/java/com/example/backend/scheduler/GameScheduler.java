@@ -29,54 +29,59 @@ public class GameScheduler {
 
     @Value("${game.scheduler.round-end-delay:5000}")
     private long roundEndDelay; // milliseconds to wait after round end before starting new hand
-    
+
     @Value("${game.scheduler.player-timeout-delay:30000}")
     private long playerTimeoutDelay; // milliseconds to wait before auto-folding a player
-    
+
+    @Value("${game.scheduler.all-in-round-delay:2000}")
+    private long allInRoundDelay; // milliseconds to wait between rounds when all players are all-in
+
     private final GameRepository gameRepository;
     private final GameService gameService;
     private final TaskScheduler taskScheduler;
-    
+
     private final AtomicReference<Long> currentPlayerTimeoutInterval = new AtomicReference<>(5000L);
     private final AtomicReference<Long> currentGameStartInterval = new AtomicReference<>(8000L);
-    
+
     // Track games with scheduled next hand starts
     private final Map<String, ScheduledFuture<?>> scheduledGameStarts = new ConcurrentHashMap<>();
-    
+
     // Track players with scheduled timeout actions
     private final Map<String, ScheduledFuture<?>> scheduledPlayerTimeouts = new ConcurrentHashMap<>();
-    
+
     // Performance metrics
     private final Map<String, AtomicLong> taskExecutionCounts = new ConcurrentHashMap<>();
     private final Map<String, AtomicLong> taskExecutionTimes = new ConcurrentHashMap<>();
     private final Map<String, AtomicLong> taskErrorCounts = new ConcurrentHashMap<>();
     private final Map<String, Instant> taskLastExecutions = new ConcurrentHashMap<>();
-    
+
     public GameScheduler(GameRepository gameRepository, @Lazy GameService gameService, TaskScheduler taskScheduler) {
         this.gameRepository = gameRepository;
         this.gameService = gameService;
         this.taskScheduler = taskScheduler;
     }
-    
+
     @PostConstruct
     public void initMetrics() {
         // Initialize metrics for each task
-        for (String task : List.of("startWaitingGames", "handlePlayerTimeouts", 
-                                   "cleanupIdleGames", "updateActionDeadlines", 
-                                   "scheduleNextHand", "schedulePlayerTimeout")) {
+        for (String task : List.of("startWaitingGames", "handlePlayerTimeouts",
+                "cleanupIdleGames", "updateActionDeadlines",
+                "scheduleNextHand", "schedulePlayerTimeout")) {
             taskExecutionCounts.put(task, new AtomicLong(0));
             taskExecutionTimes.put(task, new AtomicLong(0));
             taskErrorCounts.put(task, new AtomicLong(0));
             taskLastExecutions.put(task, Instant.now());
         }
-        
-        logger.info("GameScheduler initialized with roundEndDelay={}, playerTimeoutDelay={}, currentGameStartInterval={}",
+
+        logger.info(
+                "GameScheduler initialized with roundEndDelay={}, playerTimeoutDelay={}, currentGameStartInterval={}",
                 roundEndDelay, playerTimeoutDelay, currentGameStartInterval.get());
     }
-    
+
     /**
      * This method runs at a fixed rate to start waiting games
-     * Using Spring's @Scheduled annotation for better reliability on cloud platforms
+     * Using Spring's @Scheduled annotation for better reliability on cloud
+     * platforms
      */
     @Scheduled(fixedRate = 8000)
     public void startWaitingGames() {
@@ -84,26 +89,26 @@ public class GameScheduler {
         String taskName = "startWaitingGames";
         Instant start = Instant.now();
         taskLastExecutions.put(taskName, start);
-        
+
         try {
             // Try the alternative method first
             List<Game> waitingGames = gameRepository.findWaitingGamesWithAutoStart();
-            
+
             logger.info("Found {} waiting games with auto-start enabled", waitingGames.size());
-            
+
             // Filter games that can auto-start (using the canAutoStart method)
             List<Game> readyToStartGames = waitingGames.stream()
-                .filter(game -> {
-                    boolean canStart = game.canAutoStart();
-                    int playerCount = game.getPlayers().size();
-                    logger.info("Game {} has {} players, canAutoStart={}", 
+                    .filter(game -> {
+                        boolean canStart = game.canAutoStart();
+                        int playerCount = game.getPlayers().size();
+                        logger.info("Game {} has {} players, canAutoStart={}",
                                 game.getId(), playerCount, canStart);
-                    return canStart;
-                })
-                .toList();
-            
+                        return canStart;
+                    })
+                    .toList();
+
             logger.info("After filtering, {} games are ready to auto-start", readyToStartGames.size());
-            
+
             if (!readyToStartGames.isEmpty()) {
                 readyToStartGames.forEach(game -> {
                     try {
@@ -122,7 +127,7 @@ public class GameScheduler {
             } else {
                 logger.info("No games are ready to auto-start");
             }
-            
+
             // Update metrics
             taskExecutionCounts.get(taskName).incrementAndGet();
             taskExecutionTimes.get(taskName).addAndGet(Duration.between(start, Instant.now()).toMillis());
@@ -131,7 +136,7 @@ public class GameScheduler {
             taskErrorCounts.get(taskName).incrementAndGet();
         }
     }
-    
+
     /**
      * Logs performance metrics
      * Using Spring's @Scheduled annotation for better reliability
@@ -139,7 +144,7 @@ public class GameScheduler {
     @Scheduled(fixedRate = 60000)
     public void logMetrics() {
         StringBuilder sb = new StringBuilder("Scheduler Metrics:\n");
-        
+
         // Format each task's metrics
         for (String task : taskExecutionCounts.keySet()) {
             long count = taskExecutionCounts.get(task).get();
@@ -147,41 +152,43 @@ public class GameScheduler {
             long avgTimeMs = count > 0 ? totalTimeMs / count : 0;
             long errors = taskErrorCounts.get(task).get();
             Instant lastExecution = taskLastExecutions.get(task);
-            
+
             sb.append(String.format("  %s: executions=%d, avgTime=%dms, errors=%d, lastRun=%s\n",
-                    task, count, avgTimeMs, errors, 
+                    task, count, avgTimeMs, errors,
                     Duration.between(lastExecution, Instant.now()).toSeconds() + "s ago"));
         }
-        
+
         // Add scheduler configuration
-        sb.append(String.format("Intervals: playerTimeout=%dms, gameStart=%dms, roundEndDelay=%dms, playerTimeoutDelay=%dms\n",
+        sb.append(String.format(
+                "Intervals: playerTimeout=%dms, gameStart=%dms, roundEndDelay=%dms, playerTimeoutDelay=%dms\n",
                 currentPlayerTimeoutInterval.get(), currentGameStartInterval.get(), roundEndDelay, playerTimeoutDelay));
-        
+
         // Add info about scheduled game starts and player timeouts
-        sb.append(String.format("Scheduled game starts: %d, Scheduled player timeouts: %d\n", 
+        sb.append(String.format("Scheduled game starts: %d, Scheduled player timeouts: %d\n",
                 scheduledGameStarts.size(), scheduledPlayerTimeouts.size()));
-        
+
         logger.info(sb.toString());
     }
-    
+
     /**
      * Schedule the next hand for a game after the round end delay
+     * 
      * @param gameId The ID of the game to schedule next hand for
      */
     public void scheduleNextHand(String gameId) {
         String taskName = "scheduleNextHand";
         Instant start = Instant.now();
         taskLastExecutions.put(taskName, start);
-        
+
         try {
             logger.info("Scheduling next hand for game {} after {}ms delay", gameId, roundEndDelay);
-            
+
             // Cancel any existing scheduled start for this game
             ScheduledFuture<?> existingTask = scheduledGameStarts.remove(gameId);
             if (existingTask != null && !existingTask.isDone()) {
                 existingTask.cancel(false);
             }
-            
+
             // Schedule the new hand start after delay
             ScheduledFuture<?> future = taskScheduler.schedule(() -> {
                 try {
@@ -190,7 +197,8 @@ public class GameScheduler {
                         gameService.startNewHand(gameId);
                         logger.info("Started new hand for game {} after delay", gameId);
                     } else {
-                        logger.debug("Skipping scheduled start for game {}: game not found or not in WAITING status", gameId);
+                        logger.debug("Skipping scheduled start for game {}: game not found or not in WAITING status",
+                                gameId);
                     }
                 } catch (Exception e) {
                     logger.error("Error starting new hand for game {}: {}", gameId, e.getMessage(), e);
@@ -199,10 +207,10 @@ public class GameScheduler {
                     scheduledGameStarts.remove(gameId);
                 }
             }, Instant.now().plusMillis(roundEndDelay));
-            
+
             // Store the future for potential cancellation
             scheduledGameStarts.put(gameId, future);
-            
+
             // Update metrics
             taskExecutionCounts.get(taskName).incrementAndGet();
             taskExecutionTimes.get(taskName).addAndGet(Duration.between(start, Instant.now()).toMillis());
@@ -214,7 +222,8 @@ public class GameScheduler {
 
     /**
      * Schedule a player timeout action with delay
-     * @param gameId The ID of the game
+     * 
+     * @param gameId   The ID of the game
      * @param playerId The ID of the player who timed out
      */
     public void schedulePlayerTimeout(String gameId, String playerId) {
@@ -223,7 +232,8 @@ public class GameScheduler {
         taskLastExecutions.put(taskName, start);
 
         try {
-            logger.info("Scheduling timeout for player {} in game {} after {}ms delay", playerId, gameId, playerTimeoutDelay);
+            logger.info("Scheduling timeout for player {} in game {} after {}ms delay", playerId, gameId,
+                    playerTimeoutDelay);
 
             // Create a unique key for this timeout
             String timeoutKey = gameId + ":" + playerId;
@@ -267,7 +277,8 @@ public class GameScheduler {
                     logger.debug("Skipping timeout for player {} in game {}: no longer their turn", playerId, gameId);
                 }
             } else {
-                logger.debug("Skipping timeout for player {} in game {}: game not found or in WAITING status", playerId, gameId);
+                logger.debug("Skipping timeout for player {} in game {}: game not found or in WAITING status", playerId,
+                        gameId);
             }
         } catch (Exception e) {
             logger.error("Error handling timeout for player {} in game {}: {}", playerId, gameId, e.getMessage(), e);
@@ -284,6 +295,37 @@ public class GameScheduler {
         if (existingTask != null && !existingTask.isDone()) {
             existingTask.cancel(false);
             logger.debug("Cancelled scheduled timeout for {}", timeoutKey);
+        }
+    }
+
+    /**
+     * Schedule the next all-in action for a game
+     * 
+     * @param gameId The ID of the game
+     */
+    public void scheduleAllInAction(String gameId) {
+        String taskName = "scheduleAllInAction";
+        Instant start = Instant.now();
+        taskLastExecutions.put(taskName, start);
+
+        try {
+            logger.info("Scheduling all-in action for game {} after {}ms delay", gameId, allInRoundDelay);
+
+            taskScheduler.schedule(() -> {
+                try {
+                    gameService.executeAllInAction(gameId);
+                } catch (Exception e) {
+                    logger.error("Error executing scheduled all-in action for game {}: {}", gameId, e.getMessage(), e);
+                }
+            }, Instant.now().plusMillis(allInRoundDelay));
+
+            // Update metrics
+            taskExecutionCounts.computeIfAbsent(taskName, k -> new AtomicLong(0)).incrementAndGet();
+            taskExecutionTimes.computeIfAbsent(taskName, k -> new AtomicLong(0))
+                    .addAndGet(Duration.between(start, Instant.now()).toMillis());
+        } catch (Exception e) {
+            logger.error("Error scheduling all-in action for game {}: {}", gameId, e.getMessage(), e);
+            taskErrorCounts.computeIfAbsent(taskName, k -> new AtomicLong(0)).incrementAndGet();
         }
     }
 }

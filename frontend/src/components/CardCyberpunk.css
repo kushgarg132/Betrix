@@ -1,0 +1,194 @@
+/* ============================================
+   NEON CYBERPUNK THEME FOR CARDS
+   Import this file in Card.jsx after the main CSS
+   ============================================ */
+
+/* ============================================
+   CARD HOLOGRAPHIC EFFECTS
+   ============================================ */
+
+.card {
+    box-shadow:
+        0 4px 15px rgba(0, 0, 0, 0.6),
+        0 0 20px rgba(0, 255, 255, 0.3) !important;
+    border: 1px solid rgba(0, 255, 255, 0.4) !important;
+}
+
+/* Holographic shimmer on cards */
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(0, 255, 255, 0.3) 50%,
+            transparent 100%);
+    animation: cardShimmer 3s linear infinite;
+    pointer-events: none;
+    z-index: 10;
+    border-radius: inherit;
+}
+
+@keyframes cardShimmer {
+    0% {
+        left: -100%;
+    }
+
+    100% {
+        left: 200%;
+    }
+}
+
+/* Community cards - cyan glow */
+.card[data-context="community"],
+.card[data-context="winning-community"] {
+    box-shadow:
+        0 4px 15px rgba(0, 0, 0, 0.6),
+        0 0 25px rgba(0, 255, 255, 0.5),
+        0 0 50px rgba(0, 255, 255, 0.3) !important;
+    border: 2px solid var(--neon-cyan) !important;
+}
+
+/* Winning cards - magenta glow */
+.card[data-context="winning-community"],
+.card[data-context="winning-player"],
+.card[data-context="winning-opponent"] {
+    box-shadow:
+        0 4px 20px rgba(0, 0, 0, 0.8),
+        0 0 30px var(--neon-magenta),
+        0 0 60px rgba(255, 0, 255, 0.6) !important;
+    border: 2px solid var(--neon-magenta) !important;
+    animation: winningCardPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes winningCardPulse {
+
+    0%,
+    100% {
+        box-shadow:
+            0 4px 20px rgba(0, 0, 0, 0.8),
+            0 0 30px var(--neon-magenta),
+            0 0 60px rgba(255, 0, 255, 0.6);
+        transform: scale(1);
+    }
+
+    50% {
+        box-shadow:
+            0 6px 25px rgba(0, 0, 0, 0.9),
+            0 0 40px var(--neon-pink),
+            0 0 80px rgba(255, 0, 128, 0.8);
+        transform: scale(1.05);
+    }
+}
+
+/* Player cards - enhanced glow */
+.card[data-context="player"] {
+    box-shadow:
+        0 4px 15px rgba(0, 0, 0, 0.6),
+        0 0 20px rgba(0, 255, 157, 0.4),
+        0 0 40px rgba(0, 255, 157, 0.2) !important;
+    border: 1px solid var(--neon-mint) !important;
+}
+
+/* Card hover effects */
+.card:hover {
+    transform: translateY(-10px) scale(1.05) !important;
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.8),
+        0 0 40px var(--neon-cyan),
+        0 0 80px rgba(0, 255, 255, 0.5) !important;
+    z-index: 100 !important;
+}
+
+/* Hidden cards - purple glow */
+.card.hidden {
+    box-shadow:
+        0 4px 15px rgba(0, 0, 0, 0.6),
+        0 0 15px rgba(157, 0, 255, 0.3) !important;
+    border: 1px solid var(--neon-purple) !important;
+}
+
+/* Card back pattern enhancement */
+.card.hidden::after {
+    background:
+        linear-gradient(45deg, var(--neon-purple) 0%, var(--neon-magenta) 100%),
+        repeating-linear-gradient(45deg,
+            transparent,
+            transparent 10px,
+            rgba(0, 255, 255, 0.1) 10px,
+            rgba(0, 255, 255, 0.1) 20px) !important;
+}
+
+/* ============================================
+   CARD DEALING ANIMATION
+   ============================================ */
+
+@keyframes cardDeal {
+    0% {
+        opacity: 0;
+        transform: translateY(-50px) rotateY(180deg) scale(0.5);
+        box-shadow: 0 0 0 transparent;
+    }
+
+    50% {
+        opacity: 0.5;
+        box-shadow:
+            0 0 30px var(--neon-cyan),
+            0 0 60px rgba(0, 255, 255, 0.6);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0) rotateY(0deg) scale(1);
+        box-shadow:
+            0 4px 15px rgba(0, 0, 0, 0.6),
+            0 0 20px rgba(0, 255, 255, 0.3);
+    }
+}
+
+.card {
+    animation: cardDeal 0.6s ease-out forwards;
+}
+
+/* ============================================
+   PARTICLE TRAIL EFFECT
+   ============================================ */
+
+.card::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 4px;
+    height: 4px;
+    background: var(--neon-cyan);
+    border-radius: 50%;
+    opacity: 0;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.card:hover::after {
+    animation: particleTrail 0.5s ease-out;
+}
+
+@keyframes particleTrail {
+    0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+        box-shadow:
+            0 0 10px var(--neon-cyan),
+            0 0 20px rgba(0, 255, 255, 0.6);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -100px) scale(3);
+        box-shadow:
+            0 0 20px var(--neon-cyan),
+            0 0 40px rgba(0, 255, 255, 0.8);
+    }
+}

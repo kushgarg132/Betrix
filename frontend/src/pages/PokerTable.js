@@ -6,6 +6,7 @@ import axios from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
 import API_CONFIG from '../config/apiConfig';
 import './PokerTable.css';
+import './PokerTableCyberpunk.css'; // Neon Cyberpunk theme
 
 // Components
 import Player from '../components/Player';
@@ -29,7 +30,7 @@ const initializeSocketConnection = (gameId, playerId, setUpdateActions, setError
           console.error('Error processing game update:', error);
         }
       });
-      
+
       client.subscribe(`/topic/game/${gameId}/player/${playerId}`, (message) => {
         try {
           const playerUpdate = JSON.parse(message.body);
@@ -80,7 +81,7 @@ const PokerTable = () => {
         setLoading(true);
         const joinResponse = await axios.post(`/game/${gameId}/join`);
         setGame(joinResponse.data);
-        
+
         const playerIndex = joinResponse.data.players.findIndex(p => p.username === user.username);
         if (playerIndex !== -1) {
           const player = joinResponse.data.players[playerIndex];
@@ -91,7 +92,7 @@ const PokerTable = () => {
             index: playerIndex,
             chips: player.chips
           });
-          
+
           const client = initializeSocketConnection(gameId, player.id, setUpdateActions, setError);
           setStompClient(client);
 
@@ -114,7 +115,7 @@ const PokerTable = () => {
         setLoading(false);
       }
     };
-    
+
     if (gameId && user) {
       joinGame();
     }
@@ -259,11 +260,11 @@ const PokerTable = () => {
 
   const leaveTable = () => {
     if (stompClient?.connected && currentPlayer?.id) {
-        stompClient.publish({
-          destination: `/app/game/${gameId}/action`,
-          body: JSON.stringify({ playerId: currentPlayer.id, actionType: 'LEAVE' }),
-        });
-        stompClient.deactivate();
+      stompClient.publish({
+        destination: `/app/game/${gameId}/action`,
+        body: JSON.stringify({ playerId: currentPlayer.id, actionType: 'LEAVE' }),
+      });
+      stompClient.deactivate();
     }
     window.location.href = '/';
   };
@@ -289,31 +290,31 @@ const PokerTable = () => {
 
   return (
     <div className="poker-table-container">
-      <LeftSidebar 
-        leftSidebarVisible={leftSidebarVisible} 
-        toggleLeftSidebar={() => setLeftSidebarVisible(!leftSidebarVisible)} 
-        leaveTable={leaveTable} 
+      <LeftSidebar
+        leftSidebarVisible={leftSidebarVisible}
+        toggleLeftSidebar={() => setLeftSidebarVisible(!leftSidebarVisible)}
+        leaveTable={leaveTable}
       />
 
       <div className="poker-table-main">
 
 
-        <Table 
-          isMyTurn={isMyTurn} 
-          game={game} 
-          communityCards={game.communityCards} 
-          animatingChips={animatingChips} 
+        <Table
+          isMyTurn={isMyTurn}
+          game={game}
+          communityCards={game.communityCards}
+          animatingChips={animatingChips}
         />
 
         <div className="player-positions">
           {game.players.map((player, index) => {
             if (!player) return null;
-              const displayPosition = getDisplayPosition(index);
-              const blindStatus = getBlindStatus(player);
-              const playerBet = game.currentBettingRound?.playerBets[player.username] || 0;
-              const isCurrentTurn = game.currentPlayerIndex === index;
-              
-              return (
+            const displayPosition = getDisplayPosition(index);
+            const blindStatus = getBlindStatus(player);
+            const playerBet = game.currentBettingRound?.playerBets[player.username] || 0;
+            const isCurrentTurn = game.currentPlayerIndex === index;
+
+            return (
               <Player
                 key={player._id || index}
                 player={player}
@@ -327,35 +328,35 @@ const PokerTable = () => {
                 actionDeadline={game.currentPlayerActionDeadline}
                 game={game}
               />
-              );
-            })}
+            );
+          })}
         </div>
       </div>
 
-      <GameInfoPanel 
-          sidebarVisible={sidebarVisible} 
-          toggleSidebar={() => setSidebarVisible(!sidebarVisible)} 
-          game={game} 
-          toggleRankingsModal={() => setShowRankingsModal(!showRankingsModal)} 
-        />
+      <GameInfoPanel
+        sidebarVisible={sidebarVisible}
+        toggleSidebar={() => setSidebarVisible(!sidebarVisible)}
+        game={game}
+        toggleRankingsModal={() => setShowRankingsModal(!showRankingsModal)}
+      />
 
       {/* Betting controls positioned above the current player */}
       {isMyTurn && (
         <div className="current-player-controls">
-          <BettingControls 
-            isMyTurn={isMyTurn} 
-            game={game} 
-            currentPlayer={currentPlayer} 
-            placeBet={placeBet} 
-            check={check} 
-            fold={fold} 
+          <BettingControls
+            isMyTurn={isMyTurn}
+            game={game}
+            currentPlayer={currentPlayer}
+            placeBet={placeBet}
+            check={check}
+            fold={fold}
           />
         </div>
       )}
 
-      <RankingsModal 
-        showRankingsModal={showRankingsModal} 
-        toggleRankingsModal={() => setShowRankingsModal(!showRankingsModal)} 
+      <RankingsModal
+        showRankingsModal={showRankingsModal}
+        toggleRankingsModal={() => setShowRankingsModal(!showRankingsModal)}
       />
     </div>
   );

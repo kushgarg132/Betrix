@@ -39,11 +39,10 @@ public class GameServiceImpl implements GameService {
         logger.info("Fetching all games");
         try {
             List<Game> games = gameRepository.findAll();
-            games.forEach(game ->{
-                    game.getPlayers().forEach(Player::hideDetails);
-                    game.setDeck(new Deck());
-            }
-            );
+            games.forEach(game -> {
+                game.getPlayers().forEach(Player::hideDetails);
+                game.setDeck(new Deck());
+            });
             logger.debug("Fetched games: {}", games);
             return games;
         } catch (Exception e) {
@@ -55,7 +54,8 @@ public class GameServiceImpl implements GameService {
     @Override
     @Transactional
     public void createGame(BlindPayload payload) {
-        logger.info("Creating a new game with small blind: {} and big blind: {}", payload.getSmallBlindAmount(), payload.getBigBlindAmount());
+        logger.info("Creating a new game with small blind: {} and big blind: {}", payload.getSmallBlindAmount(),
+                payload.getBigBlindAmount());
         Game game = new Game(payload.getSmallBlindAmount(), payload.getBigBlindAmount());
         gameRepository.save(game);
         logger.debug("Game created with ID: {}", game.getId());
@@ -83,7 +83,7 @@ public class GameServiceImpl implements GameService {
         try {
             Game game = gameValidatorService.validateGameExists(gameId);
             logger.debug("Fetched game for player: {}", game);
-            return getGameForPlayer(game , playerId);
+            return getGameForPlayer(game, playerId);
         } catch (Exception e) {
             logger.error("Error fetching game for player: {}", e.getMessage());
             throw new RuntimeException("Failed to fetch game for player", e);
@@ -201,7 +201,7 @@ public class GameServiceImpl implements GameService {
         try {
             Game game = gameValidatorService.validateGameExists(gameId);
             Player player = findPlayer(game, playerId);
-            
+
             if (player == null) {
                 logger.error("Player not found in game: {}", playerId);
                 throw new RuntimeException("Player not found in game");
@@ -210,7 +210,7 @@ public class GameServiceImpl implements GameService {
             gameValidatorService.validatePlayerBetAmount(game, player, amount);
 
             // Cancel any scheduled timeout for this player
-            gameScheduler.cancelPlayerTimeout(gameId , playerId);
+            gameScheduler.cancelPlayerTimeout(gameId, playerId);
             // Perform bet logic
             bettingManager.placeBet(game, player, amount, null);
             // Start TimeOut scheduler
@@ -223,11 +223,10 @@ public class GameServiceImpl implements GameService {
                     player,
                     PlayerActionEvent.ActionType.BET,
                     amount,
-                    new Game(game)
-            ));
-            
+                    new Game(game)));
+
             // Check if betting round is complete
-            bettingManager.handleCurrentBettingRound(game , playerId);
+            bettingManager.handleCurrentBettingRound(game, playerId);
 
             game.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
             gameRepository.save(game);
@@ -246,7 +245,7 @@ public class GameServiceImpl implements GameService {
         try {
             Game game = gameValidatorService.validateGameExists(gameId);
             Player player = findPlayer(game, playerId);
-            
+
             if (player == null) {
                 logger.error("Player not found in game: {}", playerId);
                 throw new RuntimeException("Player not found in game");
@@ -254,8 +253,8 @@ public class GameServiceImpl implements GameService {
 
             gameValidatorService.validatePlayerTurn(game, playerId);
             // Cancel any scheduled timeout for this player
-            gameScheduler.cancelPlayerTimeout(gameId , playerId);
-            
+            gameScheduler.cancelPlayerTimeout(gameId, playerId);
+
             // Perform check logic (which is a bet of 0)
             bettingManager.placeBet(game, player, 0, null);
             // Start TimeOut scheduler
@@ -268,10 +267,9 @@ public class GameServiceImpl implements GameService {
                     player,
                     PlayerActionEvent.ActionType.CHECK,
                     0.0,
-                    new Game(game)
-            ));
+                    new Game(game)));
 
-            bettingManager.handleCurrentBettingRound(game,playerId);
+            bettingManager.handleCurrentBettingRound(game, playerId);
 
             game.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
             gameRepository.save(game);
@@ -298,7 +296,7 @@ public class GameServiceImpl implements GameService {
 
             gameValidatorService.validatePlayerTurn(game, playerId);
             // Cancel any scheduled timeout for this player
-            gameScheduler.cancelPlayerTimeout(gameId , playerId);
+            gameScheduler.cancelPlayerTimeout(gameId, playerId);
             // Perform fold logic
             bettingManager.fold(game, player);
             // Start TimeOut scheduler
@@ -311,8 +309,7 @@ public class GameServiceImpl implements GameService {
                     player,
                     PlayerActionEvent.ActionType.FOLD,
                     null,
-                    new Game(game)
-            ));
+                    new Game(game)));
 
             bettingManager.handleCurrentBettingRound(game, playerId);
 
@@ -333,7 +330,7 @@ public class GameServiceImpl implements GameService {
         try {
             Game game = gameValidatorService.validateGameExists(gameId);
             Player player = findPlayer(game, playerId);
-            
+
             if (player == null) {
                 logger.error("Player not found in game: {}", playerId);
                 throw new RuntimeException("Player not found in game");
@@ -353,11 +350,10 @@ public class GameServiceImpl implements GameService {
                     player,
                     PlayerActionEvent.ActionType.LEAVE,
                     null,
-                    new Game(game)
-            ));
+                    new Game(game)));
 
             game.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
-            
+
             // If no players left, delete the game
             if (game.getPlayers().isEmpty()) {
                 gameRepository.delete(game);
@@ -366,11 +362,28 @@ public class GameServiceImpl implements GameService {
             }
 
             gameRepository.save(game);
-            
+
             logger.debug("Player '{}' left game", playerId);
         } catch (Exception e) {
             logger.error("Error leaving game: {}", e.getMessage());
             throw new RuntimeException("Failed to leave game", e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void executeAllInAction(String gameId) {
+        logger.info("Executing scheduled all-in action for game '{}'", gameId);
+        try {
+            Game game = gameValidatorService.validateGameExists(gameId);
+
+            // Delegate back to BettingManager to process the next step
+            bettingManager.processAllInRound(game);
+
+            gameRepository.save(game);
+        } catch (Exception e) {
+            logger.error("Error executing all-in action: {}", e.getMessage());
+            // Don't rethrow to scheduler, just log
         }
     }
 

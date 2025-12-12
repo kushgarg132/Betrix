@@ -2,15 +2,16 @@ import React, { memo, useState, useEffect } from 'react';
 import Card from './Card';
 import { ChipStack } from './PokerChip';
 import './Player.css';
+import './PlayerCyberpunk.css'; // Neon Cyberpunk theme
 
 // Use memo to prevent unnecessary re-renders
-const Player = memo(({ 
-  player, 
-  displayPosition, 
-  blindStatus, 
-  playerBet, 
-  isCurrentTurn, 
-  isCurrentPlayer, 
+const Player = memo(({
+  player,
+  displayPosition,
+  blindStatus,
+  playerBet,
+  isCurrentTurn,
+  isCurrentPlayer,
   playerCount,
   currentHand,
   actionDeadline,
@@ -18,10 +19,10 @@ const Player = memo(({
 }) => {
   // State to track the remaining time percentage for the border animation
   const [borderProgress, setBorderProgress] = useState(100);
-  
+
   // Get the winning cards from the best hand if available
   const isWinner = game?.winners?.some(winner => winner.username === player.username);
-  
+
   // Get ALL winning cards (combine highCards and bestFiveCards)
   let winningCards = [];
   if (isWinner) {
@@ -33,7 +34,7 @@ const Player = memo(({
       winningCards = [...highCards];
     }
   }
-  
+
   // Create a map of winning cards for O(1) lookup
   const winningCardMap = {};
   if (winningCards.length > 0) {
@@ -41,69 +42,74 @@ const Player = memo(({
       winningCardMap[`${card.rank}-${card.suit}`] = true;
     });
   }
-  
+
   // Effect to calculate and update the border progress based on action deadline
   useEffect(() => {
     if (!player || !actionDeadline || !isCurrentTurn) {
       setBorderProgress(100);
       return;
     }
-    
+
     // Store the initial values when the effect first runs
     const startTime = new Date().getTime();
     const deadline = new Date(actionDeadline).getTime();
-    
+
     // Calculate the total duration from when this effect runs until the deadline
     const totalDuration = deadline - startTime;
-    
+
     if (totalDuration <= 0) {
       setBorderProgress(0);
       return;
     }
-    
+
     const updateBorderProgress = () => {
       const now = new Date().getTime();
       const remaining = deadline - now;
-      
+
       if (remaining <= 0) {
         setBorderProgress(0);
         return;
       }
-      
+
       // Calculate percentage of time remaining
       const remainingPercentage = Math.max(0, Math.min(100, (remaining / totalDuration) * 100));
       setBorderProgress(remainingPercentage);
     };
-    
+
     // Initial update
     updateBorderProgress();
-    
+
     // Set up interval to update the border progress
     const intervalId = setInterval(updateBorderProgress, 100);
-    
+
     return () => clearInterval(intervalId);
   }, [actionDeadline, isCurrentTurn, player]);
-  
+
   // Calculate the border style based on the remaining time
   const getBorderStyle = () => {
     if (!isCurrentTurn || !actionDeadline) return {};
-    
+
+    // When time is up, remove the border completely
+    if (borderProgress <= 0) {
+      return { border: 'none' };
+    }
+
     // Create a gradient that starts from top right (0deg) and moves counterclockwise
-    // This will make the border disappear from top right to top left
+    // This will make the border disappear from top right to top left as time passes
     return {
       borderImage: `conic-gradient(
-        from 0deg at 50% 50%,
-        transparent 0deg ${360 - (borderProgress * 3.6)}deg,
-        ${isCurrentTurn ? '#f1c40f' : 'rgba(52, 152, 219, 0.3)'} ${360 - (borderProgress * 3.6)}deg 360deg
-      ) 1 stretch`,
+      from 0deg at 50% 50%,
+      transparent 0deg ${360 - (borderProgress * 3.6)}deg,
+      ${isCurrentTurn ? '#f1c40f' : 'rgba(52, 152, 219, 0.3)'} ${360 - (borderProgress * 3.6)}deg 360deg
+    ) 1 stretch`,
       borderStyle: 'solid',
-      borderWidth: '2px'
+      borderWidth: '2px',
     };
   };
-  
+
   // Don't render anything if player is null or undefined
   if (!player) return null;
-  
+
   // Special template for current player - more compact with optimized layout
   if (isCurrentPlayer) {
     return (
@@ -119,21 +125,27 @@ const Player = memo(({
           ...getBorderStyle()
         }}
       >
+        {/* Turn timer */}
+        {isCurrentTurn && actionDeadline && (
+          <span className="turn-timer">
+            {Math.max(0, Math.ceil((new Date(actionDeadline).getTime() - Date.now()) / 1000))}s
+          </span>
+        )}
         {/* Bet display at top right for current player */}
         {playerBet > 0 && (
           <div className="opponent-bet-display current-player-bet">${playerBet}</div>
         )}
-        
+
         <div className="current-player-content">
           <div className="player-avatar">
             <div className="player-name">{player.username}</div>
           </div>
-          
+
           <div className="player-info-container">
             <div className="chips">${player.chips}</div>
           </div>
         </div>
-        
+
         <div className="player-cards-container">
           <div className="player-cards">
             {currentHand && currentHand.length > 0 ? (
@@ -141,10 +153,10 @@ const Player = memo(({
                 // Check if this card is part of the winning hand
                 const isWinningCard = winningCardMap[`${card.rank}-${card.suit}`];
                 return (
-                  <Card 
-                    key={`player-card-${idx}-${card.suit}-${card.rank}`} 
-                    card={card} 
-                    cardContext={isWinningCard ? "winning-player" : "player"} 
+                  <Card
+                    key={`player-card-${idx}-${card.suit}-${card.rank}`}
+                    card={card}
+                    cardContext={isWinningCard ? "winning-player" : "player"}
                   />
                 );
               })
@@ -156,19 +168,19 @@ const Player = memo(({
             )}
           </div>
         </div>
-        
+
         {isWinner && player.bestHand && (
           <div className="winner-badge">
             {player.bestHand.rank.replace(/_/g, ' ')}
           </div>
         )}
-        
+
         {blindStatus && (
           <div className={`blind-indicator ${blindStatus}`}>
             {blindStatus === 'big-blind' ? 'BB' : 'SB'}
           </div>
         )}
-        
+
         {playerBet > 0 && (
           <div className="bet-chips">
             <ChipStack amount={playerBet} />
@@ -196,11 +208,11 @@ const Player = memo(({
       {playerBet > 0 && (
         <div className="opponent-bet-display">${playerBet}</div>
       )}
-      
+
       <div className="player-avatar">
         <div className="player-name">{player.username}</div>
       </div>
-      
+
       <div className="player-cards-container">
         {/* Show hidden cards for opponents unless they've folded */}
         {!player.hasFolded && (
@@ -210,11 +222,11 @@ const Player = memo(({
                 // Check if this card is part of the winning hand
                 const isWinningCard = winningCardMap[`${card.rank}-${card.suit}`];
                 return (
-                  <Card 
-                    key={`opponent-card-${idx}-${card.suit}-${card.rank}`} 
-                    card={card} 
+                  <Card
+                    key={`opponent-card-${idx}-${card.suit}-${card.rank}`}
+                    card={card}
                     hidden={false}
-                    cardContext={isWinningCard ? "winning-opponent" : "opponent"} 
+                    cardContext={isWinningCard ? "winning-opponent" : "opponent"}
                   />
                 );
               })
@@ -227,26 +239,26 @@ const Player = memo(({
           </div>
         )}
       </div>
-      
+
       {isWinner && player.bestHand && (
         <div className="winner-badge">
           {player.bestHand.rank.replace(/_/g, ' ')}
         </div>
       )}
-      
+
       <div className="player-info-container">
         <div className="chips">${player.chips}</div>
         {/* Only show text bet info on smaller screens */}
         <div className="player-bet-small-screen">
           {playerBet > 0 && `Bet: $${playerBet}`}
         </div>
-        
+
         {blindStatus && (
           <div className={`blind-indicator ${blindStatus}`}>
             {blindStatus === 'big-blind' ? 'BB' : 'SB'}
           </div>
         )}
-        
+
         {playerBet > 0 && (
           <div className="bet-chips">
             <ChipStack amount={playerBet} />
