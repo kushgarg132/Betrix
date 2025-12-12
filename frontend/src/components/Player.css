@@ -497,3 +497,21 @@
   padding: 0.3125rem 0.625rem; /* Converted from 5px 10px */
   font-size: 0.875rem; /* Converted from 14px */
 }
+.sitting-out-indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.85);
+  color: #bdc3c7;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: bold;
+  z-index: 100;
+  border: 1px solid rgba(189, 195, 199, 0.3);
+  pointer-events: none;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}

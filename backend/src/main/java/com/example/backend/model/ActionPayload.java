@@ -9,8 +9,9 @@ public class ActionPayload {
     private double amount;
 
     public enum ActionType {
-        BET("BET"),CHECK("CHECK"),FOLD("FOLD") , LEAVE("LEAVE");
-        public final String value ;
+        BET("BET"), CHECK("CHECK"), FOLD("FOLD"), LEAVE("LEAVE"), SIT_OUT("SIT_OUT"), SIT_IN("SIT_IN");
+
+        public final String value;
 
         ActionType(String check) {
             this.value = check;

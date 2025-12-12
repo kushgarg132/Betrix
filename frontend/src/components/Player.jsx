@@ -181,6 +181,12 @@ const Player = memo(({
           </div>
         )}
 
+        {player.isSittingOut && (
+          <div className="sitting-out-indicator">
+            Sitting Out
+          </div>
+        )}
+
         {playerBet > 0 && (
           <div className="bet-chips">
             <ChipStack amount={playerBet} />

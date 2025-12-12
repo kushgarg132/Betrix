@@ -23,6 +23,10 @@ public interface GameService {
 
     void leaveGame(String gameId, String playerId);
 
+    void sitOut(String gameId, String playerId);
+
+    void sitIn(String gameId, String playerId);
+
     void executeAllInAction(String gameId);
 
     Game getGameForPlayer(String gameId, String playerId);

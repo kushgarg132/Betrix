@@ -146,9 +146,33 @@ public class GameServiceImpl implements GameService {
         try {
             Game game = gameValidatorService.validateGameExists(gameId);
 
-            if (game.getPlayers().size() < 2) {
-                logger.error("Need at least 2 players to start a game");
-                throw new RuntimeException("Need at least 2 players to start a game");
+            // Auto Kick Logic: Remove players with insufficient chips
+            List<Player> toKick = new ArrayList<>();
+            for (Player player : game.getPlayers()) {
+                if (player.getChips() < game.getBigBlindAmount()) {
+                   toKick.add(player);
+                }
+            }
+            
+            for (Player player : toKick) {
+                logger.info("Auto kicking player {} due to insufficient funds", player.getUsername());
+                leaveGame(gameId, player.getId());
+            }
+
+            // Re-validate player count after kicks
+             if (game.getPlayers().size() < 2) { // You might want to check active players here, but existing logic checks total players. Sticking to total players for game existence, but maybe we need 2 active players? 
+                // Note: Existing logic throws if < 2 players. If auto-kick leaves 1 player, we should probably stop.
+                 // However, let's stick to the existing check pattern if possible, or adapt.
+                 // Actually, if we kick players, we might drop below 2.
+            }
+            
+            // Check for active players (not sitting out)
+            long activePlayersCount = game.getPlayers().stream().filter(p -> !p.isSittingOut()).count();
+             if (activePlayersCount < 2) {
+                logger.error("Need at least 2 active players to start a game");
+                // Instead of throwing, maybe just set status to WAITING and return? 
+                // But the caller expects a new hand. Let's throw for now as per existing logic.
+                throw new RuntimeException("Need at least 2 active players to start a game");
             }
 
             if (game.getStatus() != Game.GameStatus.WAITING) {
@@ -162,11 +186,17 @@ public class GameServiceImpl implements GameService {
 
             // Deal cards to players
             for (Player player : game.getPlayers()) {
-                if (player.isActive()) {
+                // Reset player state for new hand
+                 player.reset();
+                 
+                if (!player.isSittingOut() && player.getChips() > 0) {
+                    player.setActive(true); // Ensure they are marked active if they are playing
                     player.addCard(game.getDeck().drawCard());
                     player.addCard(game.getDeck().drawCard());
                     // Add active players to the main pot's eligible players
                     game.getMainPot().addEligiblePlayer(player.getId());
+                } else {
+                    player.setActive(false); // Mark as inactive for this hand
                 }
             }
 
@@ -384,6 +414,87 @@ public class GameServiceImpl implements GameService {
         } catch (Exception e) {
             logger.error("Error executing all-in action: {}", e.getMessage());
             // Don't rethrow to scheduler, just log
+        }
+    }
+
+    @Override
+    @Transactional
+    public void sitOut(String gameId, String playerId) {
+        logger.info("Player '{}' is sitting out in game '{}'", playerId, gameId);
+        try {
+            Game game = gameValidatorService.validateGameExists(gameId);
+            Player player = findPlayer(game, playerId);
+
+            if (player == null) {
+                throw new RuntimeException("Player not found");
+            }
+
+            player.setSittingOut(true);
+
+            // If the player sits out during their turn, we might need to fold them?
+            // Usually sit out takes effect next hand.
+            // If they are currently active in a hand, they remain active until they fold or
+            // hand ends.
+            // But we can mark them so they don't get cards next hand.
+
+            // Optional: If it's their turn, force a checks/fold?
+            // For now, assume sit out is "next hand" effect or just state change.
+            // The user requirement didn't specify immediate fold.
+
+            game.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
+            gameRepository.save(game);
+
+            // Limit event to player update or generic game update?
+            // Reuse PlayerJoinedEvent or create generic PlayerUpdateEvent?
+            // Existing events are specific. Let's send a game update via some mechanism if
+            // needed.
+            // But since we modify the game object and save it, the next polling/socket
+            // update should catch it if we emit one.
+            // We should probably emit an event. Reusing PlayerAction for now with a custom
+            // type if strictly needed,
+            // but we added SIT_OUT to ActionType enum.
+
+            eventPublisher.publishEvent(new PlayerActionEvent(
+                    gameId,
+                    player,
+                    PlayerActionEvent.ActionType.SIT_OUT,
+                    null,
+                    new Game(game)));
+
+        } catch (Exception e) {
+            logger.error("Error sitting out: {}", e.getMessage());
+            throw new RuntimeException("Failed to sit out", e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void sitIn(String gameId, String playerId) {
+        logger.info("Player '{}' is sitting in in game '{}'", playerId, gameId);
+        try {
+            Game game = gameValidatorService.validateGameExists(gameId);
+            Player player = findPlayer(game, playerId);
+
+            if (player == null) {
+                throw new RuntimeException("Player not found");
+            }
+
+            player.setSittingOut(false);
+            // They will be picked up in next hand's deals.
+
+            game.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
+            gameRepository.save(game);
+
+            eventPublisher.publishEvent(new PlayerActionEvent(
+                    gameId,
+                    player,
+                    PlayerActionEvent.ActionType.SIT_IN,
+                    null,
+                    new Game(game)));
+
+        } catch (Exception e) {
+            logger.error("Error sitting in: {}", e.getMessage());
+            throw new RuntimeException("Failed to sit in", e);
         }
     }
 

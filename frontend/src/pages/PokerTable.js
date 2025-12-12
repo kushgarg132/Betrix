@@ -90,7 +90,8 @@ const PokerTable = () => {
             username: player.username,
             hand: player.hand || [],
             index: playerIndex,
-            chips: player.chips
+            chips: player.chips,
+            isSittingOut: player.isSittingOut
           });
 
           const client = initializeSocketConnection(gameId, player.id, setUpdateActions, setError);
@@ -269,6 +270,24 @@ const PokerTable = () => {
     window.location.href = '/';
   };
 
+  const sitOut = () => {
+    if (stompClient?.connected && currentPlayer?.id) {
+       stompClient.publish({
+        destination: `/app/game/${gameId}/action`,
+        body: JSON.stringify({ playerId: currentPlayer.id, actionType: 'SIT_OUT' }),
+      });
+    }
+  };
+
+  const sitIn = () => {
+     if (stompClient?.connected && currentPlayer?.id) {
+       stompClient.publish({
+        destination: `/app/game/${gameId}/action`,
+        body: JSON.stringify({ playerId: currentPlayer.id, actionType: 'SIT_IN' }),
+      });
+    }
+  };
+
   const getDisplayPosition = (actualIndex) => {
     if (!game || currentPlayer.index === null) return 0;
     const playerCount = game.players.length;
@@ -294,6 +313,9 @@ const PokerTable = () => {
         leftSidebarVisible={leftSidebarVisible}
         toggleLeftSidebar={() => setLeftSidebarVisible(!leftSidebarVisible)}
         leaveTable={leaveTable}
+        sitOut={sitOut}
+        sitIn={sitIn}
+        isSittingOut={game?.players?.find(p => p.username === user.username)?.isSittingOut || false}
       />
 
       <div className="poker-table-main">

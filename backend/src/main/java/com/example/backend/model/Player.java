@@ -19,8 +19,9 @@ public class Player {
     private double currentBet;
     private boolean hasFolded;
     private double lastWinAmount; // Amount won in the last hand
+    private boolean isSittingOut;
     private HandResult bestHand; // Best hand for the player
-    
+
     public Player(String name, String username, double initialChips) {
         this.id = UUID.randomUUID().toString();
         this.name = name;
@@ -45,9 +46,10 @@ public class Player {
         this.hasFolded = player.isHasFolded();
         this.lastWinAmount = player.getLastWinAmount();
         this.bestHand = player.getBestHand();
+        this.isSittingOut = player.isSittingOut();
     }
 
-    public void hideDetails(){
+    public void hideDetails() {
         this.hand = new ArrayList<>();
         this.id = null;
     }
@@ -60,14 +62,14 @@ public class Player {
         this.lastWinAmount = 0;
         this.bestHand = null;
     }
-    
+
     public void addCard(Card card) {
         if (card == null) {
             throw new IllegalArgumentException("Cannot add null card to hand");
         }
         hand.add(card);
     }
-    
+
     public void placeBet(double amount) {
         if (amount < 0) {
             throw new IllegalArgumentException("Bet amount must be positive");
@@ -78,7 +80,7 @@ public class Player {
         chips -= amount;
         currentBet += amount;
     }
-    
+
     public void awardPot(double amount) {
         if (amount < 0) {
             throw new IllegalArgumentException("Award amount cannot be negative");
@@ -86,9 +88,10 @@ public class Player {
         chips += amount;
         lastWinAmount = amount;
     }
-    
+
     /**
      * Check if the player is all-in (has no chips left)
+     * 
      * @return true if player has no chips left
      */
     public boolean isAllIn() {

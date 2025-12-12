@@ -284,3 +284,34 @@
     padding-bottom: max(0px, env(safe-area-inset-bottom, 0px));
   }
 } 
+.sit-out-button {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Centering content like leave-table-button */
+  width: 100%;
+  padding: 10px 15px; /* Matching leave-table-button padding */
+  background-color: rgba(241, 196, 15, 0.1);
+  border: 1px solid rgba(241, 196, 15, 0.3);
+  border-radius: 8px;
+  color: #f1c40f;
+  font-size: 1rem;
+  font-weight: bold; /* Matching leave-table-button */
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 10px; /* Reduced margin to fit */
+}
+
+.sit-out-button:hover {
+  background-color: rgba(241, 196, 15, 0.2);
+  transform: translateY(-2px);
+}
+
+.sit-out-button.sitting-out {
+  background-color: rgba(46, 204, 113, 0.1);
+  border-color: rgba(46, 204, 113, 0.3);
+  color: #2ecc71;
+}
+
+.sit-out-button.sitting-out:hover {
+  background-color: rgba(46, 204, 113, 0.2);
+}
