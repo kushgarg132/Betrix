@@ -1,20 +1,26 @@
 /* Realistic card styles */
 .card.realistic {
-  width: 3.75rem; /* Converted from 60px */
-  height: 5.625rem; /* Converted from 90px */
+  width: 3.75rem;
+  /* Converted from 60px */
+  height: 5.625rem;
+  /* Converted from 90px */
   background-color: #ffffff;
-  border-radius: 0.3125rem; /* Converted from 5px */
+  border-radius: 0.3125rem;
+  /* Converted from 5px */
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 0.3125rem; /* Converted from 5px */
-  box-shadow: 0 0.3125rem 0.9375rem rgba(0, 0, 0, 0.5), 0 0 0.625rem rgba(0, 229, 255, 0.2); /* Converted from 0 5px 15px, 0 0 10px */
+  padding: 0.3125rem;
+  /* Converted from 5px */
+  box-shadow: 0 0.3125rem 0.9375rem rgba(0, 0, 0, 0.5), 0 0 0.625rem rgba(0, 229, 255, 0.2);
+  /* Converted from 0 5px 15px, 0 0 10px */
   position: relative;
   font-family: 'Poppins', sans-serif;
   transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
   transform-style: preserve-3d;
   overflow: hidden;
-  border: 0.0625rem solid rgba(200, 200, 200, 0.8); /* Converted from 1px */
+  border: 0.0625rem solid rgba(200, 200, 200, 0.8);
+  /* Converted from 1px */
 }
 
 /* Add a subtle card texture */
@@ -31,20 +37,21 @@
       rgba(255, 255, 255, 0.3) 25%,
       rgba(255, 255, 255, 0) 50%,
       rgba(0, 0, 0, 0.05) 100%),
-    repeating-linear-gradient(
-      45deg,
+    repeating-linear-gradient(45deg,
       rgba(240, 240, 240, 0.1) 0px,
       rgba(240, 240, 240, 0.1) 3px,
       transparent 3px,
-      transparent 6px
-    );
-  border-radius: 0.3125rem; /* Converted from 5px */
+      transparent 6px);
+  border-radius: 0.3125rem;
+  /* Converted from 5px */
   z-index: 1;
 }
 
 .card.realistic:hover {
-  transform: translateY(-0.3125rem) rotateX(10deg); /* Converted from -5px */
-  box-shadow: 0 0.625rem 1.5625rem rgba(0, 0, 0, 0.7), 0 0 1.25rem rgba(0, 229, 255, 0.3); /* Converted from 0 10px 25px, 0 0 20px */
+  transform: translateY(-0.3125rem) rotateX(10deg);
+  /* Converted from -5px */
+  box-shadow: 0 0.625rem 1.5625rem rgba(0, 0, 0, 0.7), 0 0 1.25rem rgba(0, 229, 255, 0.3);
+  /* Converted from 0 10px 25px, 0 0 20px */
   z-index: 10;
 }
 
@@ -77,10 +84,12 @@
   align-items: center;
   font-size: 1.8em;
   flex-grow: 1;
-  transform: translate3d(0, 0, 0.625rem); /* Converted from 10px */
+  transform: translate3d(0, 0, 0.625rem);
+  /* Converted from 10px */
   z-index: 2;
   opacity: 0.85;
-  text-shadow: 0.125rem 0.125rem 0.25rem rgba(0, 0, 0, 0.1); /* Converted from 2px 2px 4px */
+  text-shadow: 0.125rem 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
+  /* Converted from 2px 2px 4px */
 }
 
 /* Face card styling */
@@ -168,8 +177,10 @@
 }
 
 .card:hover {
-  transform: translateY(-0.3125rem); /* Converted from -5px */
-  box-shadow: 0 0.375rem 0.75rem rgba(0, 0, 0, 0.4); /* Converted from 0 6px 12px */
+  transform: translateY(-0.3125rem);
+  /* Converted from -5px */
+  box-shadow: 0 0.375rem 0.75rem rgba(0, 0, 0, 0.4);
+  /* Converted from 0 6px 12px */
 }
 
 .card.hidden {
@@ -179,29 +190,46 @@
 .card.hidden::before {
   content: '';
   position: absolute;
-  top: 0.25rem; /* Converted from 4px */
-  left: 0.25rem; /* Converted from 4px */
-  right: 0.25rem; /* Converted from 4px */
-  bottom: 0.25rem; /* Converted from 4px */
-  background: 
+  top: 0.25rem;
+  /* Converted from 4px */
+  left: 0.25rem;
+  /* Converted from 4px */
+  right: 0.25rem;
+  /* Converted from 4px */
+  bottom: 0.25rem;
+  /* Converted from 4px */
+  background:
     radial-gradient(circle at 30% 30%, rgba(30, 144, 255, 0.3) 0%, transparent 20%),
-    repeating-linear-gradient(
-      45deg,
+    repeating-linear-gradient(45deg,
       rgba(30, 144, 255, 0.05) 0px,
-      rgba(30, 144, 255, 0.05) 0.125rem, /* Converted from 2px */
-      transparent 0.125rem, /* Converted from 2px */
-      transparent 0.25rem /* Converted from 4px */
+      rgba(30, 144, 255, 0.05) 0.125rem,
+      /* Converted from 2px */
+      transparent 0.125rem,
+      /* Converted from 2px */
+      transparent 0.25rem
+      /* Converted from 4px */
     );
-  border-radius: 0.1875rem; /* Converted from 3px */
-  border: 0.0625rem solid rgba(30, 144, 255, 0.2); /* Converted from 1px */
+  border-radius: 0.1875rem;
+  /* Converted from 3px */
+  border: 0.0625rem solid rgba(30, 144, 255, 0.2);
+  /* Converted from 1px */
   z-index: 1;
-  box-shadow: inset 0 0 0.625rem rgba(0, 229, 255, 0.1); /* Converted from 10px */
+  box-shadow: inset 0 0 0.625rem rgba(0, 229, 255, 0.1);
+  /* Converted from 10px */
   animation: cardGlow 3s infinite alternate ease-in-out;
 }
 
 @keyframes cardGlow {
-  0% { box-shadow: inset 0 0 0.625rem rgba(0, 229, 255, 0.1); } /* Converted from 10px */
-  100% { box-shadow: inset 0 0 1.25rem rgba(0, 229, 255, 0.3); } /* Converted from 20px */
+  0% {
+    box-shadow: inset 0 0 0.625rem rgba(0, 229, 255, 0.1);
+  }
+
+  /* Converted from 10px */
+  100% {
+    box-shadow: inset 0 0 1.25rem rgba(0, 229, 255, 0.3);
+  }
+
+  /* Converted from 20px */
 }
 
 .card.hidden::after {
@@ -218,17 +246,21 @@
 }
 
 .card.hidden:hover {
-  transform: perspective(50rem) rotateY(15deg) translateY(-0.3125rem); /* Converted from 800px, -5px */
-  box-shadow: 
-    -0.3125rem 0.3125rem 0.9375rem rgba(0, 0, 0, 0.6), /* Converted from -5px 5px 15px */
-    0 0 0.9375rem rgba(0, 229, 255, 0.2); /* Converted from 0 0 15px */
+  transform: perspective(50rem) rotateY(15deg) translateY(-0.3125rem);
+  /* Converted from 800px, -5px */
+  box-shadow:
+    -0.3125rem 0.3125rem 0.9375rem rgba(0, 0, 0, 0.6),
+    /* Converted from -5px 5px 15px */
+    0 0 0.9375rem rgba(0, 229, 255, 0.2);
+  /* Converted from 0 0 15px */
   z-index: 10;
   cursor: pointer;
 }
 
 .card.hidden:hover::before {
   background-color: rgba(0, 20, 80, 0.3);
-  box-shadow: inset 0 0 1.25rem rgba(0, 229, 255, 0.4); /* Converted from 20px */
+  box-shadow: inset 0 0 1.25rem rgba(0, 229, 255, 0.4);
+  /* Converted from 20px */
 }
 
 .card.hidden:hover::after {
@@ -237,37 +269,27 @@
 
 /* Context-specific card sizes */
 .card-player {
-  width: 6.875rem; /* Converted from 110px */
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5), 0 0 1.5625rem rgba(0, 229, 255, 0.4); /* Converted from 0 8px 16px, 0 0 25px */
+  width: 4.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   z-index: 2;
-  border: 0.125rem solid rgba(0, 229, 255, 0.3); /* Converted from 2px */
-  animation: cardDealPlayer 0.6s cubic-bezier(0.19, 1, 0.22, 1) forwards;
-  transform-origin: center bottom;
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
 .card-opponent {
-  width: 5.625rem; /* Converted from 90px */
-  box-shadow: 0 0.3125rem 0.625rem rgba(0, 0, 0, 0.4); /* Converted from 0 5px 10px */
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  border: 0.0625rem solid rgba(255, 255, 255, 0.1); /* Converted from 1px */
-  animation: cardDealOpponent 0.4s cubic-bezier(0.19, 1, 0.22, 1) forwards;
-  transform-origin: center bottom;
+  width: 3.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
 .card-community {
-  width: 7.5rem !important;
-  height: 10.5rem !important;
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.7), 0 0 1.5rem rgba(0, 229, 255, 0.5);
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  border: 0.15rem solid rgba(255, 255, 255, 0.6);
+  width: 5.5rem !important;
+  height: 7.7rem !important;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.7);
+  border: 2px solid white;
   margin: 0;
   flex-shrink: 0;
-  transform: translateZ(0.625rem);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
+  background-color: white;
 }
 
 .card-community .card-img {
@@ -280,31 +302,51 @@
 
 /* Animations */
 @keyframes cardDealPlayer {
-  0% { transform: translate(-50vw, -50vh) scale(0.1) rotate(-180deg); opacity: 0; }
-  100% { transform: translate(0, 0) scale(1) rotate(0); opacity: 1; }
+  0% {
+    transform: translate(-50vw, -50vh) scale(0.1) rotate(-180deg);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translate(0, 0) scale(1) rotate(0);
+    opacity: 1;
+  }
 }
 
 @keyframes cardDealOpponent {
-  0% { transform: translate(-50vw, -50vh) scale(0.1) rotate(-180deg); opacity: 0; }
-  100% { transform: translate(0, 0) scale(1) rotate(0); opacity: 1; }
+  0% {
+    transform: translate(-50vw, -50vh) scale(0.1) rotate(-180deg);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translate(0, 0) scale(1) rotate(0);
+    opacity: 1;
+  }
 }
 
 /* Hover effects */
 .card-player:hover {
-  transform: translateY(-0.625rem) scale(1.05); /* Converted from -10px */
-  box-shadow: 0 0.9375rem 1.875rem rgba(0, 0, 0, 0.6), 0 0 1.875rem rgba(0, 229, 255, 0.5); /* Converted from 0 15px 30px, 0 0 30px */
+  transform: translateY(-0.625rem) scale(1.05);
+  /* Converted from -10px */
+  box-shadow: 0 0.9375rem 1.875rem rgba(0, 0, 0, 0.6), 0 0 1.875rem rgba(0, 229, 255, 0.5);
+  /* Converted from 0 15px 30px, 0 0 30px */
   z-index: 10;
 }
 
 .card-opponent:hover {
-  transform: translateY(-0.3125rem); /* Converted from -5px */
-  box-shadow: 0 0.3125rem 0.9375rem rgba(0, 0, 0, 0.5); /* Converted from 0 5px 15px */
+  transform: translateY(-0.3125rem);
+  /* Converted from -5px */
+  box-shadow: 0 0.3125rem 0.9375rem rgba(0, 0, 0, 0.5);
+  /* Converted from 0 5px 15px */
 }
 
 .card-community:hover {
-  transform: translateY(-0.75rem) translateZ(0.875rem) scale(1.15); /* Reduced from -1.5625rem, 1.875rem */
+  transform: translateY(-0.75rem) translateZ(0.875rem) scale(1.15);
+  /* Reduced from -1.5625rem, 1.875rem */
   z-index: 20;
-  box-shadow: 0 0.875rem 1.5rem rgba(0, 0, 0, 0.8), 0 0 1.875rem rgba(0, 229, 255, 0.7); /* Reduced shadow */
+  box-shadow: 0 0.875rem 1.5rem rgba(0, 0, 0, 0.8), 0 0 1.875rem rgba(0, 229, 255, 0.7);
+  /* Reduced shadow */
 }
 
 /* Winning card styles */
@@ -318,23 +360,40 @@
 }
 
 @keyframes winningCardPulse {
-  0% { box-shadow: 0 0.3125rem 0.9375rem rgba(0, 0, 0, 0.6), 0 0 0.625rem rgba(255, 215, 0, 0.5); } /* Converted from 0 5px 15px, 0 0 10px */
-  50% { box-shadow: 0 0.3125rem 0.9375rem rgba(0, 0, 0, 0.6), 0 0 1.5625rem rgba(255, 215, 0, 0.8); } /* Converted from 0 5px 15px, 0 0 25px */
-  100% { box-shadow: 0 0.3125rem 0.9375rem rgba(0, 0, 0, 0.6), 0 0 0.625rem rgba(255, 215, 0, 0.5); } /* Converted from 0 5px 15px, 0 0 10px */
+  0% {
+    box-shadow: 0 0.3125rem 0.9375rem rgba(0, 0, 0, 0.6), 0 0 0.625rem rgba(255, 215, 0, 0.5);
+  }
+
+  /* Converted from 0 5px 15px, 0 0 10px */
+  50% {
+    box-shadow: 0 0.3125rem 0.9375rem rgba(0, 0, 0, 0.6), 0 0 1.5625rem rgba(255, 215, 0, 0.8);
+  }
+
+  /* Converted from 0 5px 15px, 0 0 25px */
+  100% {
+    box-shadow: 0 0.3125rem 0.9375rem rgba(0, 0, 0, 0.6), 0 0 0.625rem rgba(255, 215, 0, 0.5);
+  }
+
+  /* Converted from 0 5px 15px, 0 0 10px */
 }
 
 /* Winner badge styling */
 .winner-badge {
   position: absolute;
-  top: -0.625rem; /* Converted from -10px */
-  right: -0.625rem; /* Converted from -10px */
+  top: -0.625rem;
+  /* Converted from -10px */
+  right: -0.625rem;
+  /* Converted from -10px */
   background: gold;
   color: #000;
-  font-size: 0.75rem; /* Converted from 12px */
+  font-size: 0.75rem;
+  /* Converted from 12px */
   font-weight: bold;
-  padding: 0.3125rem 0.5rem; /* Converted from 5px 8px */
+  padding: 0.3125rem 0.5rem;
+  /* Converted from 5px 8px */
   border-radius: 50%;
-  box-shadow: 0 0.1875rem 0.625rem rgba(0, 0, 0, 0.5); /* Converted from 0 3px 10px */
+  box-shadow: 0 0.1875rem 0.625rem rgba(0, 0, 0, 0.5);
+  /* Converted from 0 3px 10px */
   z-index: 20;
   transform: scale(0);
   animation: badgeAppear 0.5s 0.5s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -348,18 +407,24 @@
   transform: translateX(-50%);
   background: rgba(0, 0, 0, 0.7);
   color: white;
-  padding: 0.5rem 1rem; /* Converted from 8px 16px */
-  border-radius: 0.5rem; /* Converted from 8px */
-  font-size: 1rem; /* Converted from 16px */
-  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.5); /* Converted from 0 4px 16px */
-  border: 0.0625rem solid rgba(255, 215, 0, 0.5); /* Converted from 1px */
+  padding: 0.5rem 1rem;
+  /* Converted from 8px 16px */
+  border-radius: 0.5rem;
+  /* Converted from 8px */
+  font-size: 1rem;
+  /* Converted from 16px */
+  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.5);
+  /* Converted from 0 4px 16px */
+  border: 0.0625rem solid rgba(255, 215, 0, 0.5);
+  /* Converted from 1px */
   z-index: 30;
 }
 
 .winning-hand-display .winner-name {
   font-weight: bold;
   color: gold;
-  margin-right: 0.5rem; /* Converted from 8px */
+  margin-right: 0.5rem;
+  /* Converted from 8px */
 }
 
 .winning-hand-display .hand-type {
@@ -369,27 +434,32 @@
 /* Media queries for responsive cards */
 @media (max-width: 768px) {
   .card-player {
-    width: 5.625rem; /* Converted from 90px */
+    width: 5.625rem;
+    /* Converted from 90px */
   }
-  
+
   .card-opponent {
-    width: 4.6875rem; /* Converted from 75px */
+    width: 4.6875rem;
+    /* Converted from 75px */
   }
-  
+
   .card-community {
     width: 5.5rem !important;
     height: 7.7rem !important;
   }
-  
+
   .winner-badge {
-    font-size: 0.625rem; /* Converted from 10px */
-    padding: 0.25rem 0.375rem; /* Converted from 4px 6px */
+    font-size: 0.625rem;
+    /* Converted from 10px */
+    padding: 0.25rem 0.375rem;
+    /* Converted from 4px 6px */
   }
-  
+
   .winning-hand-display {
-    font-size: 0.875rem; /* Converted from 14px */
+    font-size: 0.875rem;
+    /* Converted from 14px */
   }
-  
+
   .card[data-context="winning-community"] {
     width: 5.5rem !important;
     height: 7.7rem !important;
@@ -398,23 +468,27 @@
 
 @media (max-width: 480px) {
   .card {
-    width: 4.6875rem; /* Converted from 75px */
+    width: 4.6875rem;
+    /* Converted from 75px */
   }
-  
+
   .card-community {
     width: 4.5rem !important;
     height: 6.3rem !important;
   }
-  
+
   .winner-badge {
-    font-size: 0.5rem; /* Converted from 8px */
-    padding: 0.1875rem 0.25rem; /* Converted from 3px 4px */
+    font-size: 0.5rem;
+    /* Converted from 8px */
+    padding: 0.1875rem 0.25rem;
+    /* Converted from 3px 4px */
   }
-  
+
   .winning-hand-display {
-    font-size: 0.75rem; /* Converted from 12px */
+    font-size: 0.75rem;
+    /* Converted from 12px */
   }
-  
+
   .card[data-context="winning-community"] {
     width: 4.5rem !important;
     height: 6.3rem !important;
@@ -423,14 +497,15 @@
 
 @media (max-height: 600px) and (orientation: landscape) {
   .card {
-    width: 4.375rem; /* Converted from 70px */
+    width: 4.375rem;
+    /* Converted from 70px */
   }
-  
+
   .card-community {
     width: 4.5rem !important;
     height: 6.3rem !important;
   }
-  
+
   .card[data-context="winning-community"] {
     width: 4.5rem !important;
     height: 6.3rem !important;
@@ -444,4 +519,4 @@
   box-shadow: 0 0.3125rem 0.9375rem rgba(0, 0, 0, 0.6), 0 0 1.25rem rgba(255, 215, 0, 0.5);
   animation: winningCardPulse 2s infinite;
   z-index: 5;
-} 
+}

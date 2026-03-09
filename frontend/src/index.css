@@ -2,41 +2,49 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Orbitron:wght@400;500;700&display=swap');
 
 :root {
-  /* Premium Dark Palette */
-  --bg-dark: #0f172a;
-  --bg-darker: #020617;
-  --card-dark: rgba(30, 41, 59, 0.7);
-  
-  --primary: #38bdf8; /* Sky 400 */
-  --primary-glow: rgba(56, 189, 248, 0.4);
-  --secondary: #818cf8; /* Indigo 400 */
-  
-  --gold: #fbbf24; /* Amber 400 */
-  --gold-glow: rgba(251, 191, 36, 0.4);
-  
-  --emerald: #10b981; /* Emerald 500 */
-  --rose: #f43f5e; /* Rose 500 */
-  
-  /* Text */
-  --text-main: #f8fafc;
-  --text-dim: #94a3b8;
-  --text-poker-green: #4ade80;
-  
-  /* Glassmorphism */
-  --glass-bg: rgba(15, 23, 42, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
-  
+  /* Pixel-Perfect Mockup Palette */
+  --bg-dark: #0a0e17;
+  /* Deeper black/navy */
+  --bg-darker: #05070a;
+
+  --felt-green: #14532d;
+  --felt-green-bright: #166534;
+  --felt-texture: rgba(255, 255, 255, 0.05);
+
+  --primary: #38bdf8;
+  --primary-glow: rgba(56, 189, 248, 0.5);
+
+  --gold: #f59e0b;
+  /* Mockup gold */
+  --gold-glow: rgba(245, 158, 11, 0.4);
+  --brass: #b45309;
+
+  --emerald: #10b981;
+  --rose: #ef4444;
+  /* Brighter red for Fold */
+
+  /* Glassmorphism Refined */
+  --glass-bg: rgba(15, 23, 42, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-highlight: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.9);
+
+  /* Table Elements */
+  --table-rim: #1e293b;
+  --table-inner-glow: radial-gradient(circle at center, rgba(22, 101, 52, 0.4) 0%, transparent 70%);
+
   /* Layout */
-  --radius-sm: 6px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
-  --radius-xl: 32px;
-  
-  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  --transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-html, body {
+html,
+body {
   height: 100%;
   width: 100%;
   margin: 0;
@@ -50,8 +58,14 @@ html, body {
 }
 
 /* Typography */
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Orbitron', sans-serif; /* Tech/Sci-fi feel for headers */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Orbitron', sans-serif;
+  /* Tech/Sci-fi feel for headers */
   color: var(--text-primary);
   margin-bottom: 1rem;
   letter-spacing: 0.05em;
@@ -103,7 +117,8 @@ button {
   background: transparent;
   border: 1px solid var(--primary-color);
   color: var(--primary-color);
-  padding: 11px 23px; /* Compensate for border */
+  padding: 11px 23px;
+  /* Compensate for border */
   border-radius: var(--radius-full);
   font-weight: 600;
 }
@@ -124,7 +139,7 @@ button {
 }
 
 .glass-card {
-  background: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
   backdrop-filter: blur(10px);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-sm);
@@ -152,11 +167,18 @@ button {
   justify-content: center;
 }
 
-.w-full { width: 100%; }
-.h-full { height: 100%; }
+.w-full {
+  width: 100%;
+}
+
+.h-full {
+  height: 100%;
+}
 
 /* Form Elements */
-input, select, textarea {
+input,
+select,
+textarea {
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid var(--glass-border);
   color: var(--text-primary);
@@ -167,7 +189,9 @@ input, select, textarea {
   width: 100%;
 }
 
-input:focus, select:focus, textarea:focus {
+input:focus,
+select:focus,
+textarea:focus {
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 2px rgba(0, 170, 255, 0.2);
@@ -184,7 +208,9 @@ input:focus, select:focus, textarea:focus {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Scrollbar */

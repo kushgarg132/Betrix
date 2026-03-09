@@ -1,9 +1,9 @@
-/* Table.css - Premium Design */
+/* Table.css - Pixel Perfect Mockup Refinement */
 
 .table-felt {
-  width: 90%;
-  max-width: 1000px;
-  height: 500px;
+  width: 92%;
+  max-width: 1100px;
+  height: 520px;
   position: relative;
   margin: 0 auto;
   transform-style: preserve-3d;
@@ -13,14 +13,12 @@
 .wood-border {
   width: 100%;
   height: 100%;
-  padding: 12px;
-  background: linear-gradient(145deg, #1e293b, #020617);
-  border-radius: 250px;
-  /* Oval shape */
+  padding: 18px;
+  background: linear-gradient(145deg, #1e293b, #0a0e17);
+  border-radius: 300px;
   box-shadow:
-    0 20px 50px rgba(0, 0, 0, 0.8),
-    inset 0 0 20px rgba(251, 191, 36, 0.2);
-  /* Subtle Gold Glow */
+    0 30px 60px rgba(0, 0, 0, 0.9),
+    inset 0 0 30px rgba(0, 0, 0, 0.8);
   border: 4px solid #334155;
   position: relative;
   display: flex;
@@ -28,27 +26,79 @@
   justify-content: center;
 }
 
-/* Inner Gold Rim */
-.wood-border::after {
-  content: '';
+/* Metallic Brass Lights on the Rim */
+.metallic-accents {
   position: absolute;
-  top: 8px;
-  left: 8px;
-  right: 8px;
-  bottom: 8px;
-  border: 2px solid rgba(251, 191, 36, 0.3);
-  border-radius: 242px;
+  inset: 0;
   pointer-events: none;
+}
+
+.accent-light {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: radial-gradient(circle at 30% 30%, #fbbf24, #b45309);
+  border-radius: 50%;
+  box-shadow:
+    0 0 8px rgba(245, 158, 11, 0.6),
+    inset 0 0 2px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+/* Position 8 lights around the rim */
+.accent-light:nth-child(1) {
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.accent-light:nth-child(2) {
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.accent-light:nth-child(3) {
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.accent-light:nth-child(4) {
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.accent-light:nth-child(5) {
+  top: 15%;
+  left: 15%;
+}
+
+.accent-light:nth-child(6) {
+  top: 15%;
+  right: 15%;
+}
+
+.accent-light:nth-child(7) {
+  bottom: 15%;
+  left: 15%;
+}
+
+.accent-light:nth-child(8) {
+  bottom: 15%;
+  right: 15%;
 }
 
 .circular-table {
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle at center, #14532d 0%, #052e16 100%);
-  /* Deep Green Felt */
-  border-radius: 230px;
+  background: radial-gradient(circle at center, #166534 0%, #064e3b 100%);
+  border-radius: 282px;
   position: relative;
-  box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.6);
+  box-shadow:
+    inset 0 0 100px rgba(0, 0, 0, 0.7),
+    0 0 40px rgba(22, 101, 52, 0.2);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -56,87 +106,102 @@
   overflow: visible;
 }
 
-/* Felt Texture Effect */
+/* Felt Texture & Lighting */
 .circular-table::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-  opacity: 0.15;
-  border-radius: 230px;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.08;
+  border-radius: 282px;
   pointer-events: none;
+}
+
+/* Glass Card Tray */
+.community-cards-tray {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 0 20px rgba(255, 255, 255, 0.02);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 }
 
 .community-cards {
   display: flex;
   gap: 12px;
-  z-index: 10;
-  padding: 16px;
-  perspective: 1000px;
-  height: 120px;
-  /* Base height for cards */
+  padding: 4px;
+}
+
+.tray-label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-top: 4px;
+}
+
+.pot-display {
+  position: absolute;
+  top: 15%;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 6px 20px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+}
+
+.pot-amount {
+  color: var(--gold);
+  font-weight: 700;
+  margin-left: 8px;
+}
+
+/* In-table UI Labels */
+.felt-info {
+  position: absolute;
+  bottom: 20%;
+  display: flex;
+  gap: 24px;
+  opacity: 0.6;
+}
+
+.felt-stat {
+  display: flex;
+  flex-direction: column;
   align-items: center;
 }
 
-/* Placeholder Slots */
-.card-placeholder {
-  width: 70px;
-  height: 100px;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px dashed rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
+.stat-label {
+  font-size: 0.65rem;
+  color: #94a3b8;
+  text-transform: uppercase;
 }
 
-/* Winning Hand Overlay */
-.winning-hand-display {
-  position: absolute;
-  top: 25%;
-  background: var(--glass-bg);
-  backdrop-filter: blur(8px);
-  padding: 8px 16px;
-  border-radius: var(--radius-full);
-  border: 1px solid var(--gold);
-  color: var(--gold);
+.stat-value {
   font-family: 'Orbitron', sans-serif;
-  font-size: 0.9rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-  display: flex;
-  gap: 8px;
-  animation: winnerPopup 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes winnerPopup {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.winner-name {
-  font-weight: 700;
-  color: white;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
   .table-felt {
-    height: 350px;
+    height: 380px;
   }
 
-  .card-placeholder {
-    width: 50px;
-    height: 75px;
-  }
-
-  .community-cards {
-    gap: 6px;
+  .metallic-accents {
+    opacity: 0.5;
   }
 }

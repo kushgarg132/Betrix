@@ -9,7 +9,6 @@ const BettingControls = memo(({
   check,
   fold
 }) => {
-  const [showRaiseSlider, setShowRaiseSlider] = useState(false);
   const [raiseAmount, setRaiseAmount] = useState(1);
 
   const { callAmount, canCheck, minRaise, maxRaise, isCallAllIn, isForceAllIn } = useMemo(() => {
@@ -30,18 +29,15 @@ const BettingControls = memo(({
   }, [game, currentPlayer]);
 
   useEffect(() => {
-    if (showRaiseSlider) setRaiseAmount(minRaise);
-  }, [showRaiseSlider, minRaise]);
+    setRaiseAmount(minRaise);
+  }, [minRaise]);
 
   const handleRaiseChange = useCallback((value) => {
     setRaiseAmount(parseInt(value));
   }, []);
 
-  const handleOpenRaiseSlider = useCallback(() => setShowRaiseSlider(true), []);
-  const handleCloseRaiseSlider = useCallback(() => setShowRaiseSlider(false), []);
   const confirmRaise = useCallback(() => {
     placeBet(raiseAmount);
-    setShowRaiseSlider(false);
   }, [placeBet, raiseAmount]);
 
   const formatNumber = useCallback((num) => {
@@ -51,77 +47,59 @@ const BettingControls = memo(({
   if (!isMyTurn || !game) return null;
 
   return (
-    <>
-      <div className="betting-controls-wrapper">
-        <div className="betting-controls-container">
-          {isForceAllIn ? (
-            <button className="call-button" onClick={() => placeBet(maxRaise)}>
-              <span className="action-text">All-In</span>
-              <span className="action-amount">${formatNumber(maxRaise)}</span>
-            </button>
-          ) : (
-            <>
-              {canCheck ? (
-                <button className="check-button" onClick={check}>
-                  <span className="action-text">Check</span>
-                </button>
-              ) : (
-                <button className="call-button" onClick={() => placeBet(callAmount)}>
-                  <span className="action-text">Call</span>
-                  <span className="action-amount">${formatNumber(callAmount)}</span>
-                </button>
-              )}
+    <div className="betting-controls-wrapper">
+      <div className="betting-controls-container">
+        {/* Fold Button */}
+        <button className="fold-button" onClick={fold}>
+          <span className="action-text">Fold</span>
+        </button>
 
-              {!isCallAllIn && (
-                <button className="raise-button" onClick={handleOpenRaiseSlider}>
-                  <span className="action-text">Raise</span>
-                </button>
-              )}
-            </>
-          )}
-
-          <button className="fold-button" onClick={fold}>
-            <span className="action-text">Fold</span>
+        {/* Check/Call Button */}
+        {canCheck ? (
+          <button className="check-button" onClick={check}>
+            <span className="action-text">Check</span>
           </button>
-        </div>
+        ) : (
+          <button className="call-button" onClick={() => placeBet(callAmount)}>
+            <span className="action-text">Call</span>
+            <span className="action-amount">${formatNumber(callAmount)}</span>
+          </button>
+        )}
       </div>
 
-      {showRaiseSlider && !isForceAllIn && (
-        <div className="raise-slider-overlay" onClick={handleCloseRaiseSlider}>
-          <div className="raise-controls" onClick={(e) => e.stopPropagation()}>
-            <div className="raise-header">
-              <span>Set Your Raise</span>
-              <button className="close-button" onClick={handleCloseRaiseSlider}>×</button>
+      {/* Bet/Raise Slider Section (Mockup Style) */}
+      {!isCallAllIn && !isForceAllIn && (
+        <div className="bet-raise-section">
+          <div className="bet-raise-container">
+            <div className="bet-raise-label">Bet / Raise</div>
+            <div className="raise-slider-track">
+              <input
+                type="range"
+                className="raise-slider"
+                min={minRaise}
+                max={maxRaise}
+                value={raiseAmount}
+                onChange={(e) => handleRaiseChange(e.target.value)}
+                onMouseUp={confirmRaise}
+              />
             </div>
-
-            <div className="raise-amount">${formatNumber(raiseAmount)}</div>
-
-            <input
-              type="range"
-              className="raise-slider"
-              min={minRaise}
-              max={maxRaise}
-              value={raiseAmount}
-              onChange={(e) => handleRaiseChange(e.target.value)}
-            />
-
-            <div className="raise-info">
-              <span>Min: ${formatNumber(minRaise)}</span>
-              <span>Max: ${formatNumber(maxRaise)}</span>
-            </div>
-
-            <div className="raise-buttons">
-              <button className="confirm-raise-button" onClick={confirmRaise}>
-                Confirm Raise
-              </button>
-              <button className="cancel-raise-button" onClick={handleCloseRaiseSlider}>
-                Cancel
-              </button>
+            <div className="slider-limits">
+              <span>${formatNumber(minRaise)}</span>
+              <span>${formatNumber(raiseAmount)}</span>
+              <span>${formatNumber(maxRaise)}</span>
             </div>
           </div>
         </div>
       )}
-    </>
+
+      {/* Final Bet Amount Display */}
+      <div className="bet-amount-container">
+        <div className="bet-amount-label">Bet Amount</div>
+        <div className="bet-amount-box">
+          ${formatNumber(raiseAmount)}
+        </div>
+      </div>
+    </div>
   );
 });
 
