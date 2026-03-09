@@ -6,7 +6,6 @@ import axios from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
 import API_CONFIG from '../config/apiConfig';
 import './PokerTable.css';
-import './PokerTableCyberpunk.css'; // Neon Cyberpunk theme
 
 // Components
 import Player from '../components/Player';

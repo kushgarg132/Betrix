@@ -1,517 +1,199 @@
+/* Player.css - Premium "Avatar" Design */
+
 .player {
-  position: absolute !important; /* Force absolute positioning */
-  width: 8rem; /* Reduced from 9.375rem */
-  height: auto;
-  min-height: 8rem; /* Reduced from 9.375rem */
-  border-radius: 0.625rem;
-  background: rgba(0, 0, 0, 0.7);
-  box-shadow: 0 0 1.25rem rgba(0, 0, 0, 0.6), 0 0 0.9375rem rgba(52, 152, 219, 0.4); /* Converted from 0 0 20px, 0 0 15px */
-  display: flex !important;
+  position: absolute;
+  display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  color: white;
-  padding: 0.625rem; /* Converted from 10px */
-  border: 0.125rem solid rgba(52, 152, 219, 0.4); /* Converted from 2px */
-  overflow: visible;
-  backdrop-filter: blur(0.1875rem); /* Converted from 3px */
-  z-index: 20;
-  transition: all 0.2s ease, border-image 0.1s linear;
-  transform-origin: center center; /* Fixed transform origin */
-  border-style: solid;
-  border-width: 0.125rem; /* Converted from 2px */
+  gap: 12px;
+  z-index: 50;
+  transition: var(--transition);
 }
 
-.player.current-turn {
-  box-shadow: 0 0 1.5625rem rgba(241, 196, 15, 0.7); /* Converted from 0 0 25px */
-  border-color: #f1c40f;
-  z-index: 25;
-  /* The border-image property will be set dynamically in JS */
-}
-
-.player.current-player {
-  background: rgba(0, 20, 40, 0.8);
-  border: 0.125rem solid rgba(52, 152, 219, 0.7); /* Converted from 2px */
-  z-index: 25;
-  padding: 0.75rem; /* Converted from 12px */
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  width: auto !important;
-  min-width: 18rem !important; /* Reduced */
-  max-width: 22rem !important; /* Reduced */
-  gap: 0.75rem;
-}
-
-/* Fixed, clear positions for all players - with !important flags to ensure visibility */
-.player[data-position="0"] {
-  bottom: 160px !important; /* Raised to clear betting controls */
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  width: 8.125rem !important; /* Converted from 130px */
-  height: auto !important;
-  max-height: 8.75rem !important; /* Converted from 140px */
-  z-index: 24 !important;
-}
-
-.player[data-position="1"] {
-  bottom: 30% !important; /* Adjusted */
-  right: 5% !important;
-  left: auto !important; /* Override any left values */
-  top: auto !important; /* Override any top values */
-  z-index: 21 !important;
-}
-
-.player[data-position="2"] {
-  top: 10% !important;
-  right: 25% !important;
-  left: auto !important; /* Override any left values */
-  bottom: auto !important; /* Override any bottom values */
-  z-index: 21 !important;
-}
-
-.player[data-position="3"] {
-  top: 10% !important;
-  left: 25% !important;
-  right: auto !important; /* Override any right values */
-  bottom: auto !important; /* Override any bottom values */
-  z-index: 21 !important;
-}
-
-.player[data-position="4"] {
-  bottom: 30% !important; /* Adjusted */
-  left: 5% !important;
-  right: auto !important; /* Override any right values */
-  top: auto !important; /* Override any top values */
-  z-index: 21 !important;
-}
-
-.player[data-position="5"] {
-  bottom: 40% !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  right: auto !important; /* Override any right values */
-  top: auto !important; /* Override any top values */
-  z-index: 21 !important;
-}
-
-/* Player avatar */
+/* Base Avatar Style */
 .player-avatar {
-  width: 100%;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1e293b, #020617);
+  border: 3px solid var(--glass-border);
+  position: relative;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
   display: flex;
-  justify-content: center;
   align-items: center;
-  margin-bottom: 0.3125rem; /* Converted from 5px */
+  justify-content: center;
+  overflow: visible;
+  transition: var(--transition);
+}
+
+/* Glow Ring for Active Turn */
+.current-turn .player-avatar {
+  border-color: var(--primary);
+  box-shadow: 0 0 20px var(--primary-glow);
+  transform: scale(1.1);
+}
+
+/* Turn Timer SVG Overlay (Placeholder for actual SVG implementation in JSX) */
+.turn-timer {
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  right: -6px;
+  bottom: -6px;
+  pointer-events: none;
+  z-index: 2;
+  color: var(--primary);
+  font-family: 'Orbitron', 'Roboto', sans-serif;
+  font-weight: 700;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-shadow: 0 0 8px var(--primary-glow);
+}
+
+/* Player Info Label (Glassmorphism) */
+.player-info-container {
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
+  padding: 6px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  min-width: 100px;
 }
 
 .player-name {
-  font-size: 0.85rem; /* Reduced from 1rem */
-  font-weight: bold;
-  color: #ffffff;
-  text-shadow: 0 0 0.3125rem rgba(0, 229, 255, 0.4); /* Converted from 0 0 5px */
-  padding: 0.1875rem 0.5rem; /* Converted from 3px 8px */
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 0.75rem; /* Converted from 12px */
-  z-index: 3;
-  display: inline-block;
-}
-
-/* Cards container */
-.player-cards-container {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  margin: 0.3125rem 0; /* Converted from 5px 0 */
-  min-height: 3.125rem; /* Converted from 50px */
-}
-
-.player-cards {
-  display: flex;
-  justify-content: center;
-  gap: 0.3125rem; /* Converted from 5px */
-  position: relative;
-  z-index: 2;
-}
-
-.opponent-cards {
-  display: flex;
-  gap: 0;
-  position: relative;
-  z-index: 2;
-  margin-top: 0.5rem; /* Converted from 8px */
-  perspective: 50rem; /* Converted from 800px */
-}
-
-.opponent-cards .card.hidden {
-  margin: 0 -1.875rem 0 0; /* Converted from -30px */
-  transform: rotate(-5deg);
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.opponent-cards .card.hidden:last-child {
-  transform: rotate(5deg);
-  z-index: 1;
-}
-
-.opponent-cards .card.hidden:hover {
-  transform: translateY(-0.625rem) rotate(0); /* Converted from -10px */
-  z-index: 3;
-  margin-right: 0; /* Remove overlap on hover */
-}
-
-/* Ensure bet display is positioned correctly relative to opponent cards */
-.opponent-cards .opponent-bet-display {
-  display: none;
-}
-
-/* Player info and chips */
-.player-info-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  margin-top: 0.3125rem; /* Converted from 5px */
-  position: relative;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: white;
+  margin-bottom: 2px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .chips {
-  font-size: 1rem;
-  color: #ffffff;
-  background: rgba(0, 0, 0, 0.4);
-  padding: 0.1875rem 0.5rem; /* Converted from 3px 8px */
-  border-radius: 0.75rem; /* Converted from 12px */
-  font-weight: bold;
-  display: inline-block;
-  text-shadow: 0 0 0.1875rem rgba(0, 229, 255, 0.4); /* Converted from 0 0 3px */
-  box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.3); /* Converted from 0 2px 4px */
-  border: 0.0625rem solid rgba(0, 229, 255, 0.2); /* Converted from 1px */
-}
-
-.player-bet {
+  color: var(--gold);
+  font-family: 'Orbitron', sans-serif;
   font-size: 0.8rem;
-  color: #ffffff;
-  background: rgba(0, 0, 0, 0.3);
-  padding: 0.125rem 0.375rem; /* Converted from 2px 6px */
-  border-radius: 0.625rem; /* Converted from 10px */
-  font-weight: 500;
-  display: inline-block;
-  margin-top: 0.1875rem; /* Converted from 3px */
-}
-
-/* Opponent bet display - smaller and more compact */
-.opponent-bet-display {
-  position: absolute;
-  top: -0.625rem; /* Converted from -10px */
-  right: -0.625rem; /* Converted from -10px */
-  background: radial-gradient(circle at center, rgba(0, 229, 255, 0.8) 0%, rgba(30, 144, 255, 0.8) 100%);
-  color: white;
-  border-radius: 50%;
-  padding: 0.1875rem; /* Converted from 3px */
-  min-width: 1.5rem; /* Converted from 24px */
-  min-height: 1.5rem; /* Converted from 24px */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 0.75rem;
-  box-shadow: 0 0 0.625rem rgba(0, 229, 255, 0.4); /* Converted from 0 0 10px */
-  border: 0.0625rem solid rgba(255, 255, 255, 0.8); /* Converted from 1px */
-  transform: scale(0.9);
-  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  z-index: 30; /* Increased z-index to ensure visibility */
-  text-shadow: 0 0 0.3125rem rgba(0, 0, 0, 0.5); /* Converted from 0 0 5px */
-}
-
-/* Special styling for current player bet display */
-.current-player-bet {
-  top: -0.5rem; /* Converted from -8px */
-  right: -0.5rem; /* Converted from -8px */
-  z-index: 30; /* Higher z-index to ensure visibility */
   font-weight: 700;
-  min-width: 1.625rem; /* Converted from 26px */
-  min-height: 1.625rem; /* Converted from 26px */
-  font-size: 0.8rem;
 }
 
+/* Small Indicator Badges */
 .blind-indicator {
   position: absolute;
-  top: -1.5625rem; /* Converted from -25px */
-  right: -0.625rem; /* Converted from -10px */
-  background: rgba(0, 0, 0, 0.7);
-  font-size: 0.8rem;
-  font-weight: bold;
-  padding: 0.25rem; /* Converted from 4px */
+  top: -5px;
+  right: -5px;
+  width: 24px;
+  height: 24px;
+  background: white;
+  color: black;
   border-radius: 50%;
-  box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.4); /* Converted from 0 0 8px */
-  z-index: 10;
-  width: 1.25rem; /* Converted from 20px */
-  height: 1.25rem; /* Converted from 20px */
+  font-size: 0.7rem;
+  font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.big-blind .blind-indicator {
-  background: #f1c40f;
-  color: #000;
-}
-
-.small-blind .blind-indicator {
-  background: #3498db;
-  color: #fff;
-}
-
-.bet-chips {
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   z-index: 5;
 }
 
-/* New container for player info and avatar */
-.current-player-content {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  flex: 0 0 auto;
+.big-blind {
+  background: #ef4444;
+  color: white;
 }
 
-/* Create special styling for current player cards to be more compact */
-.player.current-player .player-cards-container {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  flex: 0 0 auto;
-  margin: 0;
-  padding: 0;
-  min-width: 160px; /* Reduced from 180px */
-  position: relative;
+.small-blind {
+  background: #3b82f6;
+  color: white;
 }
 
-.player.current-player .player-cards {
-  display: flex;
-  justify-content: center;
-  gap: 0;
-  margin: 0;
-  padding: 0;
-  transform: none;
+/* In-table Bet Display */
+.opponent-bet-display {
+  background: rgba(0, 0, 0, 0.4);
+  color: white;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--gold);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  margin-bottom: 10px;
 }
 
-.player.current-player .player-cards .card {
-  width: 110px; /* Reduced from 120px */
-  height: auto;
-  margin: 0 -35px 0 0; /* Increased overlap from -30px */
-  transform: rotate(5deg);
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+/* Sitting Out State */
+.player.sitting-out {
+  opacity: 0.5;
+  filter: grayscale(0.5);
 }
 
-.player.current-player .player-cards .card:first-child {
-  transform: rotate(-5deg);
-  z-index: 1;
-}
-
-.player.current-player .player-cards .card:hover {
-  transform: translateY(-20px) rotate(0);
-  z-index: 3;
-  margin-right: 0; /* Remove overlap on hover */
-}
-
-.player.current-player .player-avatar {
-  margin-bottom: 5px;
-  flex: 0 0 auto;
-}
-
-.player.current-player .player-info-container {
-  margin-top: 0;
-  padding: 0;
-  flex: 0 0 auto;
-  align-items: flex-start;
-}
-
-/* Responsive styles */
-@media (max-width: 768px) {
-  .player {
-    width: 7.5rem; /* Converted from 120px */
-    min-height: 7.5rem; /* Converted from 120px */
-    padding: 0.5rem; /* Converted from 8px */
-    border-radius: 0.625rem; /* Converted from 10px */
-  }
-  
-  .player[data-position="0"] {
-    width: 6.875rem !important; /* Converted from 110px */
-    max-height: 6.875rem !important; /* Converted from 110px */
-  }
-  
-  .player.current-player {
-    min-width: 18.75rem !important; /* Converted from 300px */
-    max-width: 21.875rem !important; /* Converted from 350px */
-    padding: 0.5rem; /* Converted from 8px */
-    gap: 0.625rem; /* Converted from 10px */
-  }
-  
-  .player.current-player .player-cards-container {
-    margin-right: 0.3125rem; /* Converted from 5px */
-  }
-  
-  .player.current-player .player-cards .card {
-    width: 5rem; /* Converted from 80px */
-  }
-  
-  .opponent-cards .card.hidden {
-    margin: 0 -1.5625rem 0 0; /* Converted from -25px */
-  }
-  
-  .player-name {
-    font-size: 0.875rem; /* Converted from 14px */
-  }
-  
-  .chips {
-    font-size: 0.8125rem; /* Converted from 13px */
-    padding: 0.125rem 0.375rem; /* Converted from 2px 6px */
-    border-radius: 0.5rem; /* Converted from 8px */
-  }
-  
-  .opponent-bet-display {
-    min-width: 1.375rem; /* Converted from 22px */
-    min-height: 1.375rem; /* Converted from 22px */
-    font-size: 0.6875rem; /* Converted from 11px */
-    padding: 0.125rem; /* Converted from 2px */
-    top: -0.5rem; /* Converted from -8px */
-    right: -0.5rem; /* Converted from -8px */
-  }
-  
-  .current-player-bet {
-    min-width: 1.5rem; /* Converted from 24px */
-    min-height: 1.5rem; /* Converted from 24px */
-    font-size: 0.75rem; /* Converted from 12px */
-  }
-  
-  .winner-badge {
-    font-size: 0.625rem; /* Converted from 10px */
-    padding: 0.1875rem 0.375rem; /* Converted from 3px 6px */
-  }
-  
-  .player.current-player .winner-badge {
-    top: -0.75rem; /* Converted from -12px */
-    right: -0.75rem; /* Converted from -12px */
-  }
-}
-
-@media (max-height: 600px) {
-  .player {
-    min-height: 6.875rem; /* Converted from 110px */
-    width: 6.875rem; /* Converted from 110px */
-  }
-  
-  .player-cards-container {
-    min-height: 2.5rem; /* Converted from 40px */
-  }
-  
-  .winner-badge {
-    font-size: 0.5625rem; /* Converted from 9px */
-    padding: 0.125rem 0.3125rem; /* Converted from 2px 5px */
-    top: -0.5rem; /* Converted from -8px */
-    right: -0.5rem; /* Converted from -8px */
-  }
-}
-
-/* Hide bet text on normal screens but show on mobile */
-.player-bet-small-screen {
-  display: none;
-  position: absolute;
-  top: -1.25rem; /* Converted from -20px */
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.6);
-  padding: 0.125rem 0.375rem; /* Converted from 2px 6px */
-  border-radius: 0.625rem; /* Converted from 10px */
-  font-size: 0.75rem; /* Converted from 12px */
-}
-
-/* Media query to show bet text on small screens */
-@media (max-width: 768px) {
-  .player-bet-small-screen {
-    display: block;
-  }
-  
-  /* On mobile, hide the opponent-bet-display when in landscape to save space */
-  @media (max-height: 500px) {
-    .opponent-bet-display {
-      position: absolute;
-      top: 50%;
-      right: -1.25rem; /* Converted from -20px */
-      transform: translateY(-50%);
-      min-width: 1.25rem; /* Converted from 20px */
-      min-height: 1.25rem; /* Converted from 20px */
-      font-size: 0.625rem; /* Converted from 10px */
-    }
-  }
-}
-
-/* Modify the animation for bet display to avoid layout shifts */
-@keyframes popIn {
-  0% { transform: scale(0); opacity: 0; }
-  80% { transform: scale(1.2); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-/* Animation for the ticking border - not used anymore as we're using dynamic JS-based animation */
-@keyframes borderTick {
-  0% { border-color: rgba(241, 196, 15, 0.7); }
-  50% { border-color: rgba(241, 196, 15, 1); }
-  100% { border-color: rgba(241, 196, 15, 0.7); }
-}
-
-/* Winner badge styling */
-.winner-badge {
-  position: absolute;
-  top: -0.625rem; /* Converted from -10px */
-  right: -0.625rem; /* Converted from -10px */
-  background: linear-gradient(135deg, gold, #ffdd57);
-  color: #000;
-  padding: 0.25rem 0.5rem; /* Converted from 4px 8px */
-  border-radius: 0.625rem; /* Converted from 10px */
-  font-size: 0.75rem; /* Converted from 12px */
-  font-weight: bold;
-  box-shadow: 0 0.3125rem 0.625rem rgba(0, 0, 0, 0.3); /* Converted from 0 5px 10px */
-  z-index: 50;
-  border: 0.0625rem solid rgba(255, 255, 255, 0.6); /* Converted from 1px */
-  white-space: nowrap;
-  transform: scale(0);
-  animation: badgeAppear 0.5s 0.5s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-@keyframes badgeAppear {
-  0% { transform: scale(0); opacity: 0; }
-  70% { transform: scale(1.2); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-/* Current player winner badge positioning */
-.player.current-player .winner-badge {
-  top: -1rem; /* Converted from -16px */
-  right: -1rem; /* Converted from -16px */
-  padding: 0.3125rem 0.625rem; /* Converted from 5px 10px */
-  font-size: 0.875rem; /* Converted from 14px */
-}
 .sitting-out-indicator {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: rgba(0, 0, 0, 0.85);
-  color: #bdc3c7;
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  font-weight: bold;
-  z-index: 100;
-  border: 1px solid rgba(189, 195, 199, 0.3);
-  pointer-events: none;
-  font-size: 0.9rem;
+  background: rgba(0, 0, 0, 0.8);
+  font-size: 0.6rem;
+  padding: 2px 6px;
+  border-radius: 4px;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Position Data Attributes (Circular distribution) */
+.player[data-position="0"] {
+  bottom: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.player[data-position="1"] {
+  bottom: 0;
+  left: 10%;
+}
+
+.player[data-position="2"] {
+  top: 10%;
+  left: 0%;
+  transform: translateX(-50%);
+}
+
+.player[data-position="3"] {
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.player[data-position="4"] {
+  top: 10%;
+  right: 0%;
+  transform: translateX(50%);
+}
+
+.player[data-position="5"] {
+  bottom: 0;
+  right: 10%;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+  .player-avatar {
+    width: 60px;
+    height: 60px;
+  }
+
+  .player-info-container {
+    min-width: 80px;
+    padding: 4px 8px;
+  }
+
+  .player-name {
+    font-size: 0.75rem;
+  }
+
+  .chips {
+    font-size: 0.7rem;
+  }
 }

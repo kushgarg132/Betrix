@@ -110,132 +110,75 @@ const Player = memo(({
   // Don't render anything if player is null or undefined
   if (!player) return null;
 
-  // Special template for current player - more compact with optimized layout
-  if (isCurrentPlayer) {
-    return (
-      <div
-        className={`player ${blindStatus ? blindStatus : ''} 
-                   ${playerCount}-players 
-                   ${isCurrentTurn ? 'current-turn' : ''}
-                   ${isWinner ? 'winner' : ''}
-                   current-player`}
-        data-position={displayPosition}
-        style={{
-          opacity: player.hasFolded ? 0.5 : 1,
-          ...getBorderStyle()
-        }}
-      >
-        {/* Turn timer */}
-        {isCurrentTurn && actionDeadline && (
-          <span className="turn-timer">
-            {Math.max(0, Math.ceil((new Date(actionDeadline).getTime() - Date.now()) / 1000))}s
-          </span>
-        )}
-        {/* Bet display at top right for current player */}
-        {playerBet > 0 && (
-          <div className="opponent-bet-display current-player-bet">${playerBet}</div>
-        )}
-
-        <div className="current-player-content">
-          <div className="player-avatar">
-            <div className="player-name">{player.username}</div>
-          </div>
-
-          <div className="player-info-container">
-            <div className="chips">${player.chips}</div>
-          </div>
-        </div>
-
-        <div className="player-cards-container">
-          <div className="player-cards">
-            {currentHand && currentHand.length > 0 ? (
-              currentHand.map((card, idx) => {
-                // Check if this card is part of the winning hand
-                const isWinningCard = winningCardMap[`${card.rank}-${card.suit}`];
-                return (
-                  <Card
-                    key={`player-card-${idx}-${card.suit}-${card.rank}`}
-                    card={card}
-                    cardContext={isWinningCard ? "winning-player" : "player"}
-                  />
-                );
-              })
-            ) : (
-              <>
-                <Card hidden={true} cardContext="player" />
-                <Card hidden={true} cardContext="player" />
-              </>
-            )}
-          </div>
-        </div>
-
-        {isWinner && player.bestHand && (
-          <div className="winner-badge">
-            {player.bestHand.rank.replace(/_/g, ' ')}
-          </div>
-        )}
-
-        {blindStatus && (
-          <div className={`blind-indicator ${blindStatus}`}>
-            {blindStatus === 'big-blind' ? 'BB' : 'SB'}
-          </div>
-        )}
-
-        {player.isSittingOut && (
-          <div className="sitting-out-indicator">
-            Sitting Out
-          </div>
-        )}
-
-        {playerBet > 0 && (
-          <div className="bet-chips">
-            <ChipStack amount={playerBet} />
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // Regular template for other players
+  // Refactored Player Component for Premium Look
   return (
     <div
-      className={`player ${blindStatus ? blindStatus : ''} 
-                 ${playerCount}-players 
+      className={`player ${player.isSittingOut ? 'sitting-out' : ''} 
                  ${isCurrentTurn ? 'current-turn' : ''}
                  ${isWinner ? 'winner' : ''}
-                 ${isCurrentPlayer ? 'current-player' : ''}`}
+                 ${isCurrentPlayer ? 'is-user' : ''}`}
       data-position={displayPosition}
-      style={{
-        opacity: player.hasFolded ? 0.5 : 1,
-        ...getBorderStyle()
-      }}
+      style={{ opacity: player.hasFolded ? 0.4 : 1 }}
     >
-      {/* Bet display at top right */}
+      {/* Bet Display Above Player */}
       {playerBet > 0 && (
         <div className="opponent-bet-display">${playerBet}</div>
       )}
 
       <div className="player-avatar">
-        <div className="player-name">{player.username}</div>
+        {/* SVG Progress Ring */}
+        {isCurrentTurn && actionDeadline && (
+          <svg className="turn-timer-ring" viewBox="0 0 100 100">
+            <circle
+              cx="50" cy="50" r="46"
+              fill="none"
+              stroke="var(--primary)"
+              strokeWidth="4"
+              strokeDasharray="290"
+              strokeDashoffset={290 - (borderProgress * 2.9)}
+              strokeLinecap="round"
+              style={{ transition: 'stroke-dashoffset 0.1s linear', filter: 'drop-shadow(0 0 5px var(--primary-glow))' }}
+            />
+          </svg>
+        )}
+
+        {/* Placeholder for actual avatar image or initials */}
+        <div className="avatar-placeholder">
+          {player.username.charAt(0).toUpperCase()}
+        </div>
+
+        {/* Turn Timer Text Overlay */}
+        {isCurrentTurn && actionDeadline && (
+          <div className="turn-timer">
+            {Math.max(0, Math.ceil((new Date(actionDeadline).getTime() - Date.now()) / 1000))}s
+          </div>
+        )}
+
+        {/* Blind Indicator */}
+        {blindStatus && (
+          <div className={`blind-indicator ${blindStatus}`}>
+            {blindStatus === 'big-blind' ? 'B' : 'S'}
+          </div>
+        )}
+
+        {/* Sitting Out Indicator */}
+        {player.isSittingOut && (
+          <div className="sitting-out-indicator">OFF</div>
+        )}
       </div>
 
-      <div className="player-cards-container">
-        {/* Show hidden cards for opponents unless they've folded */}
-        {!player.hasFolded && (
-          <div className="opponent-cards">
-            {isWinner && player.hand && player.hand.length > 0 ? (
-              player.hand.map((card, idx) => {
-                // Check if this card is part of the winning hand
-                const isWinningCard = winningCardMap[`${card.rank}-${card.suit}`];
-                return (
-                  <Card
-                    key={`opponent-card-${idx}-${card.suit}-${card.rank}`}
-                    card={card}
-                    hidden={false}
-                    cardContext={isWinningCard ? "winning-opponent" : "opponent"}
-                  />
-                );
-              })
+      {/* Cards Display */}
+      {!player.hasFolded && (
+        <div className="player-cards-container">
+          <div className="player-cards">
+            {isCurrentPlayer || isWinner ? (
+              (isCurrentPlayer ? currentHand : player.hand).map((card, idx) => (
+                <Card
+                  key={`${player.username}-card-${idx}`}
+                  card={card}
+                  cardContext={winningCardMap[`${card.rank}-${card.suit}`] ? "winning-player" : "player"}
+                />
+              ))
             ) : (
               <>
                 <Card hidden={true} cardContext="opponent" />
@@ -243,38 +186,17 @@ const Player = memo(({
               </>
             )}
           </div>
-        )}
-      </div>
-
-      {isWinner && player.bestHand && (
-        <div className="winner-badge">
-          {player.bestHand.rank.replace(/_/g, ' ')}
         </div>
       )}
 
+      {/* Player Label Info */}
       <div className="player-info-container">
-        <div className="chips">${player.chips}</div>
-        {/* Only show text bet info on smaller screens */}
-        <div className="player-bet-small-screen">
-          {playerBet > 0 && `Bet: $${playerBet}`}
-        </div>
-
-        {blindStatus && (
-          <div className={`blind-indicator ${blindStatus}`}>
-            {blindStatus === 'big-blind' ? 'BB' : 'SB'}
-          </div>
-        )}
-
-        {playerBet > 0 && (
-          <div className="bet-chips">
-            <ChipStack amount={playerBet} />
-          </div>
-        )}
+        <div className="player-name">{player.username}</div>
+        <div className="chips">${player.chips.toLocaleString()}</div>
       </div>
     </div>
   );
 });
 
-Player.displayName = 'Player'; // For debugging in React DevTools
-
+Player.displayName = 'Player';
 export default Player; 
