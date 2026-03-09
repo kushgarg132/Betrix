@@ -262,6 +262,9 @@ public class GameScheduler {
         }
     }
 
+    // Track when time bank usage starts for specific players
+    private final Map<String, Instant> timeBankStartTimes = new ConcurrentHashMap<>();
+
     private void handlePlayerTimeOut(String gameId, String playerId) {
         // Create a unique key for this timeout
         String timeoutKey = gameId + ":" + playerId;
@@ -270,9 +273,27 @@ public class GameScheduler {
             if (game != null && game.getStatus() != Game.GameStatus.WAITING) {
                 // Double check that this player is still the current player
                 if (game.isPlayersTurn(playerId)) {
-                    // Auto-fold the player
+                    Player player = game.getPlayerById(playerId);
+
+                    if (player != null && player.getTimeBankMs() > 0 && !timeBankStartTimes.containsKey(timeoutKey)) {
+                        // Activate Time Bank
+                        logger.info("Player {} standard time expired, activating Time Bank ({} ms left)", playerId,
+                                player.getTimeBankMs());
+                        timeBankStartTimes.put(timeoutKey, Instant.now());
+
+                        // Schedule final timeout for the rest of their time bank
+                        ScheduledFuture<?> future = taskScheduler.schedule(() -> {
+                            handlePlayerTimeOut(gameId, playerId);
+                        }, Instant.now().plusMillis(player.getTimeBankMs()));
+
+                        scheduledPlayerTimeouts.put(timeoutKey, future);
+                        return; // Return early, don't fold yet
+                    }
+
+                    // Auto-fold the player (either time bank was 0, or time bank just expired)
                     gameService.fold(gameId, playerId);
-                    logger.info("Auto-folded player {} in game {} after timeout delay", playerId, gameId);
+                    logger.info("Auto-folded player {} in game {} after timeout delay (and any time bank)", playerId,
+                            gameId);
                 } else {
                     logger.debug("Skipping timeout for player {} in game {}: no longer their turn", playerId, gameId);
                 }
@@ -283,19 +304,31 @@ public class GameScheduler {
         } catch (Exception e) {
             logger.error("Error handling timeout for player {} in game {}: {}", playerId, gameId, e.getMessage(), e);
         } finally {
-            // Remove from tracking map when done
-            scheduledPlayerTimeouts.remove(timeoutKey);
+            // Remove from tracking map when done auto-folding (or if skip)
+            if (!timeBankStartTimes.containsKey(timeoutKey)) {
+                scheduledPlayerTimeouts.remove(timeoutKey);
+            }
         }
     }
 
-    public void cancelPlayerTimeout(String gameId, String playerId) {
+    public long cancelPlayerTimeout(String gameId, String playerId) {
         // Create a unique key for this timeout
         String timeoutKey = gameId + ":" + playerId;
+        long usedTimeBankMs = 0;
+
         ScheduledFuture<?> existingTask = scheduledPlayerTimeouts.remove(timeoutKey);
         if (existingTask != null && !existingTask.isDone()) {
             existingTask.cancel(false);
             logger.debug("Cancelled scheduled timeout for {}", timeoutKey);
         }
+
+        // Calculate and return used time bank if applicable
+        Instant tbStart = timeBankStartTimes.remove(timeoutKey);
+        if (tbStart != null) {
+            usedTimeBankMs = Duration.between(tbStart, Instant.now()).toMillis();
+            logger.info("Player {} used {} ms of Time Bank", playerId, usedTimeBankMs);
+        }
+        return usedTimeBankMs;
     }
 
     /**

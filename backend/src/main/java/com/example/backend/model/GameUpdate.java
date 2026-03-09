@@ -26,6 +26,7 @@ public class GameUpdate {
         ROUND_STARTED,
         COMMUNITY_CARDS,
         PLAYER_ACTION,
-        GAME_ENDED
+        GAME_ENDED,
+        CHAT_MESSAGE
     }
 }

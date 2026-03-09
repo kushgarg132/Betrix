@@ -74,6 +74,22 @@ const PokerTable = () => {
   const [isMyTurn, setIsMyTurn] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const [leftSidebarVisible, setLeftSidebarVisible] = useState(false);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [actionLogs, setActionLogs] = useState([]);
+
+  const sendChatMessage = (message) => {
+    if (stompClient?.connected && message.trim()) {
+      stompClient.publish({
+        destination: `/app/game/${gameId}/chat`,
+        body: JSON.stringify({
+          senderId: currentPlayer.id,
+          senderName: currentPlayer.username,
+          message: message.trim(),
+          timestamp: new Date().toISOString()
+        }),
+      });
+    }
+  };
 
   useEffect(() => {
     const joinGame = async () => {
@@ -96,6 +112,24 @@ const PokerTable = () => {
 
           const client = initializeSocketConnection(gameId, player.id, setUpdateActions, setError);
           setStompClient(client);
+
+          // Auto sit-in if they were sitting out (e.g., from a disconnect/refresh)
+          if (player.isSittingOut && client.connected) {
+            client.publish({
+              destination: `/app/game/${gameId}/action`,
+              body: JSON.stringify({ playerId: player.id, actionType: 'SIT_IN' }),
+            });
+          } else if (player.isSittingOut) {
+            // If client isn't connected yet, wait briefly
+            setTimeout(() => {
+              if (client.connected) {
+                client.publish({
+                  destination: `/app/game/${gameId}/action`,
+                  body: JSON.stringify({ playerId: player.id, actionType: 'SIT_IN' }),
+                });
+              }
+            }, 1000);
+          }
 
           setLoading(false);
           return () => {
@@ -152,13 +186,25 @@ const PokerTable = () => {
             break;
 
           case GAME_STATUS.PLAYER_ACTION:
+            // Extract the nested game object
+            const actGame = payload.game || payload;
             newGameState = {
-              ...payload,
-              communityCards: payload.communityCards || [],
-              players: payload.players || [],
-              pots: payload.pots || [{ amount: payload.pot || 0, eligiblePlayerIds: [] }]
+              ...actGame,
+              communityCards: actGame.communityCards || [],
+              players: actGame.players || [],
+              pots: actGame.pots || [{ amount: actGame.pot || 0, eligiblePlayerIds: [] }]
             };
+
+            // Add to action logs
+            if (payload.action && payload.player) {
+              const actionText = `${payload.player.username} ${payload.action.toLowerCase()}${payload.amount ? ` $${payload.amount}` : ''}`;
+              setActionLogs(prev => [...prev, { message: actionText, timestamp: new Date().toISOString() }].slice(-50));
+            }
             break;
+
+          case 'CHAT_MESSAGE':
+            setChatMessages(prev => [...prev, payload].slice(-100));
+            return prevGame;
 
           case GAME_STATUS.CARDS_DEALT:
             setCurrentPlayer(prevPlayer => ({
@@ -220,7 +266,7 @@ const PokerTable = () => {
       // Ensure player hasn't folded and isn't sitting out
       const player = game.players[currentPlayer.index];
       const isActive = player && !player.hasFolded && !player.isSittingOut;
-      
+
       setIsMyTurn(isTurn && isActive);
     } else {
       setIsMyTurn(false);
@@ -277,7 +323,7 @@ const PokerTable = () => {
 
   const sitOut = () => {
     if (stompClient?.connected && currentPlayer?.id) {
-       stompClient.publish({
+      stompClient.publish({
         destination: `/app/game/${gameId}/action`,
         body: JSON.stringify({ playerId: currentPlayer.id, actionType: 'SIT_OUT' }),
       });
@@ -285,8 +331,8 @@ const PokerTable = () => {
   };
 
   const sitIn = () => {
-     if (stompClient?.connected && currentPlayer?.id) {
-       stompClient.publish({
+    if (stompClient?.connected && currentPlayer?.id) {
+      stompClient.publish({
         destination: `/app/game/${gameId}/action`,
         body: JSON.stringify({ playerId: currentPlayer.id, actionType: 'SIT_IN' }),
       });
@@ -365,6 +411,9 @@ const PokerTable = () => {
         toggleSidebar={() => setSidebarVisible(!sidebarVisible)}
         game={game}
         toggleRankingsModal={() => setShowRankingsModal(!showRankingsModal)}
+        chatMessages={chatMessages}
+        actionLogs={actionLogs}
+        sendChatMessage={sendChatMessage}
       />
 
       {/* Betting controls positioned above the current player */}

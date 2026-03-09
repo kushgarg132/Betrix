@@ -111,4 +111,22 @@ public class GameWebSocketController {
             logger.error("Error starting game {}: {}", gameId, e.getMessage());
         }
     }
+
+    @Autowired
+    private org.springframework.messaging.simp.SimpMessagingTemplate messagingTemplate;
+
+    @MessageMapping("/game/{gameId}/chat")
+    public void sendChatMessage(@Header("simpDestination") String destination,
+            @RequestBody com.example.backend.model.ChatMessagePayload chatMessage) {
+        String gameId = extractGameIdFromDestination(destination);
+
+        GameUpdate update = GameUpdate.builder()
+                .gameId(gameId)
+                .type(GameUpdate.GameUpdateType.CHAT_MESSAGE)
+                .payload(chatMessage)
+                .timestamp(java.time.LocalDateTime.now())
+                .build();
+
+        messagingTemplate.convertAndSend("/topic/game/" + gameId, update);
+    }
 }

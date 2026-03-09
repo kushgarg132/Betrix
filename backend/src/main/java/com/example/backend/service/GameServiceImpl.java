@@ -150,29 +150,37 @@ public class GameServiceImpl implements GameService {
             List<Player> toKick = new ArrayList<>();
             for (Player player : game.getPlayers()) {
                 if (player.getChips() < game.getBigBlindAmount()) {
-                   toKick.add(player);
+                    toKick.add(player);
                 }
             }
-            
+
             for (Player player : toKick) {
                 logger.info("Auto kicking player {} due to insufficient funds", player.getUsername());
                 leaveGame(gameId, player.getId());
             }
 
             // Re-validate player count after kicks
-             if (game.getPlayers().size() < 2) { // You might want to check active players here, but existing logic checks total players. Sticking to total players for game existence, but maybe we need 2 active players? 
-                // Note: Existing logic throws if < 2 players. If auto-kick leaves 1 player, we should probably stop.
-                 // However, let's stick to the existing check pattern if possible, or adapt.
-                 // Actually, if we kick players, we might drop below 2.
+            if (game.getPlayers().size() < 2) { // You might want to check active players here, but existing logic
+                                                // checks total players. Sticking to total players for game existence,
+                                                // but maybe we need 2 active players?
+                // Note: Existing logic throws if < 2 players. If auto-kick leaves 1 player, we
+                // should probably stop.
+                // However, let's stick to the existing check pattern if possible, or adapt.
+                // Actually, if we kick players, we might drop below 2.
             }
-            
+
             // Check for active players (not sitting out)
             long activePlayersCount = game.getPlayers().stream().filter(p -> !p.isSittingOut()).count();
-             if (activePlayersCount < 2) {
-                logger.error("Need at least 2 active players to start a game");
-                // Instead of throwing, maybe just set status to WAITING and return? 
-                // But the caller expects a new hand. Let's throw for now as per existing logic.
-                throw new RuntimeException("Need at least 2 active players to start a game");
+            if (activePlayersCount < 2) {
+                logger.warn("Not enough active players to start a new hand. Setting game back to WAITING.");
+                game.setStatus(Game.GameStatus.WAITING);
+                gameRepository.save(game);
+
+                // Publish game update so clients know it's paused
+                // We'll publish a GameStartedEvent but with WAITING status as a fallback,
+                // or just rely on clients polling / subsequent updates.
+                // It's cleaner to just return without throwing an exception.
+                return;
             }
 
             if (game.getStatus() != Game.GameStatus.WAITING) {
@@ -187,8 +195,8 @@ public class GameServiceImpl implements GameService {
             // Deal cards to players
             for (Player player : game.getPlayers()) {
                 // Reset player state for new hand
-                 player.reset();
-                 
+                player.reset();
+
                 if (!player.isSittingOut() && player.getChips() > 0) {
                     player.setActive(true); // Ensure they are marked active if they are playing
                     player.addCard(game.getDeck().drawCard());
@@ -239,8 +247,11 @@ public class GameServiceImpl implements GameService {
             gameValidatorService.validatePlayerTurn(game, playerId);
             gameValidatorService.validatePlayerBetAmount(game, player, amount);
 
-            // Cancel any scheduled timeout for this player
-            gameScheduler.cancelPlayerTimeout(gameId, playerId);
+            // Cancel any scheduled timeout for this player and deduct time bank if used
+            long usedTimeBankMs = gameScheduler.cancelPlayerTimeout(gameId, playerId);
+            if (usedTimeBankMs > 0) {
+                player.setTimeBankMs(Math.max(0, player.getTimeBankMs() - usedTimeBankMs));
+            }
             // Perform bet logic
             bettingManager.placeBet(game, player, amount, null);
             // Start TimeOut scheduler
@@ -282,8 +293,11 @@ public class GameServiceImpl implements GameService {
             }
 
             gameValidatorService.validatePlayerTurn(game, playerId);
-            // Cancel any scheduled timeout for this player
-            gameScheduler.cancelPlayerTimeout(gameId, playerId);
+            // Cancel any scheduled timeout for this player and deduct time bank if used
+            long usedTimeBankMs = gameScheduler.cancelPlayerTimeout(gameId, playerId);
+            if (usedTimeBankMs > 0) {
+                player.setTimeBankMs(Math.max(0, player.getTimeBankMs() - usedTimeBankMs));
+            }
 
             // Perform check logic (which is a bet of 0)
             bettingManager.placeBet(game, player, 0, null);
@@ -325,8 +339,11 @@ public class GameServiceImpl implements GameService {
             }
 
             gameValidatorService.validatePlayerTurn(game, playerId);
-            // Cancel any scheduled timeout for this player
-            gameScheduler.cancelPlayerTimeout(gameId, playerId);
+            // Cancel any scheduled timeout for this player and deduct time bank if used
+            long usedTimeBankMs = gameScheduler.cancelPlayerTimeout(gameId, playerId);
+            if (usedTimeBankMs > 0) {
+                player.setTimeBankMs(Math.max(0, player.getTimeBankMs() - usedTimeBankMs));
+            }
             // Perform fold logic
             bettingManager.fold(game, player);
             // Start TimeOut scheduler

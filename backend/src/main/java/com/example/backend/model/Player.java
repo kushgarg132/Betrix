@@ -21,6 +21,7 @@ public class Player {
     private double lastWinAmount; // Amount won in the last hand
     private boolean isSittingOut;
     private HandResult bestHand; // Best hand for the player
+    private long timeBankMs; // Extra time bank in milliseconds for the player
 
     public Player(String name, String username, double initialChips) {
         this.id = UUID.randomUUID().toString();
@@ -33,6 +34,7 @@ public class Player {
         this.hasFolded = false;
         this.lastWinAmount = 0;
         this.bestHand = null;
+        this.timeBankMs = 60000; // 60 seconds time bank
     }
 
     public Player(Player player) {
@@ -47,6 +49,7 @@ public class Player {
         this.lastWinAmount = player.getLastWinAmount();
         this.bestHand = player.getBestHand();
         this.isSittingOut = player.isSittingOut();
+        this.timeBankMs = player.getTimeBankMs();
     }
 
     public void hideDetails() {
