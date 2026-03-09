@@ -119,15 +119,62 @@ const PokerTable = () => {
         if (!updateAction.type) return updateAction;
         const { type, payload } = updateAction;
 
+        console.log(`Processing game update: ${type}`, payload);
+
         switch (type) {
           case 'CHAT_MESSAGE':
             setChatMessages(prev => [...prev, payload].slice(-100));
             return prevGame;
+
           case GAME_STATUS.CARDS_DEALT:
-            setCurrentPlayer(prev => ({ ...prev, hand: payload }));
+            setCurrentPlayer(prev => {
+              if (Array.isArray(payload)) {
+                return { ...prev, hand: payload };
+              }
+              return prev;
+            });
             return prevGame;
+
+          case GAME_STATUS.COMMUNITY_CARDS:
+            return {
+              ...prevGame,
+              communityCards: Array.isArray(payload) ? payload : (prevGame?.communityCards || [])
+            };
+
+          case GAME_STATUS.PLAYER_JOINED:
+            return {
+              ...prevGame,
+              players: [...(prevGame?.players || []), payload]
+            };
+
+          case GAME_STATUS.PLAYER_ACTION:
+            // Extract the nested game object
+            const actGame = payload.game || payload;
+            return {
+              ...actGame,
+              communityCards: actGame.communityCards || [],
+              players: actGame.players || []
+            };
+
+          case GAME_STATUS.GAME_STARTED:
+          case GAME_STATUS.ROUND_STARTED:
+            return {
+              ...payload,
+              communityCards: payload.communityCards || [],
+              players: payload.players || []
+            };
+
+          case GAME_STATUS.GAME_ENDED:
+            const endGameState = payload.game || payload;
+            return {
+              ...endGameState,
+              winners: payload.winners || [],
+              bestHand: payload.bestHand || null,
+              status: 'ENDED'
+            };
+
           default:
-            return payload.game || payload;
+            return payload.game || payload || prevGame;
         }
       });
       setUpdateActions(null);

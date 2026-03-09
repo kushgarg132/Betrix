@@ -17,9 +17,9 @@ const Table = memo(({ isMyTurn, game, communityCards }) => {
   const hasWinner = game.winners && game.winners.length > 0 && game.winners[0].bestHand;
 
   // Calculate Call Amount for the current player
-  const currentUsername = game.players[game.currentPlayerIndex]?.username;
-  const currentPlayerBet = game.currentBettingRound?.playerBets[currentUsername] || 0;
-  const callAmount = Math.max(0, game.currentBet - currentPlayerBet);
+  const currentUsername = game.players?.[game.currentPlayerIndex]?.username;
+  const currentPlayerBet = game.currentBettingRound?.playerBets?.[currentUsername] || 0;
+  const callAmount = Math.max(0, (game.currentBet || 0) - currentPlayerBet);
 
   return (
     <div className={`table-felt ${isMyTurn ? 'my-turn' : ''}`}>

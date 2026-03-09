@@ -18,13 +18,17 @@ const Player = memo(({
   // Calculate visual progress for turn ring
   const borderProgress = useMemo(() => {
     if (!isCurrentTurn || !actionDeadline) return 0;
-    const now = Date.now();
-    const deadline = new Date(actionDeadline).getTime();
-    const totalTime = 12 * 1000; // 12s standard
-    return Math.max(0, Math.min(100, ((deadline - now) / totalTime) * 100));
+    try {
+      const now = Date.now();
+      const deadline = new Date(actionDeadline).getTime();
+      const totalTime = 12 * 1000; // 12s standard
+      return Math.max(0, Math.min(100, ((deadline - now) / totalTime) * 100));
+    } catch (e) {
+      return 0;
+    }
   }, [isCurrentTurn, actionDeadline]);
 
-  const isWinner = game.winners?.some(w => w.username === player.username);
+  const isWinner = game?.winners?.some(w => w.username === player.username) || false;
 
   return (
     <div
