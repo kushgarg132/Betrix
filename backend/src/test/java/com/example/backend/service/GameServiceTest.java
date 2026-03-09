@@ -161,13 +161,11 @@ public class GameServiceTest {
 
         when(gameValidatorService.validateGameExists(gameId)).thenReturn(game);
 
-        // We need 2 ACTIVE players for start a game usually?
-        // Logic: if (activePlayersCount < 2) throw...
-        // Here only P1 is active. So it should THROW exception.
-
-        assertThrows(RuntimeException.class, () -> {
-            gameService.startNewHand(gameId);
-        });
+        // Logic: if (activePlayersCount < 2) set status to WAITING
+        // Here only P1 is active. So it should not start but stay/become WAITING.
+        gameService.startNewHand(gameId);
+        assertEquals(Game.GameStatus.WAITING, game.getStatus());
+        verify(gameRepository, atLeastOnce()).save(game);
 
         // Now lets add P3 active
         Player p3 = new Player("P3", "p3", 1000);
