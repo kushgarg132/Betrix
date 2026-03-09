@@ -5,10 +5,10 @@
   width: 3.5rem;
   aspect-ratio: 2.5/3.5;
   position: relative;
-  border-radius: 4px;
+  border-radius: 5px;
   overflow: hidden;
   transition: transform 0.2s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 .card-inner {
@@ -34,19 +34,22 @@
 
 /* Context Sizes */
 .card-player {
-  width: 3rem;
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  width: 2.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: white;
+  border-radius: 4px;
 }
 
 .card-opponent {
-  width: 2.5rem;
+  width: 2.4rem;
   border: 1px solid #334155;
 }
 
 .card-community {
-  width: 4rem;
-  border: 2px solid rgba(255, 255, 255, 0.8);
+  width: 3.8rem;
+  border: 2px solid rgba(255, 255, 255, 0.7);
   background: white;
+  border-radius: 5px;
 }
 
 .card-community .card-img {
@@ -58,8 +61,9 @@
 /* Hover */
 .card-player:hover,
 .card-community:hover {
-  transform: translateY(-4px);
+  transform: translateY(-3px);
   z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
 /* Winning Card */
@@ -69,44 +73,10 @@
   box-shadow: 0 0 12px rgba(212, 168, 67, 0.5);
 }
 
-/* Placeholder (empty card slot) */
-.card-placeholder {
-  width: 4rem;
-  aspect-ratio: 2.5/3.5;
-  border: 1px dashed rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
-}
-
-/* Winner overlay */
-.winning-hand-display {
-  position: absolute;
-  bottom: 8%;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--bg-panel);
-  padding: 6px 16px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--gold);
-  font-size: 0.8rem;
-  z-index: 30;
-  white-space: nowrap;
-}
-
-.winner-name {
-  color: var(--gold);
-  font-weight: 700;
-  margin-right: 8px;
-}
-
-.hand-rank {
-  color: var(--text-white);
-  text-transform: capitalize;
-}
-
 /* Responsive */
 @media (max-width: 768px) {
   .card-player {
-    width: 2.5rem;
+    width: 2.2rem;
   }
 
   .card-opponent {
@@ -114,10 +84,6 @@
   }
 
   .card-community {
-    width: 3rem;
-  }
-
-  .card-placeholder {
     width: 3rem;
   }
 }

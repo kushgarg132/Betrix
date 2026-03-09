@@ -1,177 +1,198 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import './GameInfoPanel.css';
 
 const GameInfoPanel = ({
-  sidebarVisible,
-  toggleSidebar,
   game,
   toggleRankingsModal,
   chatMessages = [],
   actionLogs = [],
   sendChatMessage
 }) => {
-  const [showPotDetails, setShowPotDetails] = useState(false);
-  const [activeTab, setActiveTab] = useState('chat');
+  const [activeTab, setActiveTab] = useState('rankings');
   const [chatInput, setChatInput] = useState('');
 
-  // Handle toggle click with explicit state management
-  const handleToggleClick = (e) => {
-    e.stopPropagation(); // Prevent event bubbling
-    toggleSidebar();
-  };
+  // Generate leaderboard from players sorted by chips
+  const leaderboard = useMemo(() => {
+    if (!game?.players) return [];
+    return [...game.players]
+      .filter(p => p)
+      .sort((a, b) => (b.chips || 0) - (a.chips || 0))
+      .map((player, idx) => ({
+        rank: idx + 1,
+        username: player.username,
+        chips: player.chips || 0,
+        initials: (() => {
+          const name = player.username || '';
+          const parts = name.split(/[\s._-]+/);
+          return parts.length >= 2
+            ? (parts[0][0] + parts[1][0]).toUpperCase()
+            : name.substring(0, 2).toUpperCase();
+        })()
+      }));
+  }, [game?.players]);
 
-  // Format player names for display
-  const getEligiblePlayerNames = (eligiblePlayerIds) => {
-    if (!game.players || !Array.isArray(game.players) || !eligiblePlayerIds) return 'All players';
-
-    const eligiblePlayers = game.players
-      .filter(player => eligiblePlayerIds.includes(player.id))
-      .map(player => player.username);
-
-    return eligiblePlayers.length > 0 ? eligiblePlayers.join(', ') : 'All players';
+  const handleSendChat = () => {
+    if (chatInput.trim() && sendChatMessage) {
+      sendChatMessage(chatInput);
+      setChatInput('');
+    }
   };
 
   return (
-    <div
-      className={`game-info-sidebar ${sidebarVisible ? 'expanded' : 'collapsed'}`}
-      data-testid="game-info-sidebar"
-    >
-      {/* Arrow-shaped toggle button */}
-      <button
-        className={`sidebar-toggle ${sidebarVisible ? 'expanded' : 'collapsed'}`}
-        onClick={handleToggleClick}
-        aria-label={sidebarVisible ? "Hide game info" : "Show game info"}
-      >
-        <div className="toggle-icon">
-          {/* Icon is hidden, arrow shape is created with CSS */}
-        </div>
-      </button>
+    <div className="right-sidebar">
+      {/* Tab Bar */}
+      <div className="tab-bar">
+        <button
+          className={`tab-btn ${activeTab === 'rankings' ? 'active' : ''}`}
+          onClick={() => setActiveTab('rankings')}
+        >
+          <span className="tab-icon">🏆</span> Rankings
+        </button>
+        <button
+          className={`tab-btn ${activeTab === 'chat' ? 'active' : ''}`}
+          onClick={() => setActiveTab('chat')}
+        >
+          <span className="tab-icon">💬</span> Chat
+        </button>
+        <button
+          className={`tab-btn ${activeTab === 'info' ? 'active' : ''}`}
+          onClick={() => setActiveTab('info')}
+        >
+          <span className="tab-icon">ℹ️</span> Info
+        </button>
+      </div>
 
-      <div className="info-content">
-        <h3>Game Information</h3>
-
-        <table className="info-table">
-          <tbody>
-            <tr>
-              <td className="info-label">Pot:</td>
-              <td className="info-value pot-value" onClick={() => setShowPotDetails(!showPotDetails)}>
-                ${game.pot || 0}
-                {game.pots && game.pots.length > 1 && (
-                  <span className="pot-details-indicator">{showPotDetails ? '▼' : '▶'}</span>
-                )}
-              </td>
-              <td className="info-label">Big Blind:</td>
-              <td className="info-value">{game.bigBlindAmount || 'N/A'}</td>
-            </tr>
-
-            {/* Show pot details when expanded */}
-            {showPotDetails && game.pots && game.pots.length > 1 && (
-              <tr className="pot-details-row">
-                <td colSpan="4" className="pot-details-cell">
-                  <div className="pot-details">
-                    <div className="pot-detail">
-                      <span className="pot-name">Main Pot:</span>
-                      <span className="pot-amount">${game.pots[0].amount}</span>
-                    </div>
-                    {game.pots.slice(1).map((sidePot, index) => (
-                      <div key={`side-pot-${index}`} className="pot-detail">
-                        <span className="pot-name">Side Pot {index + 1}:</span>
-                        <span className="pot-amount">${sidePot.amount}</span>
-                        <div className="pot-eligible">
-                          <span className="eligible-label">Eligible:</span>
-                          <span className="eligible-players">{getEligiblePlayerNames(sidePot.eligiblePlayerIds)}</span>
-                        </div>
-                      </div>
-                    ))}
+      {/* Tab Content */}
+      <div className="tab-content">
+        {/* Rankings Tab */}
+        {activeTab === 'rankings' && (
+          <div className="rankings-tab">
+            <h4 className="section-title">
+              <span className="title-icon">🏆</span> LEADERBOARD
+            </h4>
+            <div className="leaderboard-list">
+              {leaderboard.map((entry) => (
+                <div key={entry.username} className={`leaderboard-row ${entry.rank <= 3 ? 'top-three' : ''}`}>
+                  <div className={`rank-badge rank-${entry.rank <= 3 ? entry.rank : 'default'}`}>
+                    {entry.rank}
                   </div>
-                </td>
-              </tr>
-            )}
-
-            <tr>
-              <td className="info-label">Current Bet:</td>
-              <td className="info-value">${game.currentBet || 0}</td>
-              <td className="info-label">Small Blind:</td>
-              <td className="info-value">{game.smallBlindAmount || 'N/A'}</td>
-            </tr>
-            <tr>
-              <td className="info-label">Phase:</td>
-              <td className="info-value">{game.status ? game.status.replace(/_/g, ' ') : 'Pre-Flop'}</td>
-              <td className="info-label">Dealer:</td>
-              <td className="info-value">{game.dealerPosition !== undefined ? game.dealerPosition + 1 : 'N/A'}</td>
-            </tr>
-            <tr>
-              <td className="info-label">Current Player:</td>
-              <td className="info-value">{game.players && game.currentPlayerIndex !== undefined ? game.players[game.currentPlayerIndex]?.username || 'N/A' : 'N/A'}</td>
-              <td className="info-label">Players:</td>
-              <td className="info-value">{game.players ? game.players.length : 0}</td>
-            </tr>
-          </tbody>
-        </table>
-
-
-        {/* Action Buttons */}
-        <div className="button-row">
-          <button className="game-button rankings-btn" onClick={toggleRankingsModal}>
-            <span className="button-icon">♠</span>
-            <span>Rankings</span>
-          </button>
-        </div>
-
-        {/* Tabs for Chat and Logs */}
-        <div className="panel-tabs" style={{ display: 'flex', marginTop: '1rem', borderBottom: '1px solid #444' }}>
-          <button
-            style={{ flex: 1, padding: '8px', background: activeTab === 'chat' ? '#333' : 'transparent', color: 'white', border: 'none', cursor: 'pointer' }}
-            onClick={() => setActiveTab('chat')}>Chat</button>
-          <button
-            style={{ flex: 1, padding: '8px', background: activeTab === 'logs' ? '#333' : 'transparent', color: 'white', border: 'none', cursor: 'pointer' }}
-            onClick={() => setActiveTab('logs')}>Action Log</button>
-        </div>
-
-        <div className="panel-tab-content" style={{ display: 'flex', flexDirection: 'column', height: '250px', marginTop: '0.5rem' }}>
-          {activeTab === 'chat' && (
-            <div className="chat-container" style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
-              <div className="chat-messages" style={{ flex: 1, overflowY: 'auto', marginBottom: '0.5rem', fontSize: '0.85rem' }}>
-                {chatMessages?.map((msg, i) => (
-                  <div key={i} className="chat-message" style={{ marginBottom: '4px', wordBreak: 'break-word' }}>
-                    <strong style={{ color: '#64b5f6' }}>{msg.senderName}:</strong> {msg.message}
+                  <div className="lb-player-info">
+                    <span className="lb-name">{entry.username}</span>
+                    <span className="lb-chips">$ {entry.chips.toLocaleString()}</span>
                   </div>
-                ))}
-              </div>
-              <div className="chat-input-row" style={{ display: 'flex', gap: '5px' }}>
-                <input
-                  type="text"
-                  style={{ flex: 1, padding: '6px', borderRadius: '4px', border: '1px solid #555', background: '#222', color: 'white' }}
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter' && chatInput.trim()) { sendChatMessage(chatInput); setChatInput(''); } }}
-                  placeholder="Type message..."
-                />
-                <button
-                  style={{ padding: '6px 12px', background: '#4caf50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                  onClick={() => { if (chatInput.trim()) { sendChatMessage(chatInput); setChatInput(''); } }}>
-                  Send
-                </button>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'logs' && (
-            <div className="logs-container" style={{ flex: 1, overflowY: 'auto', fontSize: '0.85rem' }}>
-              {actionLogs?.map((log, i) => (
-                <div key={i} className="log-entry" style={{ marginBottom: '4px', opacity: 0.8 }}>
-                  <span className="log-time" style={{ color: '#aaa', marginRight: '6px', fontSize: '0.75rem' }}>
-                    {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                  </span>
-                  <span className="log-message">{log.message}</span>
+                  <div className="lb-card-icon">🃏</div>
                 </div>
               ))}
             </div>
-          )}
-        </div>
+
+            {/* Session Stats */}
+            <div className="session-section">
+              <h4 className="session-title">YOUR SESSION</h4>
+              <div className="session-stats">
+                <div className="stat-row">
+                  <span className="stat-label">Hands Played</span>
+                  <span className="stat-value">{game?.handsPlayed || 0}</span>
+                </div>
+                <div className="stat-row">
+                  <span className="stat-label">Hands Won</span>
+                  <span className="stat-value">{game?.handsWon || 0}</span>
+                </div>
+                <div className="stat-row">
+                  <span className="stat-label">Win Rate</span>
+                  <span className="stat-value">
+                    {game?.handsPlayed > 0
+                      ? ((game?.handsWon / game?.handsPlayed) * 100).toFixed(1) + '%'
+                      : '0%'}
+                  </span>
+                </div>
+                <div className="stat-row">
+                  <span className="stat-value profit">{game?.netProfit >= 0 ? '+' : ''}${game?.netProfit?.toLocaleString() || 0}</span>
+                  <span className="stat-label">Net Profit</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Chat Tab */}
+        {activeTab === 'chat' && (
+          <div className="chat-tab">
+            <div className="chat-messages">
+              {chatMessages.length === 0 && (
+                <div className="chat-empty">No messages yet. Start the conversation!</div>
+              )}
+              {chatMessages.map((msg, i) => (
+                <div key={i} className="chat-message">
+                  <strong className="chat-sender">{msg.senderName}:</strong>
+                  <span className="chat-text">{msg.message}</span>
+                </div>
+              ))}
+            </div>
+            <div className="chat-input-row">
+              <input
+                type="text"
+                className="chat-input"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleSendChat(); }}
+                placeholder="Type message..."
+              />
+              <button className="chat-send-btn" onClick={handleSendChat}>Send</button>
+            </div>
+          </div>
+        )}
+
+        {/* Info Tab */}
+        {activeTab === 'info' && (
+          <div className="info-tab">
+            <h4 className="section-title">GAME INFO</h4>
+            <div className="info-grid">
+              <div className="info-row">
+                <span className="info-label">Pot</span>
+                <span className="info-value gold">${game?.pot || 0}</span>
+              </div>
+              <div className="info-row">
+                <span className="info-label">Current Bet</span>
+                <span className="info-value">${game?.currentBet || 0}</span>
+              </div>
+              <div className="info-row">
+                <span className="info-label">Big Blind</span>
+                <span className="info-value">{game?.bigBlindAmount || 'N/A'}</span>
+              </div>
+              <div className="info-row">
+                <span className="info-label">Small Blind</span>
+                <span className="info-value">{game?.smallBlindAmount || 'N/A'}</span>
+              </div>
+              <div className="info-row">
+                <span className="info-label">Phase</span>
+                <span className="info-value">{game?.status ? game.status.replace(/_/g, ' ') : 'Pre-Flop'}</span>
+              </div>
+              <div className="info-row">
+                <span className="info-label">Dealer</span>
+                <span className="info-value">{game?.dealerPosition !== undefined ? game.dealerPosition + 1 : 'N/A'}</span>
+              </div>
+              <div className="info-row">
+                <span className="info-label">Current Player</span>
+                <span className="info-value">
+                  {game?.players && game.currentPlayerIndex !== undefined
+                    ? game.players[game.currentPlayerIndex]?.username || 'N/A'
+                    : 'N/A'}
+                </span>
+              </div>
+              <div className="info-row">
+                <span className="info-label">Players</span>
+                <span className="info-value">{game?.players ? game.players.length : 0}</span>
+              </div>
+            </div>
+
+            <button className="rankings-view-btn" onClick={toggleRankingsModal}>
+              ♠ Hand Rankings
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-export default GameInfoPanel; 
+export default GameInfoPanel;

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
@@ -11,6 +11,8 @@ import Player from '../components/Player';
 import Table from '../components/Table';
 import BettingControls from '../components/BettingControls';
 import RankingsModal from '../components/RankingsModal';
+import LeftSidebar from '../components/LeftSidebar';
+import GameInfoPanel from '../components/GameInfoPanel';
 
 const initializeSocketConnection = (gameId, playerId, setUpdateActions, setError) => {
   const socket = new SockJS(API_CONFIG.WS_URL);
@@ -63,6 +65,9 @@ const PokerTable = () => {
   const [currentPlayer, setCurrentPlayer] = useState({ id: null, username: null, hand: [], index: null });
   const [showRankingsModal, setShowRankingsModal] = useState(false);
   const [isMyTurn, setIsMyTurn] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [actionLogs, setActionLogs] = useState([]);
 
   useEffect(() => {
     const joinGame = async () => {
@@ -172,6 +177,39 @@ const PokerTable = () => {
     });
   };
 
+  const leaveTable = useCallback(() => {
+    if (stompClient && stompClient.connected) {
+      stompClient.publish({
+        destination: `/app/game/${gameId}/leave`,
+        body: JSON.stringify({ playerId: currentPlayer.id }),
+      });
+    }
+    window.location.href = '/lobby';
+  }, [stompClient, gameId, currentPlayer.id]);
+
+  const sitOut = useCallback(() => {
+    stompClient?.publish({
+      destination: `/app/game/${gameId}/sitout`,
+      body: JSON.stringify({ playerId: currentPlayer.id }),
+    });
+  }, [stompClient, gameId, currentPlayer.id]);
+
+  const sitIn = useCallback(() => {
+    stompClient?.publish({
+      destination: `/app/game/${gameId}/sitin`,
+      body: JSON.stringify({ playerId: currentPlayer.id }),
+    });
+  }, [stompClient, gameId, currentPlayer.id]);
+
+  const sendChatMessage = useCallback((message) => {
+    if (stompClient && stompClient.connected) {
+      stompClient.publish({
+        destination: `/app/game/${gameId}/chat`,
+        body: JSON.stringify({ senderName: currentPlayer.username, message }),
+      });
+    }
+  }, [stompClient, gameId, currentPlayer.username]);
+
   const getDisplayPosition = (actualIndex) => {
     if (!game || currentPlayer.index === null) return 0;
     const playerCount = game.players.length;
@@ -190,8 +228,21 @@ const PokerTable = () => {
   if (!game?.players) return <div>Invalid game data.</div>;
 
   return (
-    <div className="poker-table-container">
-      <div className="poker-table-main">
+    <div className="poker-table-page">
+      {/* Left Sidebar — Game Menu */}
+      <LeftSidebar
+        leaveTable={leaveTable}
+        sitOut={sitOut}
+        sitIn={sitIn}
+        isSittingOut={currentPlayer.isSittingOut}
+        soundEnabled={soundEnabled}
+        setSoundEnabled={setSoundEnabled}
+        gameId={gameId}
+        game={game}
+      />
+
+      {/* Center — Table */}
+      <div className="poker-table-center">
         <Table
           isMyTurn={isMyTurn}
           game={game}
@@ -217,20 +268,29 @@ const PokerTable = () => {
             );
           })}
         </div>
+
+        {isMyTurn && (
+          <div className="current-player-controls">
+            <BettingControls
+              isMyTurn={isMyTurn}
+              game={game}
+              currentPlayer={currentPlayer}
+              placeBet={placeBet}
+              check={check}
+              fold={fold}
+            />
+          </div>
+        )}
       </div>
 
-      {isMyTurn && (
-        <div className="current-player-controls">
-          <BettingControls
-            isMyTurn={isMyTurn}
-            game={game}
-            currentPlayer={currentPlayer}
-            placeBet={placeBet}
-            check={check}
-            fold={fold}
-          />
-        </div>
-      )}
+      {/* Right Sidebar — Info Panel */}
+      <GameInfoPanel
+        game={game}
+        toggleRankingsModal={() => setShowRankingsModal(!showRankingsModal)}
+        chatMessages={chatMessages}
+        actionLogs={actionLogs}
+        sendChatMessage={sendChatMessage}
+      />
 
       <RankingsModal
         showRankingsModal={showRankingsModal}
