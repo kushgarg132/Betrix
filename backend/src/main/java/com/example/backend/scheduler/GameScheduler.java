@@ -1,6 +1,7 @@
 package com.example.backend.scheduler;
 
 import com.example.backend.entity.Game;
+import com.example.backend.model.Player;
 import com.example.backend.repository.GameRepository;
 import com.example.backend.service.GameService;
 import lombok.RequiredArgsConstructor;

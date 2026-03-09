@@ -24,11 +24,11 @@ import java.util.UUID;
 @Document(collection = "games")
 public class Game {
     private int MAX_PLAYERS = 6;
-    
+
     // Default timeout values
     public static final int DEFAULT_PLAYER_ACTION_TIMEOUT_SECONDS = 30;
     public static final int DEFAULT_GAME_IDLE_TIMEOUT_MINUTES = 10;
-    
+
     @Id
     private String id;
     private List<Player> players;
@@ -42,14 +42,14 @@ public class Game {
     private int currentPlayerIndex;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    
+
     // Timeout tracking fields
     private Instant currentPlayerActionDeadline;
     private LocalDateTime lastActivityTime;
     private int playerActionTimeoutSeconds = DEFAULT_PLAYER_ACTION_TIMEOUT_SECONDS;
     private int gameIdleTimeoutMinutes = DEFAULT_GAME_IDLE_TIMEOUT_MINUTES;
     private boolean autoStart = true;
-    
+
     // Additional fields required by BettingManager
     private String smallBlindUserId;
     private String bigBlindUserId;
@@ -57,15 +57,15 @@ public class Game {
     private double bigBlindAmount;
     private double currentBet;
     private Map<String, PlayerAction> lastActions;
-    
+
     public enum GameStatus {
-        WAITING, STARTING, PRE_FLOP_BETTING, FLOP_BETTING, TURN_BETTING, RIVER_BETTING, SHOWDOWN , FINISHED
+        WAITING, STARTING, PRE_FLOP_BETTING, FLOP_BETTING, TURN_BETTING, RIVER_BETTING, SHOWDOWN, FINISHED
     }
-    
+
     public enum PlayerAction {
         NONE, FOLD, CHECK, SMALL_BLIND, BIG_BLIND, CALL, RAISE, ALL_IN, AUTO_FOLD
     }
-    
+
     public Game(int smallBlindAmount, int bigBlindAmount) {
         this.id = UUID.randomUUID().toString();
         this.players = new ArrayList<>();
@@ -90,9 +90,12 @@ public class Game {
     public Game(Game game) {
         this.id = game.getId() != null ? game.getId() : UUID.randomUUID().toString();
         this.players = new ArrayList<>();
-        game.getPlayers().forEach(p -> {this.players.add(new Player(p));});
+        game.getPlayers().forEach(p -> {
+            this.players.add(new Player(p));
+        });
         this.deck = new Deck();
-        this.communityCards = game.getCommunityCards() != null ? new ArrayList<>(game.getCommunityCards()) : new ArrayList<>();
+        this.communityCards = game.getCommunityCards() != null ? new ArrayList<>(game.getCommunityCards())
+                : new ArrayList<>();
         this.pot = game.getPot();
         this.pots = game.getPots() != null ? new ArrayList<>(game.getPots()) : new ArrayList<>();
         if (this.pots.isEmpty()) {
@@ -112,7 +115,8 @@ public class Game {
         this.smallBlindUserId = game.getSmallBlindUserId();
         this.bigBlindUserId = game.getBigBlindUserId();
         this.currentPlayerActionDeadline = game.getCurrentPlayerActionDeadline();
-        this.lastActivityTime = game.getLastActivityTime() != null ? game.getLastActivityTime() : LocalDateTime.now(ZoneOffset.UTC);
+        this.lastActivityTime = game.getLastActivityTime() != null ? game.getLastActivityTime()
+                : LocalDateTime.now(ZoneOffset.UTC);
         this.playerActionTimeoutSeconds = game.getPlayerActionTimeoutSeconds();
         this.gameIdleTimeoutMinutes = game.getGameIdleTimeoutMinutes();
         this.autoStart = game.isAutoStart();
@@ -123,34 +127,34 @@ public class Game {
         if (amount <= 0) {
             return; // Ignore zero or negative amounts
         }
-        
+
         this.pot += amount;
-        
+
         // Add to the main pot by default
         if (!pots.isEmpty()) {
             pots.get(0).addAmount(amount);
-            
+
             // Make sure all active players are eligible for the main pot
             players.stream()
-                .filter(p -> p.isActive() && !p.isHasFolded())
-                .forEach(p -> pots.get(0).addEligiblePlayer(p.getId()));
+                    .filter(p -> p.isActive() && !p.isHasFolded())
+                    .forEach(p -> pots.get(0).addEligiblePlayer(p.getId()));
         } else {
             Pot mainPot = new Pot(amount);
             // Add all active players to the main pot
             players.stream()
-                .filter(p -> p.isActive() && !p.isHasFolded())
-                .forEach(p -> mainPot.addEligiblePlayer(p.getId()));
+                    .filter(p -> p.isActive() && !p.isHasFolded())
+                    .forEach(p -> mainPot.addEligiblePlayer(p.getId()));
             pots.add(mainPot);
         }
     }
-    
+
     // Create a side pot when a player goes all-in
     public void createSidePot(double amount, List<Player> eligiblePlayers) {
         Pot sidePot = new Pot(amount);
         eligiblePlayers.forEach(p -> sidePot.addEligiblePlayer(p.getId()));
         pots.add(sidePot);
     }
-    
+
     // Get the main pot
     public Pot getMainPot() {
         if (pots.isEmpty()) {
@@ -160,7 +164,7 @@ public class Game {
         }
         return pots.get(0);
     }
-    
+
     // Get all side pots
     public List<Pot> getSidePots() {
         if (pots.size() <= 1) {
@@ -175,11 +179,11 @@ public class Game {
         }
         return players.get(currentPlayerIndex).getId().equals(playerId);
     }
-    
+
     public boolean isGameFull() {
         return players.size() >= MAX_PLAYERS;
     }
-    
+
     public boolean hasPlayer(String username) {
         return players.stream().anyMatch(p -> p.getUsername().equals(username));
     }
@@ -187,37 +191,39 @@ public class Game {
     public Player getPlayerByUsername(String username) {
         return players.stream().filter(p -> p.getUsername().equals(username)).findFirst().orElse(null);
     }
-    
+
+    public Player getPlayerById(String playerId) {
+        return players.stream().filter(p -> p.getId().equals(playerId)).findFirst().orElse(null);
+    }
+
     public void moveToNextPlayer() {
         int itr = 0;
         do {
             currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
-        } while (++itr < players.size() && (
-                !players.get(currentPlayerIndex).isActive() ||
-                 players.get(currentPlayerIndex).isHasFolded() ||
-                 players.get(currentPlayerIndex).isAllIn())
-        );
+        } while (++itr < players.size() && (!players.get(currentPlayerIndex).isActive() ||
+                players.get(currentPlayerIndex).isHasFolded() ||
+                players.get(currentPlayerIndex).isAllIn()));
 
         // Just update the last activity time, but don't set the deadline
         // as we'll do that separately when needed
         updateCurrentPlayerActionDeadline();
         updateLastActivityTime();
     }
-    
+
     /**
      * Updates the current player's action deadline
      */
     public void updateCurrentPlayerActionDeadline() {
         this.currentPlayerActionDeadline = Instant.now().plusSeconds(playerActionTimeoutSeconds);
     }
-    
+
     /**
      * Updates the last activity timestamp
      */
     public void updateLastActivityTime() {
         this.lastActivityTime = LocalDateTime.now(ZoneOffset.UTC);
     }
-    
+
     /**
      * Checks if the current player's action timeout has expired
      */
@@ -227,9 +233,10 @@ public class Game {
         }
         return Instant.now().isAfter(this.currentPlayerActionDeadline);
     }
-    
+
     /**
      * Checks if the current player is in the warning period before timeout
+     * 
      * @param warningSeconds seconds before timeout when warning should appear
      * @return true if the player is in warning period
      */
@@ -240,7 +247,7 @@ public class Game {
         Instant warningThreshold = this.currentPlayerActionDeadline.minusSeconds(warningSeconds);
         return Instant.now().isAfter(warningThreshold) && !isCurrentPlayerActionTimedOut();
     }
-    
+
     /**
      * Checks if the game has been idle for too long
      */
@@ -250,16 +257,16 @@ public class Game {
         }
         return LocalDateTime.now(ZoneOffset.UTC).isAfter(this.lastActivityTime.plusMinutes(gameIdleTimeoutMinutes));
     }
-    
+
     /**
      * Checks if game can auto-start when enough players join
      */
     public boolean canAutoStart() {
-        return this.autoStart && 
-               this.status == GameStatus.WAITING && 
-               this.players.size() >= 2;
+        return this.autoStart &&
+                this.status == GameStatus.WAITING &&
+                this.players.size() >= 2;
     }
-    
+
     public void resetForNewHand() {
         deck = new Deck();
         communityCards.clear();
@@ -272,42 +279,42 @@ public class Game {
         players.forEach(Player::reset);
         // Rotate dealer position
         dealerPosition = (dealerPosition + 1) % players.size();
-        
+
         // Set small and big blind positions
         int smallBlindPosition = (dealerPosition + 1) % players.size();
         int bigBlindPosition = (dealerPosition + 2) % players.size();
-        
+
         smallBlindUserId = players.get(smallBlindPosition).getUsername();
         bigBlindUserId = players.get(bigBlindPosition).getUsername();
-        
+
         currentPlayerIndex = (dealerPosition + 1) % players.size();
-        
+
         updateLastActivityTime();
         updatedAt = LocalDateTime.now(ZoneOffset.UTC);
     }
-    
+
     public void setupNextRound() {
         currentBettingRound = new BettingRound();
         currentBet = 0;
-        
+
         // Reset player actions for the new round
         for (Player player : players) {
             if (player.isActive()) {
                 lastActions.put(player.getUsername(), PlayerAction.NONE);
             }
         }
-        
+
         // Set first player to act (after dealer in post-flop rounds)
         int firstToActIdx = (dealerPosition + 1) % players.size();
-        int idx=0;
+        int idx = 0;
         while (idx < players.size() && (!players.get(firstToActIdx).isActive() ||
-               players.get(firstToActIdx).isHasFolded() || 
-               players.get(firstToActIdx).isAllIn())) {
+                players.get(firstToActIdx).isHasFolded() ||
+                players.get(firstToActIdx).isAllIn())) {
             firstToActIdx = (firstToActIdx + 1) % players.size();
             idx++;
         }
         currentPlayerIndex = firstToActIdx;
-        
+
         // Set timeout for next player action
         updateCurrentPlayerActionDeadline();
         updateLastActivityTime();
