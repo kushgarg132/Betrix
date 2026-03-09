@@ -1,4 +1,4 @@
-/* Player.css - Pixel Perfect Mockup Refinement */
+/* Player.css — Classic Casino */
 
 .player {
   position: absolute;
@@ -9,188 +9,151 @@
   transition: var(--transition);
 }
 
-/* Integrated Avatar-Label Look */
-.player-container {
+/* Dark Panel */
+.player-panel {
+  background: var(--bg-panel);
+  border-radius: var(--radius-lg);
+  padding: 12px 16px;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  position: relative;
+  gap: 10px;
+  min-width: 160px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
 }
 
+/* Circular Initials Avatar */
 .player-avatar {
-  width: 90px;
-  height: 90px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #1e293b, #0a0e17);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  position: relative;
-  z-index: 2;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  margin-bottom: -15px;
-  /* Pull the label up to overlap */
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: var(--bg-darker);
+  flex-shrink: 0;
 }
 
-/* Sharp Gold Inner Border for Active Turn */
-.current-turn .player-avatar {
-  border: 2px solid var(--gold);
-  box-shadow:
-    0 0 20px rgba(245, 158, 11, 0.4),
-    inset 0 0 10px rgba(245, 158, 11, 0.2);
-  transform: scale(1.05);
+.avatar-default {
+  background: #6b7280;
 }
 
-.avatar-placeholder {
-  width: 100%;
-  height: 100%;
-  background-size: cover;
-  background-position: center;
+.avatar-active {
+  background: var(--gold);
 }
 
-/* Integrated Label Panel */
-.player-info-container {
-  background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  padding: 18px 24px 8px;
-  /* Padding top accommodates the avatar overlap */
-  border-radius: 12px;
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-  text-align: center;
-  min-width: 130px;
-  z-index: 1;
+.avatar-dealer {
+  background: var(--gold);
+}
+
+/* Player Info */
+.player-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .player-name {
-  font-family: 'Poppins', sans-serif;
+  font-size: 0.8rem;
   font-weight: 700;
-  font-size: 0.85rem;
-  color: #38bdf8;
-  /* Blue name in mockup */
+  color: var(--text-white);
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 
-.role-text {
-  font-size: 0.65rem;
-  color: #94a3b8;
-  margin-top: -2px;
-}
-
-.chips {
-  color: #4ade80;
-  /* Green chips in mockup */
-  font-family: 'Orbitron', sans-serif;
-  font-size: 0.9rem;
+.player-chips {
+  font-size: 0.85rem;
   font-weight: 700;
-  margin-top: 2px;
+  color: var(--gold);
 }
 
-/* Turn Timer SVG Overlay */
-.turn-timer-ring {
-  position: absolute;
-  inset: -2px;
-  z-index: 5;
-  pointer-events: none;
-}
-
-.turn-timer {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: white;
-  font-family: 'Orbitron', sans-serif;
-  font-size: 0.7rem;
-  background: rgba(0, 0, 0, 0.6);
-  padding: 2px 6px;
-  border-radius: 10px;
-}
-
-/* Chip Stacks on the surface */
-.bet-display {
-  position: absolute;
-  top: -30px;
+/* Cards Below Panel */
+.player-cards-row {
   display: flex;
-  flex-direction: column;
-  align-items: center;
   gap: 4px;
+  margin-top: 6px;
 }
 
-.chip-stack {
-  display: flex;
-  justify-content: center;
-  gap: -5px;
-  /* Overlap chips */
+/* Active Turn Glow */
+.current-turn .player-panel {
+  box-shadow: 0 0 0 2px var(--gold), 0 4px 20px rgba(212, 168, 67, 0.3);
 }
 
-.chip-icon {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: conic-gradient(white 0deg 45deg, #ef4444 45deg 90deg, white 90deg 135deg, #ef4444 135deg 180deg, white 180deg 225deg, #ef4444 225deg 270deg, white 270deg 315deg, #ef4444 315deg 360deg);
-  border: 1.5px solid rgba(0, 0, 0, 0.4);
+/* Sitting Out */
+.sitting-out .player-panel {
+  opacity: 0.4;
 }
 
-/* Opponent Hand Layout */
-.player-cards-container {
+/* Winner */
+.winner .player-panel {
+  box-shadow: 0 0 0 2px var(--gold), 0 0 20px rgba(212, 168, 67, 0.5);
+}
+
+/* Bet Amount */
+.player-bet {
   position: absolute;
-  right: -50px;
-  top: 10px;
-  z-index: 10;
-  perspective: 500px;
+  top: -24px;
+  background: var(--bg-panel);
+  padding: 2px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--gold);
 }
 
-.player-cards {
-  display: flex;
-  gap: -15px;
-}
-
-.player-cards .card {
-  transform: rotateY(-20deg) rotateZ(-5deg);
-  box-shadow: -5px 5px 10px rgba(0, 0, 0, 0.5);
-}
-
-/* Positioning Data Attributes (Refined for mockup scale) */
+/* Positions — 6 player layout */
 .player[data-position="0"] {
-  bottom: -30px;
+  bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
 }
 
 .player[data-position="1"] {
-  bottom: 18%;
-  left: 3%;
+  bottom: 22%;
+  left: 5%;
 }
 
 .player[data-position="2"] {
-  top: 18%;
-  left: 3%;
+  top: 22%;
+  left: 5%;
 }
 
 .player[data-position="3"] {
-  top: -30px;
+  top: 10px;
   left: 50%;
   transform: translateX(-50%);
 }
 
 .player[data-position="4"] {
-  top: 18%;
-  right: 3%;
+  top: 22%;
+  right: 5%;
 }
 
 .player[data-position="5"] {
-  bottom: 18%;
-  right: 3%;
+  bottom: 22%;
+  right: 5%;
 }
 
-/* Blind Badges */
-.blind-indicator {
-  position: absolute;
-  top: 5px;
-  right: -10px;
-  z-index: 10;
+/* Responsive */
+@media (max-width: 768px) {
+  .player-panel {
+    min-width: 130px;
+    padding: 8px 12px;
+  }
+
+  .player-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 0.75rem;
+  }
+
+  .player-name {
+    font-size: 0.7rem;
+  }
+
+  .player-chips {
+    font-size: 0.75rem;
+  }
 }

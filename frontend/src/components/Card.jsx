@@ -1,6 +1,5 @@
 import React from 'react';
 import './Card.css';
-import './CardCyberpunk.css'; // Neon Cyberpunk theme
 
 const getCardRank = (rank) => {
   switch (rank) {

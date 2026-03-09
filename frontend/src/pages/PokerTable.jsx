@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useMemo } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
@@ -7,7 +7,6 @@ import { AuthContext } from '../context/AuthContext';
 import API_CONFIG from '../config/apiConfig';
 import './PokerTable.css';
 
-// Components
 import Player from '../components/Player';
 import Table from '../components/Table';
 import BettingControls from '../components/BettingControls';
@@ -21,17 +20,14 @@ const initializeSocketConnection = (gameId, playerId, setUpdateActions, setError
     onConnect: () => {
       client.subscribe(`/topic/game/${gameId}`, (message) => {
         try {
-          const gameUpdate = JSON.parse(message.body);
-          setUpdateActions(gameUpdate);
+          setUpdateActions(JSON.parse(message.body));
         } catch (error) {
           console.error('Error processing game update:', error);
         }
       });
-
       client.subscribe(`/topic/game/${gameId}/player/${playerId}`, (message) => {
         try {
-          const playerUpdate = JSON.parse(message.body);
-          setUpdateActions(playerUpdate);
+          setUpdateActions(JSON.parse(message.body));
         } catch (error) {
           console.error('Error processing player update:', error);
         }
@@ -42,7 +38,6 @@ const initializeSocketConnection = (gameId, playerId, setUpdateActions, setError
       setError('WebSocket connection error.');
     },
   });
-
   client.activate();
   return client;
 };
@@ -68,7 +63,6 @@ const PokerTable = () => {
   const [currentPlayer, setCurrentPlayer] = useState({ id: null, username: null, hand: [], index: null });
   const [showRankingsModal, setShowRankingsModal] = useState(false);
   const [isMyTurn, setIsMyTurn] = useState(false);
-  const [chatMessages, setChatMessages] = useState([]);
 
   useEffect(() => {
     const joinGame = async () => {
@@ -91,12 +85,10 @@ const PokerTable = () => {
 
           const client = initializeSocketConnection(gameId, player.id, setUpdateActions, setError);
           setStompClient(client);
-
           setLoading(false);
+
           return () => {
-            if (client && client.connected) {
-              client.deactivate();
-            }
+            if (client && client.connected) client.deactivate();
           };
         } else {
           setError('Failed to find player in game.');
@@ -107,71 +99,41 @@ const PokerTable = () => {
         setLoading(false);
       }
     };
-
-    if (gameId && user) {
-      joinGame();
-    }
+    if (gameId && user) joinGame();
   }, [gameId, user]);
 
+  // Robust state merging
   useEffect(() => {
     if (updateAction) {
       setGame(prevGame => {
         if (!updateAction.type) return updateAction;
         const { type, payload } = updateAction;
 
-        console.log(`Processing game update: ${type}`, payload);
-
         switch (type) {
-          case 'CHAT_MESSAGE':
-            setChatMessages(prev => [...prev, payload].slice(-100));
-            return prevGame;
-
           case GAME_STATUS.CARDS_DEALT:
             setCurrentPlayer(prev => {
-              if (Array.isArray(payload)) {
-                return { ...prev, hand: payload };
-              }
+              if (Array.isArray(payload)) return { ...prev, hand: payload };
               return prev;
             });
             return prevGame;
 
           case GAME_STATUS.COMMUNITY_CARDS:
-            return {
-              ...prevGame,
-              communityCards: Array.isArray(payload) ? payload : (prevGame?.communityCards || [])
-            };
+            return { ...prevGame, communityCards: Array.isArray(payload) ? payload : (prevGame?.communityCards || []) };
 
           case GAME_STATUS.PLAYER_JOINED:
-            return {
-              ...prevGame,
-              players: [...(prevGame?.players || []), payload]
-            };
+            return { ...prevGame, players: [...(prevGame?.players || []), payload] };
 
           case GAME_STATUS.PLAYER_ACTION:
-            // Extract the nested game object
             const actGame = payload.game || payload;
-            return {
-              ...actGame,
-              communityCards: actGame.communityCards || [],
-              players: actGame.players || []
-            };
+            return { ...actGame, communityCards: actGame.communityCards || [], players: actGame.players || [] };
 
           case GAME_STATUS.GAME_STARTED:
           case GAME_STATUS.ROUND_STARTED:
-            return {
-              ...payload,
-              communityCards: payload.communityCards || [],
-              players: payload.players || []
-            };
+            return { ...payload, communityCards: payload.communityCards || [], players: payload.players || [] };
 
           case GAME_STATUS.GAME_ENDED:
-            const endGameState = payload.game || payload;
-            return {
-              ...endGameState,
-              winners: payload.winners || [],
-              bestHand: payload.bestHand || null,
-              status: 'ENDED'
-            };
+            const endGame = payload.game || payload;
+            return { ...endGame, winners: payload.winners || [], bestHand: payload.bestHand || null, status: 'ENDED' };
 
           default:
             return payload.game || payload || prevGame;
@@ -184,7 +146,7 @@ const PokerTable = () => {
   useEffect(() => {
     if (game && currentPlayer.index !== null) {
       const isTurn = game.currentPlayerIndex === currentPlayer.index;
-      const player = game.players[currentPlayer.index];
+      const player = game.players?.[currentPlayer.index];
       setIsMyTurn(isTurn && player && !player.hasFolded && !player.isSittingOut);
     }
   }, [game, currentPlayer]);
@@ -223,30 +185,19 @@ const PokerTable = () => {
     return null;
   };
 
-  if (loading) return <div className="loading-spinner">Loading Premium Universe...</div>;
+  if (loading) return <div className="loading-spinner">Loading...</div>;
   if (error) return <div className="error">{error}</div>;
+  if (!game?.players) return <div>Invalid game data.</div>;
 
   return (
     <div className="poker-table-container">
-      {/* 1. Tournament Info Bar (Mockup Element) */}
-      <div className="tournament-top-bar">
-        <div className="tournament-label">Tournament #741 / Blinds 500/1000, Ante 100</div>
-        <div className="tournament-stats">
-          <span>Level <span className="level-badge">14</span></span>
-          <span>Players 6/8</span>
-          <span>Timer: 12s</span>
-        </div>
-      </div>
-
       <div className="poker-table-main">
-        {/* 2. Central Table with 3D perspective */}
         <Table
           isMyTurn={isMyTurn}
           game={game}
           communityCards={game.communityCards || []}
         />
 
-        {/* 3. Circular Player Distribution */}
         <div className="player-positions">
           {game.players.map((player, index) => {
             if (!player) return null;
@@ -256,7 +207,7 @@ const PokerTable = () => {
                 player={player}
                 displayPosition={getDisplayPosition(index)}
                 blindStatus={getBlindStatus(player)}
-                playerBet={game.currentBettingRound?.playerBets[player.username] || 0}
+                playerBet={game.currentBettingRound?.playerBets?.[player.username] || 0}
                 isCurrentTurn={game.currentPlayerIndex === index}
                 isCurrentPlayer={player.username === currentPlayer.username}
                 currentHand={currentPlayer.hand}
@@ -268,23 +219,6 @@ const PokerTable = () => {
         </div>
       </div>
 
-      {/* 4. Floating Chat Panel (Bottom Left Mockup) */}
-      <div className="floating-chat-container">
-        <div className="glass-chat-panel">
-          <div className="chat-header">CHAT</div>
-          <div className="chat-messages-scroll">
-            {chatMessages.map((msg, i) => (
-              <div key={i} className="chat-msg">
-                <span className="chat-user">{msg.senderName}:</span>
-                <span>{msg.message}</span>
-              </div>
-            ))}
-            {chatMessages.length === 0 && <div className="chat-msg opacity-50">Welcome to the table.</div>}
-          </div>
-        </div>
-      </div>
-
-      {/* 5. Central Betting Controls (Bottom Center) */}
       {isMyTurn && (
         <div className="current-player-controls">
           <BettingControls
