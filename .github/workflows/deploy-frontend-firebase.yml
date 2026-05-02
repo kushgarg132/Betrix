@@ -29,6 +29,9 @@ jobs:
         run: npm ci --no-audit --no-fund
 
       - name: Build frontend
+        env:
+          VITE_SERVER_HOST: 'https://betrix-backend.onrender.com'
+          VITE_SERVER_PORT: ''
         run: npm run build
 
       - name: Install Firebase CLI
