@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Data
 @Builder
@@ -17,7 +17,7 @@ public class GameUpdate {
     private String gameId;
     private GameUpdateType type;
     private Object payload;
-    private LocalDateTime timestamp;
+    private OffsetDateTime timestamp;
 
     public enum GameUpdateType {
         PLAYER_JOINED,

@@ -27,6 +27,8 @@ public class User implements UserDetails {
     private List<String> roles;
     private Date registrationDate = new Date(LocalDateTime.now(ZoneOffset.UTC).toInstant(java.time.ZoneOffset.UTC).toEpochMilli());
     private boolean enabled = true;
+    private boolean isBot = false;
+    private String botDifficulty;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

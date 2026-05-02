@@ -1,0 +1,318 @@
+# ─── Scalars ────────────────────────────────────────────
+scalar DateTime
+scalar JSON
+
+# ─── Enums ──────────────────────────────────────────────
+
+enum Suit {
+  HEARTS
+  DIAMONDS
+  CLUBS
+  SPADES
+}
+
+enum Rank {
+  TWO
+  THREE
+  FOUR
+  FIVE
+  SIX
+  SEVEN
+  EIGHT
+  NINE
+  TEN
+  JACK
+  QUEEN
+  KING
+  ACE
+}
+
+enum GameStatus {
+  WAITING
+  STARTING
+  PRE_FLOP_BETTING
+  FLOP_BETTING
+  TURN_BETTING
+  RIVER_BETTING
+  SHOWDOWN
+  FINISHED
+}
+
+enum PlayerActionType {
+  NONE
+  FOLD
+  CHECK
+  SMALL_BLIND
+  BIG_BLIND
+  CALL
+  RAISE
+  ALL_IN
+  AUTO_FOLD
+}
+
+enum ActionType {
+  BET
+  CHECK
+  FOLD
+  LEAVE
+  SIT_OUT
+  SIT_IN
+}
+
+enum HandRank {
+  HIGH_CARD
+  ONE_PAIR
+  TWO_PAIR
+  THREE_OF_A_KIND
+  STRAIGHT
+  FLUSH
+  FULL_HOUSE
+  FOUR_OF_A_KIND
+  STRAIGHT_FLUSH
+  ROYAL_FLUSH
+}
+
+enum GameUpdateType {
+  PLAYER_JOINED
+  GAME_STARTED
+  CARDS_DEALT
+  ROUND_STARTED
+  COMMUNITY_CARDS
+  PLAYER_ACTION
+  GAME_ENDED
+  CHAT_MESSAGE
+}
+
+enum BotDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum RoundType {
+  PRE_FLOP
+  FLOP
+  TURN
+  RIVER
+  SHOWDOWN
+}
+
+# ─── Types ──────────────────────────────────────────────
+
+type Card {
+  suit: Suit!
+  rank: Rank!
+}
+
+type HandResult {
+  rank: HandRank!
+  highCards: [Card!]!
+}
+
+type Player {
+  id: ID
+  name: String!
+  username: String!
+  hand: [Card!]!
+  chips: Float!
+  isActive: Boolean!
+  currentBet: Float!
+  hasFolded: Boolean!
+  lastWinAmount: Float!
+  isSittingOut: Boolean!
+  bestHand: HandResult
+  timeBankMs: Float!
+  isAllIn: Boolean!
+  isBot: Boolean!
+  botDifficulty: BotDifficulty
+}
+
+type Pot {
+  amount: Float!
+  eligiblePlayerIds: [String!]!
+}
+
+type BettingRound {
+  bets: JSON
+  roundType: RoundType
+}
+
+type Game {
+  id: ID!
+  players: [Player!]!
+  communityCards: [Card!]!
+  pot: Float!
+  pots: [Pot!]!
+  status: GameStatus!
+  currentBettingRound: BettingRound
+  dealerPosition: Int!
+  currentPlayerIndex: Int!
+  createdAt: DateTime
+  updatedAt: DateTime
+  smallBlindAmount: Float!
+  bigBlindAmount: Float!
+  currentBet: Float!
+  smallBlindUserId: String
+  bigBlindUserId: String
+  lastActions: JSON
+  playerActionTimeoutSeconds: Int!
+  currentPlayerActionDeadline: DateTime
+  maxPlayers: Int!
+  playerCount: Int!
+  isGameFull: Boolean!
+}
+
+"""Lightweight game summary for the lobby — avoids sending full player data."""
+type GameSummary {
+  id: ID!
+  status: GameStatus!
+  playerCount: Int!
+  maxPlayers: Int!
+  smallBlindAmount: Float!
+  bigBlindAmount: Float!
+  pot: Float!
+  createdAt: DateTime
+  """Usernames of players currently in the game."""
+  playerUsernames: [String!]!
+}
+
+type User {
+  id: ID!
+  name: String!
+  username: String!
+  email: String
+  balance: Int!
+  roles: [String!]!
+  registrationDate: DateTime
+}
+
+type AuthPayload {
+  token: String!
+  type: String!
+  user: User
+}
+
+type GameEvent {
+  id: ID!
+  gameId: String!
+  timestamp: DateTime!
+  eventType: String!
+  eventData: JSON
+}
+
+type GameUpdate {
+  gameId: String!
+  type: GameUpdateType!
+  payload: JSON
+  timestamp: DateTime!
+}
+
+type ChatMessage {
+  senderId: String!
+  senderName: String!
+  message: String!
+  timestamp: DateTime!
+}
+
+# ─── Inputs ─────────────────────────────────────────────
+
+input LoginInput {
+  username: String!
+  password: String!
+}
+
+input RegisterInput {
+  name: String!
+  username: String!
+  password: String!
+  email: String!
+}
+
+input BlindInput {
+  smallBlindAmount: Int!
+  bigBlindAmount: Int!
+}
+
+input PlayerActionInput {
+  playerId: ID!
+  actionType: ActionType!
+  amount: Float
+}
+
+# ─── Queries ────────────────────────────────────────────
+
+type Query {
+  """Get the currently authenticated user."""
+  me: User
+
+  """List all games (lobby view — lightweight)."""
+  games: [GameSummary!]!
+
+  """Get a single game (spectator view — hands hidden)."""
+  game(id: ID!): Game
+
+  """Get a game from a specific player's perspective (their hand visible)."""
+  gameForPlayer(gameId: ID!, playerId: ID!): Game
+
+  """Get event history for a game."""
+  gameEvents(gameId: ID!): [GameEvent!]!
+
+  """Get events filtered by type."""
+  gameEventsByType(gameId: ID!, eventType: String!): [GameEvent!]!
+
+  """Replay a full game from event history."""
+  replayGame(gameId: ID!): Game
+
+  """Replay a game up to a specific event."""
+  replayGameUntilEvent(gameId: ID!, eventId: ID!): Game
+}
+
+# ─── Mutations ──────────────────────────────────────────
+
+type Mutation {
+  """Authenticate with username/password. Returns JWT."""
+  login(input: LoginInput!): AuthPayload!
+
+  """Register a new user account."""
+  register(input: RegisterInput!): User!
+
+  """Create a guest session. Returns JWT."""
+  guestLogin: AuthPayload!
+
+  """Create a new poker game with specified blinds."""
+  createGame(input: BlindInput!): Game!
+
+  """Join an existing game. Returns the updated game state."""
+  joinGame(gameId: ID!): Game!
+
+  """Delete a game (admin only)."""
+  deleteGame(gameId: ID!): Boolean!
+
+  """Add balance to the current user's account."""
+  addBalance(amount: Int!): User!
+
+  """Perform a player action (bet, check, fold, leave, sit out/in)."""
+  playerAction(gameId: ID!, input: PlayerActionInput!): Boolean!
+
+  """Start a new hand in a game."""
+  startHand(gameId: ID!): Boolean!
+
+  """Send a chat message to a game."""
+  sendChat(gameId: ID!, message: String!, playerId: ID!): ChatMessage!
+
+  """Add an AI bot player to a game."""
+  addBot(gameId: ID!, difficulty: BotDifficulty): Player!
+
+  """Remove a bot player from a game."""
+  removeBot(gameId: ID!, botPlayerId: ID!): Boolean!
+}
+
+# ─── Subscriptions ──────────────────────────────────────
+
+type Subscription {
+  """Subscribe to all updates for a game (broadcast to all players/spectators)."""
+  gameUpdated(gameId: ID!): GameUpdate!
+
+  """Subscribe to player-specific updates (private hand info)."""
+  playerUpdated(gameId: ID!, playerId: ID!): GameUpdate!
+}

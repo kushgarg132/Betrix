@@ -8,10 +8,12 @@ import com.example.backend.model.Pot;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,6 +24,10 @@ import java.util.UUID;
 @Data
 @RequiredArgsConstructor
 @Document(collection = "games")
+@CompoundIndexes({
+    @CompoundIndex(def = "{'status': 1, 'createdAt': -1}", name = "status_createdAt"),
+    @CompoundIndex(def = "{'status': 1, 'autoStart': 1}", name = "status_autoStart")
+})
 public class Game {
     private int MAX_PLAYERS = 6;
 
@@ -40,12 +46,12 @@ public class Game {
     private BettingRound currentBettingRound;
     private int dealerPosition;
     private int currentPlayerIndex;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private OffsetDateTime createdAt;
+    private OffsetDateTime updatedAt;
 
     // Timeout tracking fields
-    private Instant currentPlayerActionDeadline;
-    private LocalDateTime lastActivityTime;
+    private OffsetDateTime currentPlayerActionDeadline;
+    private OffsetDateTime lastActivityTime;
     private int playerActionTimeoutSeconds = DEFAULT_PLAYER_ACTION_TIMEOUT_SECONDS;
     private int gameIdleTimeoutMinutes = DEFAULT_GAME_IDLE_TIMEOUT_MINUTES;
     private boolean autoStart = true;
@@ -78,13 +84,13 @@ public class Game {
         this.currentBettingRound = new BettingRound();
         this.dealerPosition = 0;
         this.currentPlayerIndex = -1;
-        this.createdAt = LocalDateTime.now(ZoneOffset.UTC);
-        this.updatedAt = LocalDateTime.now(ZoneOffset.UTC);
+        this.createdAt = OffsetDateTime.now(ZoneOffset.UTC);
+        this.updatedAt = OffsetDateTime.now(ZoneOffset.UTC);
         this.currentBet = 0;
         this.lastActions = new HashMap<>();
         this.smallBlindAmount = smallBlindAmount;
         this.bigBlindAmount = bigBlindAmount;
-        this.lastActivityTime = LocalDateTime.now(ZoneOffset.UTC);
+        this.lastActivityTime = OffsetDateTime.now(ZoneOffset.UTC);
     }
 
     public Game(Game game) {
@@ -105,8 +111,8 @@ public class Game {
         this.currentBettingRound = game.getCurrentBettingRound();
         this.dealerPosition = game.getDealerPosition();
         this.currentPlayerIndex = game.getCurrentPlayerIndex() != -1 ? game.getCurrentPlayerIndex() : 0;
-        this.createdAt = game.getCreatedAt() != null ? game.getCreatedAt() : LocalDateTime.now(ZoneOffset.UTC);
-        this.updatedAt = game.getUpdatedAt() != null ? game.getUpdatedAt() : LocalDateTime.now(ZoneOffset.UTC);
+        this.createdAt = game.getCreatedAt() != null ? game.getCreatedAt() : OffsetDateTime.now(ZoneOffset.UTC);
+        this.updatedAt = game.getUpdatedAt() != null ? game.getUpdatedAt() : OffsetDateTime.now(ZoneOffset.UTC);
         this.currentBet = game.getCurrentBet() != -1 ? game.getCurrentBet() : 0.0;
         this.lastActions = game.getLastActions() != null ? new HashMap<>(game.getLastActions()) : new HashMap<>();
         this.smallBlindAmount = game.getSmallBlindAmount();
@@ -116,7 +122,7 @@ public class Game {
         this.bigBlindUserId = game.getBigBlindUserId();
         this.currentPlayerActionDeadline = game.getCurrentPlayerActionDeadline();
         this.lastActivityTime = game.getLastActivityTime() != null ? game.getLastActivityTime()
-                : LocalDateTime.now(ZoneOffset.UTC);
+                : OffsetDateTime.now(ZoneOffset.UTC);
         this.playerActionTimeoutSeconds = game.getPlayerActionTimeoutSeconds();
         this.gameIdleTimeoutMinutes = game.getGameIdleTimeoutMinutes();
         this.autoStart = game.isAutoStart();
@@ -184,6 +190,18 @@ public class Game {
         return players.size() >= MAX_PLAYERS;
     }
 
+    public boolean getIsGameFull() {
+        return isGameFull();
+    }
+
+    public int getPlayerCount() {
+        return players != null ? players.size() : 0;
+    }
+
+    public int getMaxPlayers() {
+        return MAX_PLAYERS;
+    }
+
     public boolean hasPlayer(String username) {
         return players.stream().anyMatch(p -> p.getUsername().equals(username));
     }
@@ -214,14 +232,14 @@ public class Game {
      * Updates the current player's action deadline
      */
     public void updateCurrentPlayerActionDeadline() {
-        this.currentPlayerActionDeadline = Instant.now().plusSeconds(playerActionTimeoutSeconds);
+        this.currentPlayerActionDeadline = OffsetDateTime.now(ZoneOffset.UTC).plusSeconds(playerActionTimeoutSeconds);
     }
 
     /**
      * Updates the last activity timestamp
      */
     public void updateLastActivityTime() {
-        this.lastActivityTime = LocalDateTime.now(ZoneOffset.UTC);
+        this.lastActivityTime = OffsetDateTime.now(ZoneOffset.UTC);
     }
 
     /**
@@ -231,7 +249,7 @@ public class Game {
         if (this.currentPlayerActionDeadline == null) {
             return false;
         }
-        return Instant.now().isAfter(this.currentPlayerActionDeadline);
+        return OffsetDateTime.now(ZoneOffset.UTC).isAfter(this.currentPlayerActionDeadline);
     }
 
     /**
@@ -244,8 +262,8 @@ public class Game {
         if (this.currentPlayerActionDeadline == null) {
             return false;
         }
-        Instant warningThreshold = this.currentPlayerActionDeadline.minusSeconds(warningSeconds);
-        return Instant.now().isAfter(warningThreshold) && !isCurrentPlayerActionTimedOut();
+        OffsetDateTime warningThreshold = this.currentPlayerActionDeadline.minusSeconds(warningSeconds);
+        return OffsetDateTime.now(ZoneOffset.UTC).isAfter(warningThreshold) && !isCurrentPlayerActionTimedOut();
     }
 
     /**
@@ -255,7 +273,7 @@ public class Game {
         if (this.lastActivityTime == null) {
             return false;
         }
-        return LocalDateTime.now(ZoneOffset.UTC).isAfter(this.lastActivityTime.plusMinutes(gameIdleTimeoutMinutes));
+        return OffsetDateTime.now(ZoneOffset.UTC).isAfter(this.lastActivityTime.plusMinutes(gameIdleTimeoutMinutes));
     }
 
     /**
@@ -290,7 +308,7 @@ public class Game {
         currentPlayerIndex = (dealerPosition + 1) % players.size();
 
         updateLastActivityTime();
-        updatedAt = LocalDateTime.now(ZoneOffset.UTC);
+        updatedAt = OffsetDateTime.now(ZoneOffset.UTC);
     }
 
     public void setupNextRound() {

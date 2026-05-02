@@ -1,108 +1,182 @@
-/* Classic Casino Design System */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+@plugin "tailwindcss-animate";
 
-:root {
-  /* Background */
-  --bg-dark: #1a1a1a;
-  --bg-darker: #111111;
-  --bg-darkest: #0a0a0a;
-  --bg-panel: rgba(0, 0, 0, 0.75);
-  --bg-panel-solid: #1c1c1c;
-  --bg-sidebar: #0d0d0d;
-  --bg-card: #1a1a1a;
-  --bg-card-hover: #222222;
+/* ─── Design Tokens ───────────────────────────────────── */
+@theme {
+  /* Backgrounds */
+  --color-background: #0f1117;
+  --color-surface: #1a1d27;
+  --color-surface-elevated: #252836;
+  --color-surface-overlay: #2e3245;
 
-  /* Table */
-  --felt-green: #2d5a27;
-  --felt-green-light: #3a7a30;
-  --felt-green-dark: #1e3d1a;
-  --rim-brown: #6b3a2a;
-  --rim-brown-light: #8b4a35;
-  --rim-brown-dark: #4a2518;
+  /* Felt (poker table) */
+  --color-felt: #1a5c2e;
+  --color-felt-light: #1e6d34;
+  --color-felt-dark: #143d1e;
+  --color-rim: #6b4c1e;
+  --color-rim-light: #8b6428;
 
-  /* Accent */
-  --gold: #d4a843;
-  --gold-light: #e8c468;
-  --gold-dark: #b08930;
-  --gold-muted: rgba(212, 168, 67, 0.15);
+  /* Gold accent */
+  --color-gold: #d4a843;
+  --color-gold-light: #e8c468;
+  --color-gold-dark: #a87e2a;
+  --color-gold-muted: rgba(212, 168, 67, 0.15);
 
-  /* Status */
-  --red: #c0392b;
-  --red-light: #e74c3c;
-  --green: #27ae60;
-  --green-light: #2ecc71;
+  /* Typography */
+  --color-text: #f0f2f5;
+  --color-text-muted: #8892a4;
+  --color-text-dim: #555f72;
+  --color-text-inverse: #0f1117;
 
-  /* Text */
-  --text-white: #ffffff;
-  --text-light: #e0e0e0;
-  --text-muted: #9ca3af;
-  --text-dim: #6b7280;
+  /* Borders */
+  --color-border: #2a2d3a;
+  --color-border-muted: #1e2130;
+  --color-border-gold: rgba(212, 168, 67, 0.4);
 
-  /* Chips */
-  --chip-green: #22c55e;
-  --chip-red: #ef4444;
-  --chip-blue: #3b82f6;
-  --chip-black: #1f2937;
+  /* Semantic */
+  --color-danger: #ef4444;
+  --color-danger-light: #fca5a5;
+  --color-danger-muted: rgba(239, 68, 68, 0.15);
+  --color-success: #22c55e;
+  --color-success-light: #86efac;
+  --color-success-muted: rgba(34, 197, 94, 0.15);
+  --color-warning: #f59e0b;
+  --color-info: #3b82f6;
 
-  /* Layout */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  /* Fonts */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
-  --sidebar-left-width: 190px;
-  --sidebar-right-width: 280px;
-
-  --transition: all 0.25s ease;
+  /* Border radius */
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.375rem;
+  --radius: 0.5rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-full: 9999px;
 }
 
-html,
-body,
-#root {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  background: var(--bg-darkest);
-  color: var(--text-white);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  -webkit-font-smoothing: antialiased;
-}
-
-*,
-*::before,
-*::after {
+/* ─── Base Resets ─────────────────────────────────────── */
+*, *::before, *::after {
   box-sizing: border-box;
 }
 
-button {
-  cursor: pointer;
-  border: none;
-  outline: none;
-  font-family: inherit;
-  font-weight: 600;
-  padding: 10px 20px;
-  border-radius: var(--radius-md);
-  font-size: 0.85rem;
-  transition: var(--transition);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-behavior: smooth;
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 6px;
+body {
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100dvh;
+  overflow-x: hidden;
 }
 
-::-webkit-scrollbar-track {
-  background: transparent;
+#root {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
 }
 
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 3px;
+:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--color-surface); }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-border-muted); }
+
+button, [role="button"], a, input, select, textarea {
+  touch-action: manipulation;
+}
+
+::selection {
+  background-color: rgba(212, 168, 67, 0.25);
+  color: var(--color-text);
+}
+
+/* ─── Custom utilities ────────────────────────────────── */
+@layer utilities {
+  .font-serif { font-family: var(--font-serif); }
+  .font-mono  { font-family: var(--font-mono); }
+  .text-balance { text-wrap: balance; }
+
+  .gold-text {
+    background: linear-gradient(135deg, var(--color-gold-light), var(--color-gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .felt-surface {
+    background: radial-gradient(ellipse at 50% 40%, var(--color-felt-light) 0%, var(--color-felt) 55%, var(--color-felt-dark) 100%);
+  }
+
+  .glass-surface {
+    background: rgba(26, 29, 39, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--color-border);
+  }
+
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
+
+  .seat-pulse { animation: seatPulse 1.5s ease-in-out infinite; }
+  .winner-glow { animation: winnerGlow 1s ease-in-out infinite; }
+  .shimmer-bg {
+    background: linear-gradient(90deg, var(--color-surface) 25%, var(--color-surface-elevated) 50%, var(--color-surface) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+}
+
+/* ─── Keyframes ───────────────────────────────────────── */
+@keyframes seatPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(212, 168, 67, 0.7); }
+  50%       { box-shadow: 0 0 0 12px rgba(212, 168, 67, 0); }
+}
+
+@keyframes winnerGlow {
+  0%, 100% { box-shadow: 0 0 20px rgba(212, 168, 67, 0.6); }
+  50%       { box-shadow: 0 0 50px rgba(212, 168, 67, 0.9), 0 0 80px rgba(212, 168, 67, 0.4); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(100%); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to   { background-position: 200% 0; }
+}
+
+@keyframes chipSlide {
+  from { transform: translateY(-30px) scale(1.2); opacity: 0; }
+  to   { transform: translateY(0) scale(1); opacity: 1; }
 }

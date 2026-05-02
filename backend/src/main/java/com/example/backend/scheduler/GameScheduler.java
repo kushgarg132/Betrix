@@ -3,6 +3,7 @@ package com.example.backend.scheduler;
 import com.example.backend.entity.Game;
 import com.example.backend.model.Player;
 import com.example.backend.repository.GameRepository;
+import com.example.backend.resolver.SubscriptionResolver;
 import com.example.backend.service.GameService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -135,6 +136,31 @@ public class GameScheduler {
         } catch (Exception e) {
             logger.error("Error in startWaitingGames scheduler: {}", e.getMessage(), e);
             taskErrorCounts.get(taskName).incrementAndGet();
+        }
+    }
+
+    /**
+     * Delete games idle for >24h where all players are guests (username starts with "guest-").
+     * Runs at 3 AM daily.
+     */
+    @Scheduled(cron = "0 0 3 * * *")
+    public void cleanupStaleGuestGames() {
+        try {
+            java.time.OffsetDateTime cutoff = java.time.OffsetDateTime.now(java.time.ZoneOffset.UTC).minusHours(24);
+            List<Game> stale = gameRepository.findAll().stream()
+                    .filter(g -> g.getUpdatedAt() != null && g.getUpdatedAt().isBefore(cutoff))
+                    .filter(g -> g.getPlayers().isEmpty()
+                            || g.getPlayers().stream().allMatch(p -> p.getUsername().startsWith("guest-")))
+                    .toList();
+
+            for (Game g : stale) {
+                gameRepository.delete(g);
+                SubscriptionResolver.cleanupGameSinks(g.getId());
+                logger.info("Cleaned up stale guest game {}", g.getId());
+            }
+            logger.info("Stale guest game cleanup: removed {} games", stale.size());
+        } catch (Exception e) {
+            logger.error("Error in stale guest game cleanup: {}", e.getMessage(), e);
         }
     }
 

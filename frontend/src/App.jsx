@@ -1,32 +1,41 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import './App.css';
+import { Toaster } from 'sonner';
 import PokerTable from './pages/PokerTable';
 import Home from './pages/Home';
 import GameLobby from './pages/GameLobby';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Navbar from './components/Navbar';
+import Navbar from './components/layout/Navbar';
 import Profile from './pages/Profile';
 import AdminPanel from './pages/AdminPanel';
+
 function App() {
-  return (<>
+  return (
     <Router>
-      <div className="App">
-        
-        <Navbar/>
+      <div className="min-h-dvh flex flex-col bg-background text-text">
+        <Navbar />
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/"        element={<Home />} />
+          <Route path="/login"   element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/lobby" element={<GameLobby />} />
+          <Route path="/lobby"   element={<GameLobby />} />
           <Route path="/game/:gameId" element={<PokerTable />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/admin"   element={<AdminPanel />} />
         </Routes>
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            style: {
+              background: 'var(--color-surface-elevated)',
+              color: 'var(--color-text)',
+              border: '1px solid var(--color-border)',
+            },
+          }}
+        />
       </div>
     </Router>
-    </>
   );
 }
 

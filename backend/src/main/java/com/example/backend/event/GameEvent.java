@@ -3,7 +3,7 @@ package com.example.backend.event;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
 /**
@@ -13,10 +13,10 @@ import java.time.ZoneOffset;
 @NoArgsConstructor
 public abstract class GameEvent {
     private String gameId;
-    private LocalDateTime timestamp;
+    private OffsetDateTime timestamp;
     
     public GameEvent(String gameId) {
         this.gameId = gameId;
-        this.timestamp = LocalDateTime.now(ZoneOffset.UTC);
+        this.timestamp = OffsetDateTime.now(ZoneOffset.UTC);
     }
 } 

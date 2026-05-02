@@ -4,7 +4,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Data
 @NoArgsConstructor
@@ -13,5 +13,5 @@ public class ChatMessagePayload {
     private String senderId;
     private String senderName;
     private String message;
-    private LocalDateTime timestamp;
+    private OffsetDateTime timestamp;
 }

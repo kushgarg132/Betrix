@@ -1,159 +1,209 @@
-import React, { useState, useEffect, useContext } from 'react';
-import axios from '../api/axios';
-import { AuthContext } from '../context/AuthContext';
-import './AdminPanel.css';
+import React, { useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useQuery, useMutation } from '@apollo/client/react';
+import { motion } from 'framer-motion';
+import { AuthContext } from '@/context/AuthContext';
+import { GET_GAMES } from '@/graphql/queries';
+import { DELETE_GAME } from '@/graphql/mutations';
+import { toast } from 'sonner';
+import PageWrapper from '@/components/layout/PageWrapper';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
+} from '@/components/ui/dialog';
+import {
+  Search, Trash2, RefreshCw, Shield, Loader2, Users,
+} from 'lucide-react';
+import { formatBlinds } from '@/lib/utils';
 
-const AdminPanel = () => {
-  const [games, setGames] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [deleteStatus, setDeleteStatus] = useState({ message: '', isError: false });
-  const [mounted, setMounted] = useState(false);
-  const [hoveredRow, setHoveredRow] = useState(null);
+const STATUS_VARIANT = { WAITING: 'waiting', ACTIVE: 'active', COMPLETED: 'completed' };
+
+function TableRow({ game, onDelete }) {
+  return (
+    <motion.tr
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="border-b border-border hover:bg-surface-elevated/30 transition-colors group"
+    >
+      <td className="px-4 py-3 text-xs font-mono text-text-dim">{game.id?.slice(0, 12)}…</td>
+      <td className="px-4 py-3">
+        <Badge variant={STATUS_VARIANT[game.status] || 'surface'}>{game.status}</Badge>
+      </td>
+      <td className="px-4 py-3">
+        <div className="flex items-center gap-1.5 text-sm text-text">
+          <Users size={13} className="text-text-muted" />
+          {game.playerCount}<span className="text-text-dim">/{game.maxPlayers}</span>
+        </div>
+      </td>
+      <td className="px-4 py-3 font-mono text-sm text-gold font-semibold">
+        {formatBlinds(game.smallBlindAmount, game.bigBlindAmount)}
+      </td>
+      <td className="px-4 py-3 text-xs text-text-dim">
+        {game.createdAt ? new Date(game.createdAt).toLocaleDateString() : '—'}
+      </td>
+      <td className="px-4 py-3 text-right">
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={() => onDelete(game)}
+          className="text-text-dim hover:text-danger hover:bg-danger-muted opacity-0 group-hover:opacity-100 transition-all"
+          aria-label={`Delete game ${game.id?.slice(0, 8)}`}
+        >
+          <Trash2 size={14} />
+        </Button>
+      </td>
+    </motion.tr>
+  );
+}
+
+function TableRowSkeleton() {
+  return (
+    <tr className="border-b border-border">
+      {[...Array(6)].map((_, i) => (
+        <td key={i} className="px-4 py-3"><Skeleton className="h-4 w-full" /></td>
+      ))}
+    </tr>
+  );
+}
+
+export default function AdminPanel() {
+  const navigate = useNavigate();
   const { user } = useContext(AuthContext);
+  const [search, setSearch] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
-  // Check if user is admin
-  const isAdmin = user && user.roles && user.roles.includes('ADMIN');
+  const isAdmin = user?.roles?.includes('ROLE_ADMIN');
 
-  useEffect(() => {
-    setMounted(true);
+  const { data, loading, refetch } = useQuery(GET_GAMES, { skip: !isAdmin });
+  const [deleteGameMutation] = useMutation(DELETE_GAME);
 
-    // Redirect non-admin users
-    if (!isAdmin) {
-      window.location.href = '/';
-      return;
-    }
+  if (!user) { navigate('/login'); return null; }
+  if (!isAdmin) { navigate('/'); return null; }
 
-    // Fetch all games
-    const fetchGames = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get('/game/all');
-        setGames(response.data);
-        setLoading(false);
-      } catch (err) {
-        console.error('Error fetching games:', err);
-        setError('Failed to load games. Please try again later.');
-        setLoading(false);
-      }
-    };
+  const games = (data?.games || []).filter(g => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      g.id?.toLowerCase().includes(q) ||
+      g.status?.toLowerCase().includes(q)
+    );
+  });
 
-    fetchGames();
-  }, [isAdmin]);
-
-  const handleDeleteGame = async (gameId) => {
-    if (!window.confirm(`Are you sure you want to delete game ${gameId}?`)) {
-      return;
-    }
-
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
     try {
-      await axios.delete(`/game/${gameId}`);
-
-      // Update games list
-      setGames(games.filter(game => game.id !== gameId));
-
-      // Show success message
-      setDeleteStatus({
-        message: `Game ${gameId} successfully deleted`,
-        isError: false
-      });
-
-      // Clear status message after 3 seconds
-      setTimeout(() => setDeleteStatus({ message: '', isError: false }), 3000);
+      await deleteGameMutation({ variables: { id: deleteTarget.id } });
+      toast.success('Table deleted.');
+      setDeleteTarget(null);
+      refetch();
     } catch (err) {
-      console.error('Error deleting game:', err);
-
-      // Show error message
-      setDeleteStatus({
-        message: `Failed to delete game: ${err.response?.data?.message || err.message}`,
-        isError: true
-      });
+      toast.error(err?.message || 'Failed to delete table.');
+    } finally {
+      setDeleting(false);
     }
   };
 
-  if (!isAdmin) {
-    return <div className="admin-panel">Access denied. Admin privileges required.</div>;
-  }
-
-  if (loading) {
-    return <div className="admin-panel loading">Loading games...</div>;
-  }
-
-  if (error) {
-    return <div className="admin-panel error">{error}</div>;
-  }
-
   return (
-    <div className={`admin-panel ${mounted ? 'mounted' : ''}`}>
-      {/* Floating poker chips */}
-      <div className="floating-suit floating-suit-1">♠</div>
-      <div className="floating-suit floating-suit-2">♥</div>
-      <div className="floating-suit floating-suit-3">♦</div>
-      <div className="floating-suit floating-suit-4">♣</div>
-
-      <h1 className="admin-title">Admin Panel</h1>
-
-      {deleteStatus.message && (
-        <div className={`status-message ${deleteStatus.isError ? 'error' : 'success'}`}>
-          {deleteStatus.message}
+    <PageWrapper>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-[var(--radius-lg)] bg-gold-muted border border-border-gold flex items-center justify-center">
+            <Shield size={18} className="text-gold" />
+          </div>
+          <div>
+            <h1 className="font-serif text-2xl font-bold text-text">Admin Panel</h1>
+            <p className="text-text-muted text-xs">
+              {loading ? 'Loading…' : `${data?.games?.length ?? 0} total tables`}
+            </p>
+          </div>
         </div>
-      )}
+        <Button variant="ghost" size="icon" onClick={() => refetch()} aria-label="Refresh">
+          <RefreshCw size={16} className="text-text-muted" />
+        </Button>
+      </div>
 
-      <div className="admin-section">
-        <h2>Manage Games</h2>
+      {/* Search */}
+      <div className="relative mb-5 max-w-xs">
+        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-dim" />
+        <Input
+          placeholder="Search by ID or status…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="pl-9"
+        />
+      </div>
 
-        {games.length === 0 ? (
-          <p className="no-games">No games available.</p>
-        ) : (
-          <div className="table-container">
-            <table className="games-table">
-              <thead>
-                <tr>
-                  <th>Game ID</th>
-                  <th>Status</th>
-                  <th>Players</th>
-                  <th>Created</th>
-                  <th>Last Activity</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {games.map((game, index) => (
-                  <tr
-                    key={game.id}
-                    className={hoveredRow === index ? 'hovered' : ''}
-                    onMouseEnter={() => setHoveredRow(index)}
-                    onMouseLeave={() => setHoveredRow(null)}
-                    style={{
-                      animation: mounted ? `fadeInUp 0.4s ease-out ${0.05 * index}s backwards` : 'none',
-                    }}
-                  >
-                    <td className="game-id-cell">{game.id}</td>
-                    <td>
-                      <span className={`status-badge status-${game.status.toLowerCase()}`}>
-                        {game.status}
-                      </span>
-                    </td>
-                    <td>{game.players?.length || 0}</td>
-                    <td>{new Date(game.createdAt).toLocaleString()}</td>
-                    <td>{new Date(game.updatedAt || game.createdAt).toLocaleString()}</td>
-                    <td>
-                      <button
-                        className="delete-button"
-                        onClick={() => handleDeleteGame(game.id)}
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
+      {/* Table */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-surface border border-border rounded-[var(--radius-xl)] overflow-hidden"
+      >
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[600px]">
+            <thead>
+              <tr className="border-b border-border bg-surface-elevated/50">
+                {['Game ID', 'Status', 'Players', 'Blinds', 'Created', ''].map(col => (
+                  <th key={col} className="px-4 py-3 text-left text-xs font-semibold text-text-dim uppercase tracking-wider">
+                    {col}
+                  </th>
                 ))}
-              </tbody>
-            </table>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                [...Array(5)].map((_, i) => <TableRowSkeleton key={i} />)
+              ) : games.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-4 py-12 text-center text-text-dim text-sm">
+                    {search ? 'No tables match your search.' : 'No tables found.'}
+                  </td>
+                </tr>
+              ) : (
+                games.map(game => (
+                  <TableRow key={game.id} game={game} onDelete={setDeleteTarget} />
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {!loading && games.length > 0 && (
+          <div className="px-4 py-3 border-t border-border text-xs text-text-dim">
+            Showing {games.length} {search ? 'matching ' : ''}table{games.length !== 1 ? 's' : ''}
           </div>
         )}
-      </div>
-    </div>
-  );
-};
+      </motion.div>
 
-export default AdminPanel;
+      {/* Delete confirmation dialog */}
+      <Dialog open={!!deleteTarget} onOpenChange={v => !v && setDeleteTarget(null)}>
+        <DialogContent className="max-w-[380px]">
+          <DialogHeader>
+            <DialogTitle>Delete Table</DialogTitle>
+            <DialogDescription>
+              This will permanently delete table{' '}
+              <span className="font-mono text-text">{deleteTarget?.id?.slice(0, 12)}…</span>.
+              This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setDeleteTarget(null)} disabled={deleting}>
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={handleDelete} disabled={deleting} className="gap-2">
+              {deleting && <Loader2 size={14} className="animate-spin" />}
+              {deleting ? 'Deleting…' : 'Delete Table'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </PageWrapper>
+  );
+}

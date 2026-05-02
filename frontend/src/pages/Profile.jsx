@@ -1,365 +1,228 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
-import axios from '../api/axios';
+import { motion } from 'framer-motion';
+import { AuthContext } from '@/context/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
+import PageWrapper from '@/components/layout/PageWrapper';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
+} from '@/components/ui/dialog';
+import { toast } from 'sonner';
+import {
+  Wallet, TrendingUp, Hash, Percent, LogOut,
+  PlusCircle, User, Mail, AtSign, Loader2,
+} from 'lucide-react';
+import { formatChips, getPlayerInitials } from '@/lib/utils';
 
-const Profile = () => {
-  const { user, logout, updateBalance } = useContext(AuthContext);
+const STAT_CARDS = (user) => [
+  { label: 'Balance', value: formatChips(user?.balance ?? 0), icon: Wallet, color: 'text-gold', bg: 'bg-gold-muted' },
+  { label: 'Hands Played', value: (user?.handsPlayed ?? 0).toLocaleString(), icon: Hash, color: 'text-info', bg: 'bg-blue-900/20' },
+  { label: 'Win Rate', value: `${user?.winRate ?? 0}%`, icon: Percent, color: 'text-success', bg: 'bg-success-muted' },
+  { label: 'Net Profit', value: formatChips(user?.netProfit ?? 0), icon: TrendingUp, color: 'text-warning', bg: 'bg-amber-900/20' },
+];
+
+export default function Profile() {
   const navigate = useNavigate();
-  const [mounted, setMounted] = useState(false);
-  const [hoveredButton, setHoveredButton] = useState(null);
+  const { user, logout, updateBalance, refreshUserData } = useContext(AuthContext);
+  const { addBalance } = useAuth();
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const [showTopUp, setShowTopUp] = useState(false);
+  const [amount, setAmount] = useState('');
+  const [topUpLoading, setTopUpLoading] = useState(false);
+  const [topUpError, setTopUpError] = useState('');
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
-  const handleAddBalance = async () => {
-    const amount = prompt('Enter the amount to add to your balance:');
-    if (!amount || isNaN(amount) || amount <= 0) {
-      alert('Please enter a valid amount.');
-      return;
-    }
-
+  const handleTopUp = async () => {
+    const val = parseFloat(amount);
+    if (!val || val <= 0) { setTopUpError('Enter a valid amount.'); return; }
+    setTopUpLoading(true);
+    setTopUpError('');
     try {
-      const response = await axios.post(`/user/add-balance?amount=${parseInt(amount)}`);
-      alert(`Balance updated successfully! New Balance: $${response.data.balance}`);
-
-      // Update the user balance in the context (this will update the navbar too)
-      updateBalance(response.data.balance);
-    } catch (error) {
-      console.error('Error adding balance:', error);
-      alert('Failed to add balance. Please try again.');
+      const res = await addBalance(val);
+      updateBalance(res?.balance ?? (user.balance + val));
+      await refreshUserData();
+      toast.success(`${formatChips(val)} added to your balance!`);
+      setShowTopUp(false);
+      setAmount('');
+    } catch (err) {
+      setTopUpError(err?.message || 'Failed to add balance. Please try again.');
+    } finally {
+      setTopUpLoading(false);
     }
-  };
-
-  const getButtonStyle = (buttonType, baseStyle) => {
-    const isHovered = hoveredButton === buttonType;
-    return {
-      ...baseStyle,
-      transform: isHovered ? 'translateY(-2px) scale(1.05)' : 'translateY(0) scale(1)',
-      boxShadow: isHovered
-        ? (buttonType === 'add'
-          ? '0 8px 25px rgba(0, 170, 255, 0.6), 0 0 40px rgba(0, 170, 255, 0.3)'
-          : '0 8px 25px rgba(231, 76, 60, 0.6), 0 0 40px rgba(231, 76, 60, 0.3)')
-        : baseStyle.boxShadow,
-    };
   };
 
   if (!user) {
-    return <div style={styles.loading}>Loading...</div>;
+    return (
+      <PageWrapper>
+        <div className="max-w-2xl mx-auto space-y-4 py-8">
+          <Skeleton className="h-32 w-full rounded-[var(--radius-xl)]" />
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-24" />)}
+          </div>
+        </div>
+      </PageWrapper>
+    );
   }
+
+  const stats = STAT_CARDS(user);
+  const isAdmin = user.roles?.includes('ROLE_ADMIN');
+  const initials = getPlayerInitials(user.name || user.username);
 
   return (
-    <div style={styles.container}>
-      {/* Floating poker chips */}
-      <div style={styles.floatingChip1}>♠</div>
-      <div style={styles.floatingChip2}>♥</div>
-      <div style={styles.floatingChip3}>♦</div>
-
-      <div style={{
-        ...styles.card,
-        animation: mounted ? 'scaleIn 0.6s ease-out' : 'none',
-      }}>
-        <h1 style={{
-          ...styles.title,
-          animation: mounted ? 'shimmer 3s linear infinite' : 'none',
-        }}>
-          Profile
-        </h1>
-        <div style={{
-          ...styles.infoContainer,
-          animation: mounted ? 'fadeInUp 0.6s ease-out 0.2s backwards' : 'none',
-        }}>
-          <div style={styles.avatarContainer}>
-            <div style={styles.avatar}>
-              {user.name ? user.name.charAt(0).toUpperCase() : '?'}
-            </div>
-          </div>
-          <div style={styles.infoItem}>
-            <span style={styles.infoLabel}>Name:</span>
-            <span style={styles.infoValue}>{user.name}</span>
-          </div>
-          <div style={styles.infoItem}>
-            <span style={styles.infoLabel}>Username:</span>
-            <span style={styles.infoValue}>{user.username}</span>
-          </div>
-          <div style={styles.infoItem}>
-            <span style={styles.infoLabel}>Email:</span>
-            <span style={styles.infoValue}>{user.email}</span>
-          </div>
-        </div>
-        <div style={{
-          ...styles.balanceContainer,
-          animation: mounted ? 'fadeInUp 0.6s ease-out 0.4s backwards' : 'none',
-        }}>
-          <div style={styles.balanceInfo}>
-            <span style={styles.balanceLabel}>Balance</span>
-            <span style={styles.balanceValue}>${user.balance}</span>
-          </div>
-          <button
-            style={getButtonStyle('add', styles.addBalanceButton)}
-            onClick={handleAddBalance}
-            onMouseEnter={() => setHoveredButton('add')}
-            onMouseLeave={() => setHoveredButton(null)}
-          >
-            Add Balance
-          </button>
-        </div>
-        <button
-          style={getButtonStyle('logout', styles.logoutButton)}
-          onClick={handleLogout}
-          onMouseEnter={() => setHoveredButton('logout')}
-          onMouseLeave={() => setHoveredButton(null)}
+    <PageWrapper>
+      <div className="max-w-2xl mx-auto space-y-6 py-4">
+        {/* Profile card */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-surface border border-border rounded-[var(--radius-xl)] p-6"
         >
-          Logout
-        </button>
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-4">
+              <Avatar className="h-16 w-16 border-2 border-gold/40">
+                <AvatarFallback className="bg-gold/15 text-gold text-xl font-bold font-serif">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="font-serif text-2xl font-bold text-text">{user.name}</h1>
+                  {isAdmin && <Badge variant="warning" className="text-[10px]">Admin</Badge>}
+                </div>
+                <div className="flex items-center gap-3 mt-1.5 text-text-muted text-sm">
+                  <span className="flex items-center gap-1"><AtSign size={12} />{user.username}</span>
+                  {user.email && <span className="flex items-center gap-1"><Mail size={12} />{user.email}</span>}
+                </div>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleLogout}
+              className="text-text-muted hover:text-danger hover:bg-danger-muted gap-1.5"
+              aria-label="Sign out"
+            >
+              <LogOut size={14} />
+              <span className="hidden sm:inline">Sign out</span>
+            </Button>
+          </div>
+        </motion.div>
+
+        {/* Stats grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {stats.map((s, i) => (
+            <motion.div
+              key={s.label}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.06 }}
+              className="bg-surface border border-border rounded-[var(--radius-xl)] p-4"
+            >
+              <div className={`inline-flex items-center justify-center w-8 h-8 rounded-[var(--radius-lg)] ${s.bg} mb-3`}>
+                <s.icon size={16} className={s.color} />
+              </div>
+              <div className={`font-bold text-xl font-mono ${s.color}`}>{s.value}</div>
+              <div className="text-text-dim text-xs mt-0.5">{s.label}</div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Balance top-up */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-surface border border-border rounded-[var(--radius-xl)] p-5"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="font-semibold text-text">Add Funds</h2>
+              <p className="text-text-muted text-sm mt-0.5">Top up your balance to keep playing.</p>
+            </div>
+            <Button onClick={() => setShowTopUp(true)} variant="outline" className="gap-2">
+              <PlusCircle size={15} />
+              Top Up
+            </Button>
+          </div>
+        </motion.div>
+
+        {/* Hand history placeholder */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="bg-surface border border-border rounded-[var(--radius-xl)] overflow-hidden"
+        >
+          <div className="px-5 py-4 border-b border-border flex items-center justify-between">
+            <h2 className="font-semibold text-text">Recent Hands</h2>
+            <Badge variant="surface" className="text-[10px]">Coming soon</Badge>
+          </div>
+          <div className="p-5 space-y-3">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-4 w-12" />
+              </div>
+            ))}
+            <p className="text-text-dim text-xs text-center pt-2">Hand history will appear here once you play.</p>
+          </div>
+        </motion.div>
       </div>
-    </div>
+
+      {/* Top-up dialog */}
+      <Dialog open={showTopUp} onOpenChange={v => !v && setShowTopUp(false)}>
+        <DialogContent className="max-w-[360px]">
+          <DialogHeader>
+            <DialogTitle>Add Funds</DialogTitle>
+            <DialogDescription>Enter the amount you'd like to add to your balance.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            {/* Quick amounts */}
+            <div className="grid grid-cols-3 gap-2">
+              {[100, 500, 1000].map(amt => (
+                <button
+                  key={amt}
+                  onClick={() => setAmount(String(amt))}
+                  className="py-2 rounded-[var(--radius)] border border-border bg-surface-elevated text-sm font-semibold text-text-muted hover:border-gold hover:text-gold transition-colors"
+                >
+                  ${amt}
+                </button>
+              ))}
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="topup-amount">Custom Amount ($)</Label>
+              <Input
+                id="topup-amount"
+                type="number"
+                min="1"
+                placeholder="Enter amount"
+                value={amount}
+                onChange={e => { setAmount(e.target.value); setTopUpError(''); }}
+              />
+            </div>
+            {topUpError && <p className="text-danger text-sm">{topUpError}</p>}
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowTopUp(false)}>Cancel</Button>
+            <Button onClick={handleTopUp} disabled={topUpLoading} className="gap-2">
+              {topUpLoading && <Loader2 size={14} className="animate-spin" />}
+              {topUpLoading ? 'Processing…' : 'Add Funds'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </PageWrapper>
   );
-};
-
-// Add keyframes for animations
-if (typeof document !== 'undefined') {
-  const styleSheet = document.styleSheets[0];
-  const animations = `
-  @keyframes gradientShift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
-  @keyframes scaleIn {
-    from {
-      opacity: 0;
-      transform: scale(0.9);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(30px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  @keyframes shimmer {
-    0% { background-position: -1000px 0; }
-    100% { background-position: 1000px 0; }
-  }
-  @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-20px); }
-  }
-  @keyframes pulse {
-    0%, 100% {
-      transform: scale(1);
-      box-shadow: 0 0 15px rgba(0, 170, 255, 0.3);
-    }
-    50% {
-      transform: scale(1.05);
-      box-shadow: 0 0 25px rgba(0, 170, 255, 0.5);
-    }
-  }
-  `;
-
-  try {
-    if (styleSheet && styleSheet.cssRules) {
-      styleSheet.insertRule(animations, styleSheet.cssRules.length);
-    }
-  } catch (e) {
-    // Animations already exist or error inserting
-  }
 }
-
-const styles = {
-  container: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    minHeight: '100vh',
-    background: 'linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #0f2027, #203a43, #2c5364)',
-    backgroundSize: '400% 400%',
-    animation: 'gradientShift 15s ease infinite',
-    padding: '20px',
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  // Floating poker chips
-  floatingChip1: {
-    position: 'absolute',
-    top: '20%',
-    left: '10%',
-    fontSize: '3rem',
-    color: 'rgba(0, 170, 255, 0.15)',
-    animation: 'float 6s ease-in-out infinite',
-    zIndex: 1,
-    textShadow: '0 0 20px rgba(0, 170, 255, 0.3)',
-    pointerEvents: 'none',
-  },
-  floatingChip2: {
-    position: 'absolute',
-    top: '60%',
-    right: '15%',
-    fontSize: '2.5rem',
-    color: 'rgba(255, 0, 100, 0.15)',
-    animation: 'float 7s ease-in-out infinite 1s',
-    zIndex: 1,
-    textShadow: '0 0 20px rgba(255, 0, 100, 0.3)',
-    pointerEvents: 'none',
-  },
-  floatingChip3: {
-    position: 'absolute',
-    bottom: '15%',
-    left: '15%',
-    fontSize: '2.8rem',
-    color: 'rgba(0, 255, 204, 0.15)',
-    animation: 'float 8s ease-in-out infinite 2s',
-    zIndex: 1,
-    textShadow: '0 0 20px rgba(0, 255, 204, 0.3)',
-    pointerEvents: 'none',
-  },
-  card: {
-    backgroundColor: 'rgba(22, 33, 62, 0.85)',
-    backdropFilter: 'blur(15px)',
-    padding: '40px',
-    borderRadius: '20px',
-    boxShadow: '0 15px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 170, 255, 0.1)',
-    textAlign: 'center',
-    width: '100%',
-    maxWidth: '500px',
-    color: '#fff',
-    border: '1px solid rgba(0, 170, 255, 0.2)',
-    position: 'relative',
-    zIndex: 2,
-  },
-  title: {
-    fontSize: '32px',
-    marginBottom: '30px',
-    color: '#00aaff',
-    fontWeight: 'bold',
-    textShadow: '0 0 15px rgba(0, 170, 255, 0.5)',
-    fontFamily: "'Orbitron', sans-serif",
-    background: 'linear-gradient(90deg, #00aaff, #00ffcc, #00aaff)',
-    backgroundSize: '200% auto',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-    backgroundClip: 'text',
-  },
-  avatarContainer: {
-    display: 'flex',
-    justifyContent: 'center',
-    marginBottom: '25px',
-  },
-  avatar: {
-    width: '100px',
-    height: '100px',
-    borderRadius: '50%',
-    background: 'linear-gradient(135deg, #00aaff, #0088cc)',
-    color: '#fff',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '42px',
-    fontWeight: 'bold',
-    boxShadow: '0 8px 20px rgba(0, 170, 255, 0.4), 0 0 30px rgba(0, 170, 255, 0.2)',
-    animation: 'pulse 3s ease-in-out infinite',
-  },
-  infoContainer: {
-    marginBottom: '30px',
-  },
-  infoItem: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    margin: '12px 0',
-    padding: '15px 20px',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: '10px',
-    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    border: '1px solid rgba(255, 255, 255, 0.05)',
-  },
-  infoLabel: {
-    fontWeight: 'bold',
-    color: '#00ffcc',
-    textShadow: '0 0 8px rgba(0, 255, 204, 0.3)',
-  },
-  infoValue: {
-    color: '#fff',
-  },
-  balanceContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    margin: '30px 0',
-    padding: '20px',
-    background: 'rgba(0, 170, 255, 0.15)',
-    borderRadius: '15px',
-    boxShadow: '0 4px 15px rgba(0, 170, 255, 0.2)',
-    border: '1px solid rgba(0, 170, 255, 0.3)',
-  },
-  balanceInfo: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-  },
-  balanceLabel: {
-    fontSize: '14px',
-    color: '#00ffcc',
-    marginBottom: '8px',
-    textShadow: '0 0 8px rgba(0, 255, 204, 0.3)',
-  },
-  balanceValue: {
-    fontSize: '28px',
-    fontWeight: 'bold',
-    color: '#fff',
-    textShadow: '0 0 10px rgba(255, 255, 255, 0.3)',
-  },
-  addBalanceButton: {
-    padding: '12px 20px',
-    background: 'linear-gradient(135deg, #00aaff, #0088cc)',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '25px',
-    cursor: 'pointer',
-    fontSize: '15px',
-    fontWeight: 'bold',
-    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    boxShadow: '0 4px 15px rgba(0, 170, 255, 0.4)',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
-  },
-  logoutButton: {
-    padding: '14px 24px',
-    background: 'linear-gradient(135deg, #e63946, #c81d45)',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '25px',
-    cursor: 'pointer',
-    fontSize: '16px',
-    fontWeight: 'bold',
-    marginTop: '20px',
-    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    boxShadow: '0 4px 15px rgba(231, 76, 60, 0.4)',
-    width: '100%',
-    textTransform: 'uppercase',
-    letterSpacing: '1px',
-  },
-  loading: {
-    fontSize: '24px',
-    color: '#00aaff',
-    textAlign: 'center',
-    margin: '100px auto',
-    textShadow: '0 0 10px rgba(0, 170, 255, 0.5)',
-  },
-};
-
-export default Profile;

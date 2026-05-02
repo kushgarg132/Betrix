@@ -1,97 +1,134 @@
-import React, { useState, useEffect } from 'react';
-import axios from '../api/axios';
+import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './Auth.css';
+import { AuthContext } from '@/context/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
+import AuthLayout from '@/components/layout/AuthLayout';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { toast } from 'sonner';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 
-const Register = () => {
-  const [name, setName] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [email, setEmail] = useState('');
-  const [mounted, setMounted] = useState(false);
+export default function Register() {
   const navigate = useNavigate();
+  const { login: ctxLogin } = useContext(AuthContext);
+  const { register, guestLogin } = useAuth();
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const [form, setForm] = useState({ name: '', username: '', email: '', password: '' });
+  const [showPw, setShowPw] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [guestLoading, setGuestLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleRegister = async (e) => {
+  const set = (field) => (e) => {
+    setForm(prev => ({ ...prev, [field]: e.target.value }));
+    if (error) setError('');
+  };
+
+  const validate = () => {
+    if (!form.name.trim())        return 'Enter your full name.';
+    if (!form.username.trim())    return 'Enter a username.';
+    if (form.username.length < 3) return 'Username must be at least 3 characters.';
+    if (!form.email.trim())       return 'Enter your email address.';
+    if (!form.password)           return 'Enter a password.';
+    if (form.password.length < 6) return 'Password must be at least 6 characters.';
+    return null;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    const err = validate();
+    if (err) { setError(err); return; }
+    setLoading(true);
+    setError('');
     try {
-      const response = await axios.post('/auth/register', { name, username, password, email });
-      console.log('Registration successful:', response.data);
+      await register(form.name.trim(), form.username.trim(), form.password, form.email.trim());
+      toast.success('Account created! Please sign in.');
       navigate('/login');
-    } catch (error) {
-      console.error('Registration failed:', error);
+    } catch (err) {
+      setError(err?.message || 'Registration failed. Try a different username or email.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGuest = async () => {
+    setGuestLoading(true);
+    try {
+      const data = await guestLogin();
+      await ctxLogin(data.token);
+      toast.success('Joined as guest!');
+      navigate('/lobby');
+    } catch (err) {
+      setError(err?.message || 'Guest login failed.');
+    } finally {
+      setGuestLoading(false);
     }
   };
 
   return (
-    <div className={`auth-container ${mounted ? 'mounted' : ''}`}>
-      {/* Floating poker chips */}
-      <div className="floating-suit floating-suit-1">♠</div>
-      <div className="floating-suit floating-suit-2">♥</div>
-      <div className="floating-suit floating-suit-3">♦</div>
-      <div className="floating-suit floating-suit-4">♣</div>
+    <AuthLayout
+      title="Create account"
+      subtitle="Start playing in under a minute."
+      altText="Already have an account?"
+      altLink="/login"
+      altLinkLabel="Sign in"
+    >
+      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="name">Full Name</Label>
+            <Input id="name" placeholder="Jane Smith" value={form.name} onChange={set('name')} autoComplete="name" autoFocus />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="username">Username</Label>
+            <Input id="username" placeholder="jsmith42" value={form.username} onChange={set('username')} autoComplete="username" />
+          </div>
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="email">Email</Label>
+          <Input id="email" type="email" placeholder="jane@example.com" value={form.email} onChange={set('email')} autoComplete="email" />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="password">Password</Label>
+          <div className="relative">
+            <Input
+              id="password"
+              type={showPw ? 'text' : 'password'}
+              placeholder="Min. 6 characters"
+              value={form.password}
+              onChange={set('password')}
+              autoComplete="new-password"
+              className="pr-10"
+            />
+            <button
+              type="button"
+              tabIndex={-1}
+              onClick={() => setShowPw(v => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-text-dim hover:text-text-muted transition-colors"
+              aria-label={showPw ? 'Hide password' : 'Show password'}
+            >
+              {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
+        </div>
+        {error && <p role="alert" className="text-danger text-sm">{error}</p>}
+        <Button type="submit" className="w-full" size="lg" disabled={loading}>
+          {loading && <Loader2 size={16} className="animate-spin" />}
+          {loading ? 'Creating account…' : 'Create Account'}
+        </Button>
+      </form>
 
-      <div className="glass-card auth-card">
-        <h1 className="auth-title">Create Account</h1>
-        <form onSubmit={handleRegister} className="auth-form">
-          <div className="input-group">
-            <input
-              type="text"
-              placeholder="Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </div>
-          <div className="input-group">
-            <input
-              type="text"
-              placeholder="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-          </div>
-          <div className="input-group">
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          <div className="input-group">
-            <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            className="btn-primary w-full"
-          >
-            Register
-          </button>
-        </form>
-        <p className="auth-footer">
-          Already have an account?
-          <span
-            className="auth-link"
-            onClick={() => navigate('/login')}
-          >
-            Login
-          </span>
-        </p>
+      <div className="relative my-5">
+        <Separator />
+        <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-3 text-text-dim text-xs uppercase tracking-wider">or</span>
       </div>
-    </div>
-  );
-};
 
-export default Register;
+      <Button variant="surface" className="w-full" size="lg" onClick={handleGuest} disabled={guestLoading}>
+        {guestLoading && <Loader2 size={16} className="animate-spin" />}
+        {guestLoading ? 'Joining…' : 'Continue as Guest'}
+      </Button>
+    </AuthLayout>
+  );
+}

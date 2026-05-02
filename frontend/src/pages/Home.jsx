@@ -1,363 +1,245 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { AuthContext } from '@/context/AuthContext';
+import { Button } from '@/components/ui/button';
+import PageWrapper from '@/components/layout/PageWrapper';
+import { Zap, Shield, BarChart3, Users, ArrowRight, Star } from 'lucide-react';
 
-// Add keyframes for animations
-const styleSheet = document.styleSheets[0];
-const animations = `
-@keyframes gradientShift {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
+const FEATURES = [
+  {
+    icon: Zap,
+    title: 'Real-Time Action',
+    desc: 'Sub-second updates via WebSocket subscriptions. Every bet, fold, and raise lands instantly.',
+    color: 'text-gold',
+    bg: 'bg-gold-muted',
+  },
+  {
+    icon: Shield,
+    title: 'Secure & Fair',
+    desc: 'JWT-authenticated sessions, server-side hand evaluation, and tamper-proof game state.',
+    color: 'text-success',
+    bg: 'bg-success-muted',
+  },
+  {
+    icon: BarChart3,
+    title: 'Track Your Edge',
+    desc: 'Hands played, win rate, and net profit across every session — all in your profile.',
+    color: 'text-info',
+    bg: 'bg-blue-900/20',
+  },
+  {
+    icon: Users,
+    title: 'Up to 8 Players',
+    desc: 'Fill a full table or play heads-up. Choose your stakes from micro to high-roller.',
+    color: 'text-warning',
+    bg: 'bg-amber-900/20',
+  },
+];
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+const STATS = [
+  { label: 'Active Tables', value: '12+' },
+  { label: 'Hands Dealt Today', value: '4.2K' },
+  { label: 'Players Online', value: '87' },
+  { label: 'Biggest Pot', value: '$12K' },
+];
 
-@keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.8);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-20px);
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -1000px 0;
-  }
-  100% {
-    background-position: 1000px 0;
-  }
-}
-`;
-
-try {
-  styleSheet.insertRule(animations, styleSheet.cssRules.length);
-} catch (e) {
-  // Animations already exist or error inserting
-}
-
-const Home = () => {
-  const navigate = useNavigate();
-  const [mounted, setMounted] = useState(false);
-  const [hoveredButton, setHoveredButton] = useState(null);
-  const [hoveredCard, setHoveredCard] = useState(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const getButtonStyle = (buttonType) => {
-    const baseStyle = buttonType === 'primary' ? styles.primaryButton : styles.secondaryButton;
-    const isHovered = hoveredButton === buttonType;
-
-    return {
-      ...baseStyle,
-      transform: isHovered ? 'translateY(-3px) scale(1.05)' : 'translateY(0) scale(1)',
-      boxShadow: isHovered
-        ? (buttonType === 'primary'
-          ? '0 8px 25px rgba(0, 170, 255, 0.6), 0 0 40px rgba(0, 170, 255, 0.3)'
-          : '0 8px 25px rgba(0, 255, 204, 0.4), 0 0 40px rgba(0, 255, 204, 0.2)')
-        : baseStyle.boxShadow,
-    };
-  };
-
-  const getCardStyle = (index) => {
-    const isHovered = hoveredCard === index;
-
-    return {
-      ...styles.featureCard,
-      transform: isHovered ? 'translateY(-10px) scale(1.05)' : 'translateY(0) scale(1)',
-      boxShadow: isHovered
-        ? '0 15px 40px rgba(0, 255, 204, 0.3), 0 0 20px rgba(0, 170, 255, 0.2)'
-        : styles.featureCard.boxShadow,
-    };
-  };
-
+function TablePreview() {
   return (
-    <div style={styles.container}>
-      {/* Floating poker chips */}
-      <div style={styles.floatingChip1}>♠</div>
-      <div style={styles.floatingChip2}>♥</div>
-      <div style={styles.floatingChip3}>♦</div>
-      <div style={styles.floatingChip4}>♣</div>
-
-      <div style={styles.overlay}>
-        <div style={styles.mainContent}>
-          <h1 style={{
-            ...styles.title,
-            animation: mounted ? 'fadeInDown 0.8s ease-out' : 'none',
-          }}>
-            <span style={styles.titleHighlight}>BETRIX</span> POKER
-          </h1>
-          <p style={{
-            ...styles.subtitle,
-            animation: mounted ? 'fadeInUp 0.8s ease-out 0.2s backwards' : 'none',
-          }}>
-            Experience the thrill of poker in a modern digital environment
-          </p>
-
-          <div style={{
-            ...styles.buttonContainer,
-            animation: mounted ? 'scaleIn 0.6s ease-out 0.4s backwards' : 'none',
-          }}>
-            <button
-              style={getButtonStyle('primary')}
-              onClick={() => navigate('/lobby')}
-              onMouseEnter={() => setHoveredButton('primary')}
-              onMouseLeave={() => setHoveredButton(null)}
+    <div className="relative w-full max-w-[480px] mx-auto" style={{ paddingTop: '55%' }}>
+      <div className="absolute inset-0">
+        <div
+          className="absolute inset-0 rounded-full"
+          style={{
+            background: 'linear-gradient(180deg, #8b6428 0%, #6b4c1e 50%, #4a3010 100%)',
+            boxShadow: '0 8px 48px rgba(0,0,0,0.9), 0 0 0 3px #3d2800',
+          }}
+        />
+        <div
+          className="absolute felt-surface rounded-full"
+          style={{ inset: 10, boxShadow: 'inset 0 0 60px rgba(0,0,0,0.5)' }}
+        />
+        <div
+          className="absolute rounded-full pointer-events-none"
+          style={{ inset: 24, border: '1px solid rgba(255,255,255,0.06)' }}
+        />
+        <div className="absolute inset-0 flex items-center justify-center gap-2">
+          {[
+            { rank: 'A', suit: '♠', red: false },
+            { rank: 'K', suit: '♥', red: true },
+            { rank: 'Q', suit: '♦', red: true },
+            { rank: 'J', suit: '♣', red: false },
+            { rank: '10', suit: '♠', red: false },
+          ].map((c, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: -10, rotateY: 90 }}
+              animate={{ opacity: 1, y: 0, rotateY: 0 }}
+              transition={{ delay: 0.4 + i * 0.1, duration: 0.4, type: 'spring' }}
+              className="bg-white rounded shadow-lg flex items-center justify-center"
+              style={{ width: 36, height: 52, perspective: 600 }}
             >
-              Enter Game Lobby
-            </button>
-            <button
-              style={getButtonStyle('secondary')}
-              onClick={() => navigate('/profile')}
-              onMouseEnter={() => setHoveredButton('secondary')}
-              onMouseLeave={() => setHoveredButton(null)}
-            >
-              View Profile
-            </button>
-          </div>
-
-          <div style={styles.featureGrid}>
-            <div
-              style={{
-                ...getCardStyle(0),
-                animation: mounted ? 'fadeInUp 0.6s ease-out 0.6s backwards' : 'none',
-              }}
-              onMouseEnter={() => setHoveredCard(0)}
-              onMouseLeave={() => setHoveredCard(null)}
-            >
-              <div style={styles.featureIcon}>💰</div>
-              <h3 style={styles.featureTitle}>Real-time Play</h3>
-              <p style={styles.featureText}>Compete in real-time with players worldwide</p>
-            </div>
-            <div
-              style={{
-                ...getCardStyle(1),
-                animation: mounted ? 'fadeInUp 0.6s ease-out 0.7s backwards' : 'none',
-              }}
-              onMouseEnter={() => setHoveredCard(1)}
-              onMouseLeave={() => setHoveredCard(null)}
-            >
-              <div style={styles.featureIcon}>🏆</div>
-              <h3 style={styles.featureTitle}>Tournaments</h3>
-              <p style={styles.featureText}>Join tournaments and win big prizes</p>
-            </div>
-            <div
-              style={{
-                ...getCardStyle(2),
-                animation: mounted ? 'fadeInUp 0.6s ease-out 0.8s backwards' : 'none',
-              }}
-              onMouseEnter={() => setHoveredCard(2)}
-              onMouseLeave={() => setHoveredCard(null)}
-            >
-              <div style={styles.featureIcon}>📊</div>
-              <h3 style={styles.featureTitle}>Stats Tracking</h3>
-              <p style={styles.featureText}>Track your performance and rankings</p>
-            </div>
-          </div>
+              <div className={`text-xs font-bold leading-tight text-center ${c.red ? 'text-red-600' : 'text-gray-900'}`}>
+                <div>{c.rank}</div>
+                <div>{c.suit}</div>
+              </div>
+            </motion.div>
+          ))}
         </div>
+        {[
+          { left: '50%', top: '10%' },
+          { left: '83%', top: '25%' },
+          { left: '83%', top: '75%' },
+          { left: '50%', top: '90%' },
+          { left: '17%', top: '75%' },
+          { left: '17%', top: '25%' },
+        ].map((pos, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 + i * 0.07, type: 'spring' }}
+            className="absolute w-9 h-9 rounded-full bg-surface-elevated border-2 border-border flex items-center justify-center text-xs font-bold text-text-muted"
+            style={{ left: pos.left, top: pos.top, transform: 'translate(-50%, -50%)' }}
+          >
+            P{i + 1}
+          </motion.div>
+        ))}
       </div>
     </div>
   );
-};
+}
 
-const styles = {
-  container: {
-    minHeight: '100vh',
-    background: 'linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #0f2027, #203a43, #2c5364)',
-    backgroundSize: '400% 400%',
-    animation: 'gradientShift 15s ease infinite',
-    position: 'relative',
-    paddingBottom: 'env(safe-area-inset-bottom, 0)',
-  },
-  overlay: {
-    minHeight: '100vh',
-    backgroundColor: 'rgba(15, 12, 41, 0.4)',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '20px',
-    paddingBottom: 'calc(20px + env(safe-area-inset-bottom, 0))',
-  },
-  mainContent: {
-    textAlign: 'center',
-    maxWidth: '1000px',
-    width: '100%',
-    paddingBottom: '20px',
-    position: 'relative',
-    zIndex: 2,
-  },
-  title: {
-    fontSize: '3.5rem',
-    fontWeight: 'bold',
-    marginBottom: '20px',
-    color: '#fff',
-    textShadow: '0 3px 6px rgba(0, 0, 0, 0.5)',
-    letterSpacing: '2px',
-  },
-  titleHighlight: {
-    color: '#00aaff',
-    textShadow: '0 0 10px rgba(0, 170, 255, 0.5)',
-    background: 'linear-gradient(90deg, #00aaff, #00ffcc, #00aaff)',
-    backgroundSize: '200% auto',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-    backgroundClip: 'text',
-    animation: 'shimmer 3s linear infinite',
-  },
-  subtitle: {
-    fontSize: '1.5rem',
-    marginBottom: '40px',
-    color: '#e0e0e0',
-    maxWidth: '800px',
-    margin: '0 auto 40px',
-  },
-  buttonContainer: {
-    display: 'flex',
-    justifyContent: 'center',
-    gap: '20px',
-    marginBottom: '50px',
-    flexWrap: 'wrap',
-  },
-  primaryButton: {
-    padding: '15px 30px',
-    fontSize: '1.2rem',
-    fontWeight: 'bold',
-    color: '#fff',
-    backgroundColor: '#00aaff',
-    border: 'none',
-    borderRadius: '30px',
-    cursor: 'pointer',
-    boxShadow: '0 4px 15px rgba(0, 170, 255, 0.4)',
-    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  },
-  secondaryButton: {
-    padding: '15px 30px',
-    fontSize: '1.2rem',
-    fontWeight: 'bold',
-    color: '#fff',
-    backgroundColor: 'transparent',
-    border: '2px solid #00ffcc',
-    borderRadius: '30px',
-    cursor: 'pointer',
-    boxShadow: '0 4px 15px rgba(0, 255, 204, 0.2)',
-    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  },
-  featureGrid: {
-    display: 'flex',
-    justifyContent: 'center',
-    flexWrap: 'wrap',
-    gap: '30px',
-    marginTop: '20px',
-  },
-  featureCard: {
-    backgroundColor: 'rgba(22, 33, 62, 0.7)',
-    padding: '30px 20px',
-    borderRadius: '15px',
-    width: '250px',
-    boxShadow: '0 8px 20px rgba(0, 0, 0, 0.2)',
-    backdropFilter: 'blur(5px)',
-    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-    cursor: 'pointer',
-    border: '1px solid rgba(0, 170, 255, 0.1)',
-  },
-  featureIcon: {
-    fontSize: '2.5rem',
-    marginBottom: '15px',
-    filter: 'drop-shadow(0 0 10px rgba(0, 255, 204, 0.3))',
-  },
-  featureTitle: {
-    fontSize: '1.3rem',
-    color: '#00ffcc',
-    marginBottom: '10px',
-    fontWeight: 'bold',
-  },
-  featureText: {
-    fontSize: '1rem',
-    color: '#e0e0e0',
-    lineHeight: '1.5',
-  },
-  // Floating poker suit symbols
-  floatingChip1: {
-    position: 'absolute',
-    top: '15%',
-    left: '10%',
-    fontSize: '3rem',
-    color: 'rgba(0, 170, 255, 0.2)',
-    animation: 'float 6s ease-in-out infinite',
-    zIndex: 1,
-    textShadow: '0 0 20px rgba(0, 170, 255, 0.3)',
-  },
-  floatingChip2: {
-    position: 'absolute',
-    top: '25%',
-    right: '15%',
-    fontSize: '2.5rem',
-    color: 'rgba(255, 0, 100, 0.2)',
-    animation: 'float 7s ease-in-out infinite 1s',
-    zIndex: 1,
-    textShadow: '0 0 20px rgba(255, 0, 100, 0.3)',
-  },
-  floatingChip3: {
-    position: 'absolute',
-    bottom: '20%',
-    left: '15%',
-    fontSize: '2.8rem',
-    color: 'rgba(255, 0, 100, 0.2)',
-    animation: 'float 8s ease-in-out infinite 2s',
-    zIndex: 1,
-    textShadow: '0 0 20px rgba(255, 0, 100, 0.3)',
-  },
-  floatingChip4: {
-    position: 'absolute',
-    bottom: '30%',
-    right: '10%',
-    fontSize: '3.2rem',
-    color: 'rgba(0, 170, 255, 0.2)',
-    animation: 'float 9s ease-in-out infinite 3s',
-    zIndex: 1,
-    textShadow: '0 0 20px rgba(0, 170, 255, 0.3)',
-  },
-};
+export default function Home() {
+  const { isLoggedIn } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-export default Home;
+  return (
+    <div className="flex-1 flex flex-col">
+      {/* Hero */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-felt-dark/20 pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_60%_50%,rgba(26,92,46,0.08),transparent_70%)] pointer-events-none" />
+        <PageWrapper>
+          <div className="py-16 lg:py-24 grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -24 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+              className="space-y-6"
+            >
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gold-muted border border-border-gold text-gold text-xs font-semibold">
+                <Star size={12} fill="currentColor" />
+                Premium Texas Hold'em
+              </div>
+              <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-text leading-[1.1] text-balance">
+                Real Money Poker,{' '}
+                <span className="gold-text">Real Stakes</span>
+              </h1>
+              <p className="text-text-muted text-lg leading-relaxed max-w-lg">
+                Jump into a live table in seconds. Play Texas Hold'em with real players,
+                real chips, and real-time action — from micro to high-roller stakes.
+              </p>
+              <div className="flex flex-wrap gap-3 pt-2">
+                {isLoggedIn ? (
+                  <Button size="xl" onClick={() => navigate('/lobby')} className="gap-2">
+                    Find a Table <ArrowRight size={18} />
+                  </Button>
+                ) : (
+                  <>
+                    <Button size="xl" onClick={() => navigate('/register')} className="gap-2">
+                      Play Now — Free <ArrowRight size={18} />
+                    </Button>
+                    <Button size="xl" variant="outline" onClick={() => navigate('/login')}>
+                      Sign In
+                    </Button>
+                  </>
+                )}
+              </div>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: 24 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.15 }}
+              className="lg:pl-8"
+            >
+              <TablePreview />
+            </motion.div>
+          </div>
+        </PageWrapper>
+      </section>
+
+      {/* Stats strip */}
+      <section className="border-y border-border bg-surface/60">
+        <PageWrapper>
+          <div className="py-5 grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {STATS.map((s, i) => (
+              <motion.div
+                key={s.label}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 + i * 0.05 }}
+                className="text-center"
+              >
+                <div className="text-2xl font-bold font-mono gold-text">{s.value}</div>
+                <div className="text-text-dim text-xs mt-0.5">{s.label}</div>
+              </motion.div>
+            ))}
+          </div>
+        </PageWrapper>
+      </section>
+
+      {/* Features bento grid */}
+      <section className="py-16">
+        <PageWrapper>
+          <div className="text-center mb-10">
+            <h2 className="font-serif text-3xl font-bold text-text mb-3">Built for Serious Players</h2>
+            <p className="text-text-muted max-w-md mx-auto text-sm">
+              Professional-grade poker with the speed and reliability you need to play your best game.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {FEATURES.map((f, i) => (
+              <motion.div
+                key={f.title}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 * i, duration: 0.4 }}
+                className="bg-surface border border-border rounded-[var(--radius-xl)] p-5 hover:border-border-gold transition-colors"
+              >
+                <div className={`inline-flex items-center justify-center w-10 h-10 rounded-[var(--radius-lg)] ${f.bg} mb-4`}>
+                  <f.icon size={20} className={f.color} />
+                </div>
+                <h3 className="font-semibold text-text mb-1.5">{f.title}</h3>
+                <p className="text-text-muted text-sm leading-relaxed">{f.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </PageWrapper>
+      </section>
+
+      {/* CTA */}
+      {!isLoggedIn && (
+        <section className="py-16 bg-gradient-to-t from-surface/40 to-transparent">
+          <PageWrapper>
+            <div className="text-center space-y-5">
+              <h2 className="font-serif text-3xl font-bold text-text">Ready to Play?</h2>
+              <p className="text-text-muted text-sm">Create a free account and be at a table in under 60 seconds.</p>
+              <Button size="xl" onClick={() => navigate('/register')} className="gap-2 mx-auto">
+                Start Playing Free <ArrowRight size={18} />
+              </Button>
+            </div>
+          </PageWrapper>
+        </section>
+      )}
+
+      <footer className="border-t border-border py-6 mt-auto">
+        <PageWrapper>
+          <p className="text-center text-text-dim text-xs">
+            © {new Date().getFullYear()} Betrix · Premium Texas Hold'em · Play responsibly
+          </p>
+        </PageWrapper>
+      </footer>
+    </div>
+  );
+}

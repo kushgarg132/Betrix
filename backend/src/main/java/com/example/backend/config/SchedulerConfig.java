@@ -15,7 +15,7 @@ public class SchedulerConfig {
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
         scheduler.setPoolSize(5);
         scheduler.setThreadNamePrefix("game-scheduler-");
-        scheduler.setErrorHandler(t -> t.printStackTrace());
+        scheduler.setErrorHandler(Throwable::printStackTrace);
         scheduler.initialize();
         return scheduler;
     }

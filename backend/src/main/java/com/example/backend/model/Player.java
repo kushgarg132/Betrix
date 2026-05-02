@@ -21,7 +21,9 @@ public class Player {
     private double lastWinAmount; // Amount won in the last hand
     private boolean isSittingOut;
     private HandResult bestHand; // Best hand for the player
-    private long timeBankMs; // Extra time bank in milliseconds for the player
+    private long timeBankMs;
+    private boolean isBot = false;
+    private String botDifficulty;
 
     public Player(String name, String username, double initialChips) {
         this.id = UUID.randomUUID().toString();
@@ -50,6 +52,8 @@ public class Player {
         this.bestHand = player.getBestHand();
         this.isSittingOut = player.isSittingOut();
         this.timeBankMs = player.getTimeBankMs();
+        this.isBot = player.isBot();
+        this.botDifficulty = player.getBotDifficulty();
     }
 
     public void hideDetails() {

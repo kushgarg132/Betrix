@@ -1,2 +1,6 @@
 # VS Code settings (ignore in all directories)
 .vscode/
+
+# Ignore .env files
+.env
+.env.*
