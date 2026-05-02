@@ -34,7 +34,6 @@ public class GameServiceTest {
     @Mock
     private BettingManager bettingManager;
 
-    @Mock
     private GameValidatorService gameValidatorService;
 
     @Mock
@@ -43,14 +42,23 @@ public class GameServiceTest {
     @Mock
     private GameScheduler gameScheduler;
 
-    @InjectMocks
-    @Spy // Spy to allow partial mocking of methods within the same class (like
-         // leaveGame)
+    private GameLifecycleService lifecycleService;
+    private GameHandService handService;
+    private GameActionService actionService;
+
     private GameServiceImpl gameService;
 
     @BeforeEach
     public void setup() {
         MockitoAnnotations.openMocks(this);
+        
+        gameValidatorService = spy(new GameValidatorService(gameRepository, userRepository));
+        
+        actionService = new GameActionService(gameRepository, gameValidatorService, bettingManager, eventPublisher, gameScheduler);
+        lifecycleService = spy(new GameLifecycleService(userRepository, gameRepository, gameValidatorService, eventPublisher, actionService));
+        handService = new GameHandService(gameRepository, gameValidatorService, bettingManager, eventPublisher, lifecycleService);
+        
+        gameService = new GameServiceImpl(lifecycleService, handService, actionService);
     }
 
     @Test
@@ -62,7 +70,7 @@ public class GameServiceTest {
         player.setId(playerId);
         game.getPlayers().add(player);
 
-        when(gameValidatorService.validateGameExists(gameId)).thenReturn(game);
+        doReturn(game).when(gameValidatorService).validateGameExists(gameId);
 
         gameService.sitOut(gameId, playerId);
 
@@ -81,7 +89,7 @@ public class GameServiceTest {
         player.setSittingOut(true); // Initially sitting out
         game.getPlayers().add(player);
 
-        when(gameValidatorService.validateGameExists(gameId)).thenReturn(game);
+        doReturn(game).when(gameValidatorService).validateGameExists(gameId);
 
         gameService.sitIn(gameId, playerId);
 
@@ -111,7 +119,7 @@ public class GameServiceTest {
 
         game.setDeck(new Deck()); // Ensure desk exists
 
-        when(gameValidatorService.validateGameExists(gameId)).thenReturn(game);
+        doReturn(game).when(gameValidatorService).validateGameExists(gameId);
 
         // Mock leaveGame to actually remove the player or do nothing (since we are
         // testing startNewHand logic calling leaveGame)
@@ -129,7 +137,7 @@ public class GameServiceTest {
         gameService.startNewHand(gameId);
 
         // Verify p3 was kicked (leaveGame called)
-        verify(gameService, times(1)).leaveGame(gameId, "p3");
+        verify(lifecycleService, times(1)).leaveGame(gameId, "p3");
 
         // Since we are mocking dependencies, strict real behavior of leaveGame might
         // not fully execute if we don't mock findPlayer correctly in leaveGame?
@@ -159,7 +167,7 @@ public class GameServiceTest {
 
         game.setDeck(new Deck());
 
-        when(gameValidatorService.validateGameExists(gameId)).thenReturn(game);
+        doReturn(game).when(gameValidatorService).validateGameExists(gameId);
 
         // Logic: if (activePlayersCount < 2) set status to WAITING
         // Here only P1 is active. So it should not start but stay/become WAITING.
