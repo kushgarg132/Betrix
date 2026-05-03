@@ -515,7 +515,8 @@ const PokerTable = () => {
     );
   }
 
-  const isWaiting = game.status === 'WAITING' || game.status === 'ENDED';
+  // Only show Start Hand when actually waiting between hands, not during the winner reveal
+  const isWaiting = game.status === 'WAITING';
 
   return (
     <div className="flex h-[calc(100dvh-3.5rem)] bg-background overflow-hidden">

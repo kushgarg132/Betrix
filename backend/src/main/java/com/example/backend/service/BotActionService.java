@@ -138,8 +138,8 @@ public class BotActionService {
             String text = root.at("/candidates/0/content/parts/0/text").asText();
             return objectMapper.readValue(text, GeminiAction.class);
         } catch (Exception e) {
-            logger.warn("Gemini call failed: {} — using fallback FOLD", e.getMessage());
-            return new GeminiAction("FOLD", 0);
+            logger.warn("Gemini call failed: {} — using random fallback", e.getMessage());
+            return randomFallbackAction();
         }
     }
 
@@ -147,10 +147,12 @@ public class BotActionService {
         try {
             switch (action.action()) {
                 case "CHECK" -> {
-                    if (game.getCurrentBet() <= bot.getCurrentBet()) {
+                    double toCall = callAmount(game, bot);
+                    if (toCall <= 0) {
                         gameService.check(gameId, bot.getId());
                     } else {
-                        gameService.fold(gameId, bot.getId());
+                        // Can't check when there's a bet — call instead
+                        gameService.placeBet(gameId, bot.getId(), toCall);
                     }
                 }
                 case "CALL"  -> gameService.placeBet(gameId, bot.getId(), callAmount(game, bot));
@@ -179,8 +181,9 @@ public class BotActionService {
 
     private GeminiAction randomFallbackAction() {
         double r = Math.random();
-        if (r < 0.3) return new GeminiAction("FOLD", 0);
-        if (r < 0.7) return new GeminiAction("CALL", 0);
+        // Bias toward CALL/CHECK; only fold ~15% of the time
+        if (r < 0.15) return new GeminiAction("FOLD", 0);
+        if (r < 0.75) return new GeminiAction("CALL", 0);
         return new GeminiAction("CHECK", 0);
     }
 
