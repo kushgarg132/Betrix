@@ -1,0 +1,7 @@
+{
+  "properties": [
+    { "name": "admin.username", "type": "java.lang.String", "description": "Username for the seeded admin account." },
+    { "name": "admin.password", "type": "java.lang.String", "description": "Password for the seeded admin account." },
+    { "name": "admin.email",    "type": "java.lang.String", "description": "Email for the seeded admin account." }
+  ]
+}

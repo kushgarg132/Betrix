@@ -54,7 +54,7 @@ function TableRow({ game, onDelete }) {
           variant="ghost"
           size="icon-sm"
           onClick={() => onDelete(game)}
-          className="text-text-dim hover:text-danger hover:bg-danger-muted opacity-0 group-hover:opacity-100 transition-all"
+          className="text-text-dim hover:text-danger hover:bg-danger-muted transition-colors"
           aria-label={`Delete game ${game.id?.slice(0, 8)}`}
         >
           <Trash2 size={14} />
