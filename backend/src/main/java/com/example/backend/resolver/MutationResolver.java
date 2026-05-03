@@ -15,12 +15,15 @@ import com.example.backend.service.BotService;
 import com.example.backend.service.GameNotificationService;
 import com.example.backend.service.GameService;
 import com.example.backend.service.UserService;
+import graphql.GraphqlErrorException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
+import org.springframework.graphql.execution.ErrorType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -45,11 +48,18 @@ public class MutationResolver {
 
     @MutationMapping
     public Map<String, Object> login(@Argument @Valid LoginInput input) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(input.username(), input.password()));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtTokenProvider.generateToken(authentication);
-        return Map.of("token", jwt, "type", "Bearer");
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(input.username(), input.password()));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String jwt = jwtTokenProvider.generateToken(authentication);
+            return Map.of("token", jwt, "type", "Bearer");
+        } catch (BadCredentialsException e) {
+            throw GraphqlErrorException.newErrorException()
+                    .message("Invalid username or password.")
+                    .errorClassification(ErrorType.UNAUTHORIZED)
+                    .build();
+        }
     }
 
     @MutationMapping
@@ -91,8 +101,10 @@ public class MutationResolver {
     @MutationMapping
     @PreAuthorize("isAuthenticated()")
     public User addBalance(@Argument int amount) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return userService.addBalance(auth.getName(), amount);
+        throw GraphqlErrorException.newErrorException()
+                .message("Payment processing is not yet available.")
+                .errorClassification(ErrorType.FORBIDDEN)
+                .build();
     }
 
     @MutationMapping

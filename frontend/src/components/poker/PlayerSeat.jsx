@@ -145,10 +145,13 @@ export default function PlayerSeat({
         isCurrentPlayer ? 'border-gold/40' : 'border-white/10',
       )}>
         <div className="flex items-center justify-center gap-1">
-          <span className={cn(
-            'text-xs font-semibold truncate max-w-[90px]',
-            isCurrentPlayer ? 'text-gold' : isBot ? 'text-amber-400' : 'text-white'
-          )}>
+          <span
+            title={player.username || player.name}
+            className={cn(
+              'text-xs font-semibold truncate max-w-[90px]',
+              isCurrentPlayer ? 'text-gold' : isBot ? 'text-amber-400' : 'text-white'
+            )}
+          >
             {player.username || player.name}
           </span>
           {isBot && <BotBadge difficulty={player.botDifficulty} />}

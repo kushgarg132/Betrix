@@ -53,10 +53,6 @@ export default function AuthLayout({ children, title, subtitle, altText, altLink
           </p>
         </div>
 
-        {/* Decorative chips */}
-        <div className="absolute bottom-12 left-12 w-8 h-8 rounded-full bg-danger border-2 border-white/20 shadow-lg opacity-60" />
-        <div className="absolute bottom-8 left-20 w-6 h-6 rounded-full bg-blue-600 border-2 border-white/20 shadow-lg opacity-50" />
-        <div className="absolute top-16 right-16 w-7 h-7 rounded-full bg-gold border-2 border-white/20 shadow-lg opacity-60" />
       </div>
 
       {/* Form panel (right on desktop, full on mobile) */}

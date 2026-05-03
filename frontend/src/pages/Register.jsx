@@ -19,35 +19,36 @@ export default function Register() {
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [guestLoading, setGuestLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState([]);
 
   const set = (field) => (e) => {
     setForm(prev => ({ ...prev, [field]: e.target.value }));
-    if (error) setError('');
+    if (errors.length) setErrors([]);
   };
 
   const validate = () => {
-    if (!form.name.trim())        return 'Enter your full name.';
-    if (!form.username.trim())    return 'Enter a username.';
-    if (form.username.length < 3) return 'Username must be at least 3 characters.';
-    if (!form.email.trim())       return 'Enter your email address.';
-    if (!form.password)           return 'Enter a password.';
-    if (form.password.length < 6) return 'Password must be at least 6 characters.';
-    return null;
+    const errs = [];
+    if (!form.name.trim())        errs.push('Enter your full name.');
+    if (!form.username.trim())    errs.push('Enter a username.');
+    else if (form.username.length < 3) errs.push('Username must be at least 3 characters.');
+    if (!form.email.trim())       errs.push('Enter your email address.');
+    if (!form.password)           errs.push('Enter a password.');
+    else if (form.password.length < 6) errs.push('Password must be at least 6 characters.');
+    return errs;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const err = validate();
-    if (err) { setError(err); return; }
+    const errs = validate();
+    if (errs.length) { setErrors(errs); return; }
     setLoading(true);
-    setError('');
+    setErrors([]);
     try {
       await register(form.name.trim(), form.username.trim(), form.password, form.email.trim());
       toast.success('Account created! Please sign in.');
       navigate('/login');
     } catch (err) {
-      setError(err?.message || 'Registration failed. Try a different username or email.');
+      setErrors([err?.message || 'Registration failed. Try a different username or email.']);
     } finally {
       setLoading(false);
     }
@@ -113,7 +114,11 @@ export default function Register() {
             </button>
           </div>
         </div>
-        {error && <p role="alert" className="text-danger text-sm">{error}</p>}
+        {errors.length > 0 && (
+          <ul role="alert" className="text-danger text-sm space-y-0.5 list-disc list-inside">
+            {errors.map((e, i) => <li key={i}>{e}</li>)}
+          </ul>
+        )}
         <Button type="submit" className="w-full" size="lg" disabled={loading}>
           {loading && <Loader2 size={16} className="animate-spin" />}
           {loading ? 'Creating account…' : 'Create Account'}

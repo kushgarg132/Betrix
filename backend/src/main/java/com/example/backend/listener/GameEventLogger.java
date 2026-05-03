@@ -1,8 +1,11 @@
 package com.example.backend.listener;
 
 import com.example.backend.entity.GameEvent;
+import com.example.backend.entity.User;
 import com.example.backend.event.*;
 import com.example.backend.model.GameUpdate;
+import com.example.backend.model.Player;
+import com.example.backend.repository.UserRepository;
 import com.example.backend.resolver.SubscriptionResolver;
 import com.example.backend.service.BotService;
 import com.example.backend.service.GameNotificationService;
@@ -16,6 +19,8 @@ import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -26,6 +31,7 @@ public class GameEventLogger {
     private final ObjectMapper objectMapper;
     private final GameNotificationService notificationService;
     private final BotService botService;
+    private final UserRepository userRepository;
 
     @EventListener
     public void logGameEvent(com.example.backend.event.GameEvent event) {
@@ -89,9 +95,33 @@ public class GameEventLogger {
     @EventListener
     public void onGameEnded(GameEndedEvent event) {
         // GAME_ENDED means a hand ended, not the table closed — do NOT clean up bots or sinks here.
-        // Sink/bot cleanup happens when players actually leave (GameLifecycleService.leaveGame/deleteGame).
         notify(event.getGameId(), GameUpdate.GameUpdateType.GAME_ENDED, event.getGame());
         logger.debug("Hand ended in game {}", event.getGameId());
+        updatePlayerStats(event);
+    }
+
+    private void updatePlayerStats(GameEndedEvent event) {
+        if (event.getGame() == null || event.getGame().getPlayers() == null) return;
+        try {
+            Set<String> winnerUsernames = event.getWinners() == null ? Set.of() :
+                    event.getWinners().stream()
+                            .map(Player::getUsername)
+                            .collect(Collectors.toSet());
+
+            for (Player player : event.getGame().getPlayers()) {
+                if (player.isBot()) continue;
+                userRepository.findByUsername(player.getUsername()).ifPresent(user -> {
+                    user.setHandsPlayed(user.getHandsPlayed() + 1);
+                    if (winnerUsernames.contains(player.getUsername())) {
+                        user.setHandsWon(user.getHandsWon() + 1);
+                        user.setNetProfit((int) (user.getNetProfit() + player.getLastWinAmount()));
+                    }
+                    userRepository.save(user);
+                });
+            }
+        } catch (Exception e) {
+            logger.error("Error updating player stats: {}", e.getMessage());
+        }
     }
 
     private void notify(String gameId, GameUpdate.GameUpdateType type, Object payload) {

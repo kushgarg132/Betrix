@@ -17,7 +17,7 @@ import {
   ChevronLeft, ChevronRight, MessageSquare, Trophy, BarChart3,
   LogOut, Coffee, Play, Send, Loader2, Wifi, WifiOff,
 } from 'lucide-react';
-import { cn, formatChips } from '@/lib/utils';
+import { cn, formatChips, STATUS_LABELS, ACTION_LABELS } from '@/lib/utils';
 
 /* ─── Constants ──────────────────────────────────────── */
 const GAME_STATUS = {
@@ -152,7 +152,7 @@ function LeftSidebar({ open, onToggle, game, currentPlayer, leaveTable, sitOut, 
                 <div className="flex justify-between text-xs">
                   <span className="text-text-dim">Status</span>
                   <Badge variant={game?.status === 'ACTIVE' ? 'active' : 'waiting'} className="text-[9px] px-1.5">
-                    {game?.status}
+                    {STATUS_LABELS[game?.status] ?? game?.status}
                   </Badge>
                 </div>
               </div>
@@ -196,7 +196,7 @@ function LeftSidebar({ open, onToggle, game, currentPlayer, leaveTable, sitOut, 
               <div className="space-y-1 overflow-y-auto max-h-40 scrollbar-none">
                 {Object.entries(game?.lastActions || {}).slice(-6).map(([username, action], i) => (
                   <div key={i} className="text-[10px] text-text-dim border-b border-border/30 pb-1 last:border-0">
-                    {username}: {action}
+                    {username}: {ACTION_LABELS[action] ?? action}
                   </div>
                 ))}
               </div>
@@ -446,11 +446,14 @@ const PokerTable = () => {
   }, [playerUpdate]);
 
   /* ── Track turn ── */
+  const ACTIVE_BETTING_STATUSES = ['PRE_FLOP_BETTING', 'FLOP_BETTING', 'TURN_BETTING', 'RIVER_BETTING'];
+
   useEffect(() => {
     if (game && currentPlayer.index !== null) {
+      const inActiveBetting = ACTIVE_BETTING_STATUSES.includes(game.status);
       const isTurn = game.currentPlayerIndex === currentPlayer.index;
       const player = game.players?.[currentPlayer.index];
-      const myTurn = isTurn && player && !player.hasFolded && !player.isSittingOut;
+      const myTurn = inActiveBetting && isTurn && player && !player.hasFolded && !player.isSittingOut;
       setIsMyTurn(myTurn);
       if (myTurn) toast.info("It's your turn!", { id: 'your-turn', duration: 3000 });
     }

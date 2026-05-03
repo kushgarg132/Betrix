@@ -29,6 +29,9 @@ public class User implements UserDetails {
     private boolean enabled = true;
     private boolean isBot = false;
     private String botDifficulty;
+    private int handsPlayed = 0;
+    private int handsWon = 0;
+    private int netProfit = 0;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

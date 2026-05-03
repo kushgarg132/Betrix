@@ -9,6 +9,7 @@ import Register from './pages/Register';
 import Navbar from './components/layout/Navbar';
 import Profile from './pages/Profile';
 import AdminPanel from './pages/AdminPanel';
+import NotFound from './pages/NotFound';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/game/:gameId" element={<PokerTable />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/admin"   element={<AdminPanel />} />
+          <Route path="*"        element={<NotFound />} />
         </Routes>
         <Toaster
           position="top-right"

@@ -1,23 +1,14 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { AuthContext } from '@/context/AuthContext';
-import { useAuth } from '@/hooks/useAuth';
 import PageWrapper from '@/components/layout/PageWrapper';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Separator } from '@/components/ui/separator';
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
-} from '@/components/ui/dialog';
-import { toast } from 'sonner';
 import {
   Wallet, TrendingUp, Hash, Percent, LogOut,
-  PlusCircle, User, Mail, AtSign, Loader2,
+  Clock, Mail, AtSign,
 } from 'lucide-react';
 import { formatChips, getPlayerInitials } from '@/lib/utils';
 
@@ -30,36 +21,11 @@ const STAT_CARDS = (user) => [
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { user, logout, updateBalance, refreshUserData } = useContext(AuthContext);
-  const { addBalance } = useAuth();
-
-  const [showTopUp, setShowTopUp] = useState(false);
-  const [amount, setAmount] = useState('');
-  const [topUpLoading, setTopUpLoading] = useState(false);
-  const [topUpError, setTopUpError] = useState('');
+  const { user, logout } = useContext(AuthContext);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
-  };
-
-  const handleTopUp = async () => {
-    const val = parseFloat(amount);
-    if (!val || val <= 0) { setTopUpError('Enter a valid amount.'); return; }
-    setTopUpLoading(true);
-    setTopUpError('');
-    try {
-      const res = await addBalance(val);
-      updateBalance(res?.balance ?? (user.balance + val));
-      await refreshUserData();
-      toast.success(`${formatChips(val)} added to your balance!`);
-      setShowTopUp(false);
-      setAmount('');
-    } catch (err) {
-      setTopUpError(err?.message || 'Failed to add balance. Please try again.');
-    } finally {
-      setTopUpLoading(false);
-    }
   };
 
   if (!user) {
@@ -138,7 +104,7 @@ export default function Profile() {
           ))}
         </div>
 
-        {/* Balance top-up */}
+        {/* Add Funds — coming soon */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -148,12 +114,12 @@ export default function Profile() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="font-semibold text-text">Add Funds</h2>
-              <p className="text-text-muted text-sm mt-0.5">Top up your balance to keep playing.</p>
+              <p className="text-text-muted text-sm mt-0.5">Payment processing coming soon.</p>
             </div>
-            <Button onClick={() => setShowTopUp(true)} variant="outline" className="gap-2">
-              <PlusCircle size={15} />
-              Top Up
-            </Button>
+            <Badge variant="surface" className="gap-1.5">
+              <Clock size={11} />
+              Coming soon
+            </Badge>
           </div>
         </motion.div>
 
@@ -168,61 +134,12 @@ export default function Profile() {
             <h2 className="font-semibold text-text">Recent Hands</h2>
             <Badge variant="surface" className="text-[10px]">Coming soon</Badge>
           </div>
-          <div className="p-5 space-y-3">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-4 w-16" />
-                <Skeleton className="h-4 w-12" />
-              </div>
-            ))}
-            <p className="text-text-dim text-xs text-center pt-2">Hand history will appear here once you play.</p>
+          <div className="p-8 flex flex-col items-center gap-2">
+            <p className="text-text-dim text-sm text-center">Hand history will appear here once you play.</p>
           </div>
         </motion.div>
       </div>
 
-      {/* Top-up dialog */}
-      <Dialog open={showTopUp} onOpenChange={v => !v && setShowTopUp(false)}>
-        <DialogContent className="max-w-[360px]">
-          <DialogHeader>
-            <DialogTitle>Add Funds</DialogTitle>
-            <DialogDescription>Enter the amount you'd like to add to your balance.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            {/* Quick amounts */}
-            <div className="grid grid-cols-3 gap-2">
-              {[100, 500, 1000].map(amt => (
-                <button
-                  key={amt}
-                  onClick={() => setAmount(String(amt))}
-                  className="py-2 rounded-[var(--radius)] border border-border bg-surface-elevated text-sm font-semibold text-text-muted hover:border-gold hover:text-gold transition-colors"
-                >
-                  ${amt}
-                </button>
-              ))}
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="topup-amount">Custom Amount ($)</Label>
-              <Input
-                id="topup-amount"
-                type="number"
-                min="1"
-                placeholder="Enter amount"
-                value={amount}
-                onChange={e => { setAmount(e.target.value); setTopUpError(''); }}
-              />
-            </div>
-            {topUpError && <p className="text-danger text-sm">{topUpError}</p>}
-          </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setShowTopUp(false)}>Cancel</Button>
-            <Button onClick={handleTopUp} disabled={topUpLoading} className="gap-2">
-              {topUpLoading && <Loader2 size={14} className="animate-spin" />}
-              {topUpLoading ? 'Processing…' : 'Add Funds'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </PageWrapper>
   );
 }

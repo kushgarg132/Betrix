@@ -89,11 +89,11 @@ function CreateGameForm({ onSubmit, loading, error }) {
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
             <Label htmlFor="sb">Small Blind ($)</Label>
-            <Input id="sb" type="number" min="1" placeholder="e.g. 10" value={smallBlind} onChange={e => setSmallBlind(e.target.value)} />
+            <Input id="sb" type="number" min="1" max="100000" placeholder="e.g. 10" value={smallBlind} onChange={e => setSmallBlind(e.target.value)} />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="bb">Big Blind ($)</Label>
-            <Input id="bb" type="number" min="1" placeholder="e.g. 20" value={bigBlind} onChange={e => setBigBlind(e.target.value)} />
+            <Input id="bb" type="number" min="1" max="200000" placeholder="e.g. 20" value={bigBlind} onChange={e => setBigBlind(e.target.value)} />
           </div>
         </div>
       )}

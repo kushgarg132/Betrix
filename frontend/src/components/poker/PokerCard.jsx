@@ -39,20 +39,26 @@ export default function PokerCard({ card, faceDown = false, delay = 0, className
             <span className="font-bold">{rankStr}</span>
             <span>{symbol}</span>
           </div>
-          {/* Center suit */}
-          <div className={cn(
-            'absolute inset-0 flex items-center justify-center',
-            small ? 'text-base' : 'text-xl',
-            red ? 'text-red-600' : 'text-gray-900'
-          )}>
+          {/* Center suit — decorative duplicate, hidden from screen readers */}
+          <div
+            aria-hidden="true"
+            className={cn(
+              'absolute inset-0 flex items-center justify-center',
+              small ? 'text-base' : 'text-xl',
+              red ? 'text-red-600' : 'text-gray-900'
+            )}
+          >
             {symbol}
           </div>
-          {/* Bottom-right pip (rotated) */}
-          <div className={cn(
-            'absolute bottom-1 right-1.5 flex flex-col leading-none rotate-180',
-            small ? 'text-[9px]' : 'text-[11px]',
-            red ? 'text-red-600' : 'text-gray-900'
-          )}>
+          {/* Bottom-right pip (rotated) — decorative duplicate */}
+          <div
+            aria-hidden="true"
+            className={cn(
+              'absolute bottom-1 right-1.5 flex flex-col leading-none rotate-180',
+              small ? 'text-[9px]' : 'text-[11px]',
+              red ? 'text-red-600' : 'text-gray-900'
+            )}
+          >
             <span className="font-bold">{rankStr}</span>
             <span>{symbol}</span>
           </div>

@@ -42,10 +42,7 @@ export default function GameLobby() {
 
   const games = data?.games || [];
 
-  const isPlayerInGame = (game) => {
-    if (!user || !game.playerUsernames?.length) return false;
-    return game.playerUsernames.includes(user.username);
-  };
+  const isPlayerInGame = (_game) => false;
 
   const openModal = () => { setCreateError(''); setModalOpen(true); };
   const closeModal = () => setModalOpen(false);

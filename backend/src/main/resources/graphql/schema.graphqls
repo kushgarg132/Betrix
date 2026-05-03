@@ -184,6 +184,10 @@ type User {
   balance: Int!
   roles: [String!]!
   registrationDate: DateTime
+  handsPlayed: Int!
+  handsWon: Int!
+  winRate: Float!
+  netProfit: Int!
 }
 
 type AuthPayload {

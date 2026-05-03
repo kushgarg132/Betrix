@@ -41,7 +41,7 @@ public class QueryResolver {
             guest.setId(username); // Use username as ID for guests
             guest.setUsername(username);
             guest.setName("Guest");
-            guest.setBalance(10000); // Default guest balance
+            guest.setBalance(1000); // Same starting balance as registered users
             guest.setRoles(java.util.List.of("GUEST")); // Ensure roles is not null
             return guest;
         }

@@ -23,9 +23,7 @@ public class GameSummaryResolver {
 
     @SchemaMapping(typeName = "GameSummary", field = "playerUsernames")
     public List<String> playerUsernames(Game game) {
-        if (game.getPlayers() == null) return List.of();
-        return game.getPlayers().stream()
-                .map(Player::getUsername)
-                .collect(Collectors.toList());
+        // Usernames are not exposed in the lobby for privacy.
+        return List.of();
     }
 }

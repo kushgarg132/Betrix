@@ -37,3 +37,27 @@ export function getPlayerInitials(name) {
   if (!name) return '?';
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 }
+
+export const STATUS_LABELS = {
+  WAITING:          'Waiting for players',
+  STARTING:         'Starting…',
+  PRE_FLOP_BETTING: 'Pre-Flop',
+  FLOP_BETTING:     'Flop',
+  TURN_BETTING:     'Turn',
+  RIVER_BETTING:    'River',
+  SHOWDOWN:         'Showdown',
+  FINISHED:         'Finished',
+  ENDED:            'Hand Complete',
+};
+
+export const ACTION_LABELS = {
+  NONE:       '',
+  SMALL_BLIND:'Small Blind',
+  BIG_BLIND:  'Big Blind',
+  FOLD:       'Fold',
+  CALL:       'Call',
+  RAISE:      'Raise',
+  CHECK:      'Check',
+  ALL_IN:     'All In',
+  AUTO_FOLD:  'Auto Fold',
+};

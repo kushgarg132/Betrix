@@ -5,10 +5,11 @@ import { GAME_UPDATED, PLAYER_UPDATED } from '../graphql/subscriptions';
 
 /**
  * Hook that provides all game operations and real-time subscriptions.
- * Replaces the manual STOMP setup and Axios calls in PokerTable.jsx.
  */
 export function useGame(gameId, playerId) {
-  // Query: fetch game state
+  const hasToken = !!localStorage.getItem('token');
+
+  // Query: fetch game state — only when authenticated
   const {
     data: gameData,
     loading: gameLoading,
@@ -18,20 +19,20 @@ export function useGame(gameId, playerId) {
     playerId ? GET_GAME_FOR_PLAYER : GET_GAME,
     {
       variables: playerId ? { gameId, playerId } : { id: gameId },
-      skip: !gameId,
+      skip: !gameId || !hasToken,
     }
   );
 
-  // Subscription: game-wide updates
+  // Subscription: game-wide updates — only when authenticated
   const { data: gameUpdateData } = useSubscription(GAME_UPDATED, {
     variables: { gameId },
-    skip: !gameId,
+    skip: !gameId || !hasToken,
   });
 
   // Subscription: player-specific updates (private hand)
   const { data: playerUpdateData } = useSubscription(PLAYER_UPDATED, {
     variables: { gameId, playerId },
-    skip: !gameId || !playerId,
+    skip: !gameId || !playerId || !hasToken,
   });
 
   // Mutations

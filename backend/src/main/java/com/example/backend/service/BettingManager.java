@@ -315,7 +315,10 @@ public class BettingManager {
                     winner.getBestHand() // Use the winner's best hand
             ));
 
-            // Set game status to WAITING and schedule next hand after delay
+            // Reset pot and set status to WAITING
+            game.setPot(0);
+            game.getPots().clear();
+            game.getPots().add(new Pot(0));
             game.setStatus(Game.GameStatus.WAITING);
             gameScheduler.scheduleNextHand(game.getId());
 
@@ -425,13 +428,16 @@ public class BettingManager {
                     bestOverallHand // Use the best overall hand for display
             ));
 
-            // Set game status to WAITING and schedule next hand after delay
+            // Reset pot and set status to WAITING
+            game.setPot(0);
+            game.getPots().clear();
+            game.getPots().add(new Pot(0));
             game.setStatus(Game.GameStatus.WAITING);
             gameScheduler.scheduleNextHand(game.getId());
 
         } catch (Exception e) {
             logger.error("Error evaluating hands: {}", e.getMessage(), e);
-            // In case of error, still set the game to WAITING but don't schedule next hand
+            game.setPot(0);
             game.setStatus(Game.GameStatus.WAITING);
         }
     }

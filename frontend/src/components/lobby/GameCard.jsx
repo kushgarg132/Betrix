@@ -6,20 +6,21 @@ import { Users, ArrowRight, ChevronDown, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { formatBlinds, cn } from '@/lib/utils';
+import { formatBlinds, cn, STATUS_LABELS } from '@/lib/utils';
 import { ADD_BOT } from '@/graphql/mutations';
 import { toast } from 'sonner';
 
 const STATUS_VARIANT = {
-  WAITING:   'waiting',
-  ACTIVE:    'active',
-  COMPLETED: 'completed',
-};
-
-const STATUS_LABEL = {
-  WAITING:   'Waiting',
-  ACTIVE:    'Live',
-  COMPLETED: 'Ended',
+  WAITING:          'waiting',
+  STARTING:         'waiting',
+  PRE_FLOP_BETTING: 'active',
+  FLOP_BETTING:     'active',
+  TURN_BETTING:     'active',
+  RIVER_BETTING:    'active',
+  SHOWDOWN:         'active',
+  FINISHED:         'completed',
+  ACTIVE:           'active',
+  COMPLETED:        'completed',
 };
 
 const BOT_DIFFICULTIES = [
@@ -44,8 +45,9 @@ export default function GameCard({ game, index, isPlayerInGame }) {
 
   const fillPct = Math.round((game.playerCount / game.maxPlayers) * 100);
   const isFull = game.playerCount >= game.maxPlayers;
-  const isActive = game.status === 'ACTIVE';
-  const isWaiting = game.status === 'WAITING';
+  const ACTIVE_STATUSES = ['PRE_FLOP_BETTING', 'FLOP_BETTING', 'TURN_BETTING', 'RIVER_BETTING', 'SHOWDOWN', 'ACTIVE'];
+  const isActive = ACTIVE_STATUSES.includes(game.status);
+  const isWaiting = game.status === 'WAITING' || game.status === 'STARTING';
 
   const handleJoin = () => navigate(`/game/${game.id}`);
 
@@ -71,7 +73,7 @@ export default function GameCard({ game, index, isPlayerInGame }) {
         <div className="flex items-center gap-2 flex-wrap">
           <Badge variant={STATUS_VARIANT[game.status] || 'surface'}>
             {isActive && <LivePulse />}
-            {STATUS_LABEL[game.status] || game.status}
+            {STATUS_LABELS[game.status] ?? game.status}
           </Badge>
           {isPlayerInGame && (
             <Badge variant="default" className="text-[10px]">Your table</Badge>

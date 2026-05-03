@@ -84,6 +84,10 @@ export const GET_ME = gql`
       email
       balance
       roles
+      handsPlayed
+      handsWon
+      winRate
+      netProfit
     }
   }
 `;
@@ -99,7 +103,6 @@ export const GET_GAMES = gql`
       bigBlindAmount
       pot
       createdAt
-      playerUsernames
     }
   }
 `;

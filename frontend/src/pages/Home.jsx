@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { AuthContext } from '@/context/AuthContext';
@@ -10,7 +10,7 @@ const FEATURES = [
   {
     icon: Zap,
     title: 'Real-Time Action',
-    desc: 'Sub-second updates via WebSocket subscriptions. Every bet, fold, and raise lands instantly.',
+    desc: 'Fast updates via live polling. Every bet, fold, and raise lands quickly.',
     color: 'text-gold',
     bg: 'bg-gold-muted',
   },
@@ -114,6 +114,14 @@ export default function Home() {
   const { isLoggedIn } = useContext(AuthContext);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (isLoggedIn) {
+      navigate('/lobby', { replace: true });
+    }
+  }, [isLoggedIn, navigate]);
+
+  if (isLoggedIn) return null;
+
   return (
     <div className="flex-1 flex flex-col">
       {/* Hero */}
@@ -121,18 +129,18 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-felt-dark/20 pointer-events-none" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_60%_50%,rgba(26,92,46,0.08),transparent_70%)] pointer-events-none" />
         <PageWrapper>
-          <div className="py-16 lg:py-24 grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+          <div className="py-12 sm:py-16 lg:py-24 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-8 items-center">
             <motion.div
-              initial={{ opacity: 0, x: -24 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="space-y-6"
+              className="space-y-6 min-w-0"
             >
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gold-muted border border-border-gold text-gold text-xs font-semibold">
                 <Star size={12} fill="currentColor" />
                 Premium Texas Hold'em
               </div>
-              <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-text leading-[1.1] text-balance">
+              <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-text leading-[1.1] text-balance">
                 Real Money Poker,{' '}
                 <span className="gold-text">Real Stakes</span>
               </h1>
@@ -158,10 +166,10 @@ export default function Home() {
               </div>
             </motion.div>
             <motion.div
-              initial={{ opacity: 0, x: 24 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.15 }}
-              className="lg:pl-8"
+              className="lg:pl-8 w-full"
             >
               <TablePreview />
             </motion.div>
