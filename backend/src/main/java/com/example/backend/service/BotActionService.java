@@ -174,7 +174,7 @@ public class BotActionService {
 
     private double callAmount(Game game, Player bot) {
         double alreadyBet = game.getCurrentBettingRound() != null
-                ? game.getCurrentBettingRound().getPlayerBets().getOrDefault(bot.getId(), 0.0)
+                ? game.getCurrentBettingRound().getBets().getOrDefault(bot.getId(), 0.0)
                 : 0.0;
         return Math.min(game.getCurrentBet() - alreadyBet, bot.getChips());
     }

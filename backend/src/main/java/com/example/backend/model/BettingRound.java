@@ -8,7 +8,8 @@ import java.util.Map;
 
 @Data
 public class BettingRound {
-    private Map<String, Double> playerBets = new HashMap<>();
+    private Map<String, Double> bets = new HashMap<>();
+    private RoundType roundType;
     private boolean roundComplete;
     
     public enum RoundType {

@@ -37,6 +37,7 @@ public class BettingManager {
         switch (game.getStatus()) {
             case STARTING:
                 setupPreFlopBetting(game);
+                roundType = BettingRound.RoundType.PRE_FLOP;
                 break;
             case PRE_FLOP_BETTING:
                 setupFlopBetting(game);
@@ -51,6 +52,8 @@ public class BettingManager {
                 roundType = BettingRound.RoundType.RIVER;
                 break;
         }
+        
+        game.getCurrentBettingRound().setRoundType(roundType);
 
         String currentPlayerId = game.getPlayers().get(game.getCurrentPlayerIndex()).getId();
         gameScheduler.schedulePlayerTimeout(game.getId(), currentPlayerId);
@@ -159,7 +162,7 @@ public class BettingManager {
     public void placeBet(Game game, Player player, double amount, Game.PlayerAction action) {
         logger.info("Player '{}' is placing a bet of {} in game with ID: {}", player.getUsername(), amount,
                 game.getId());
-        double betPlacedAmount = game.getCurrentBettingRound().getPlayerBets().getOrDefault(player.getId(), 0.0);
+        double betPlacedAmount = game.getCurrentBettingRound().getBets().getOrDefault(player.getId(), 0.0);
         double betPlacedTotal = betPlacedAmount + amount;
         boolean isAllIn = false;
 
@@ -190,7 +193,7 @@ public class BettingManager {
             game.addToPot(amount);
         }
 
-        game.getCurrentBettingRound().getPlayerBets().put(player.getId(), betPlacedTotal);
+        game.getCurrentBettingRound().getBets().put(player.getId(), betPlacedTotal);
 
         // Move to next player after bet
         game.moveToNextPlayer();
@@ -264,7 +267,7 @@ public class BettingManager {
             if (!player.isActive() || player.isHasFolded())
                 continue;
 
-            Double playerBet = game.getCurrentBettingRound().getPlayerBets().getOrDefault(player.getId(), 0.0);
+            Double playerBet = game.getCurrentBettingRound().getBets().getOrDefault(player.getId(), 0.0);
             Game.PlayerAction lastAction = game.getLastActions().get(player.getUsername());
 
             if (notAllowedStatus.contains(lastAction) ||
@@ -494,7 +497,7 @@ public class BettingManager {
         logger.info("Updating pot amounts for game with ID: {}", game.getId());
 
         // 1. Snapshot current round bets
-        Map<String, Double> currentRoundBets = new HashMap<>(game.getCurrentBettingRound().getPlayerBets());
+        Map<String, Double> currentRoundBets = new HashMap<>(game.getCurrentBettingRound().getBets());
 
         // 2. Identify active players for this calculation (anyone who bet > 0 this
         // round)
