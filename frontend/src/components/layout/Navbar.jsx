@@ -30,7 +30,7 @@ export default function Navbar() {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const isAdmin = user?.roles?.includes('ROLE_ADMIN');
+  const isAdmin = user?.roles?.some(r => r === 'ROLE_ADMIN' || r === 'ADMIN');
 
   const handleLogout = () => {
     logout();
