@@ -241,6 +241,8 @@ public class GameScheduler {
             // Update metrics
             taskExecutionCounts.get(taskName).incrementAndGet();
             taskExecutionTimes.get(taskName).addAndGet(Duration.between(start, Instant.now()).toMillis());
+        } catch (org.springframework.core.task.TaskRejectedException e) {
+            logger.debug("Next hand scheduling rejected for game {} (likely shutting down)", gameId);
         } catch (Exception e) {
             logger.error("Error scheduling next hand for game {}: {}", gameId, e.getMessage(), e);
             taskErrorCounts.get(taskName).incrementAndGet();
@@ -283,6 +285,8 @@ public class GameScheduler {
             // Update metrics
             taskExecutionCounts.get(taskName).incrementAndGet();
             taskExecutionTimes.get(taskName).addAndGet(Duration.between(start, Instant.now()).toMillis());
+        } catch (org.springframework.core.task.TaskRejectedException e) {
+            logger.debug("Player timeout scheduling rejected for game {} (likely shutting down)", gameId);
         } catch (Exception e) {
             logger.error("Error scheduling timeout for player {} in game {}: {}", playerId, gameId, e.getMessage(), e);
             taskErrorCounts.get(taskName).incrementAndGet();
@@ -383,6 +387,8 @@ public class GameScheduler {
             taskExecutionCounts.computeIfAbsent(taskName, k -> new AtomicLong(0)).incrementAndGet();
             taskExecutionTimes.computeIfAbsent(taskName, k -> new AtomicLong(0))
                     .addAndGet(Duration.between(start, Instant.now()).toMillis());
+        } catch (org.springframework.core.task.TaskRejectedException e) {
+            logger.debug("All-in action scheduling rejected for game {} (likely shutting down)", gameId);
         } catch (Exception e) {
             logger.error("Error scheduling all-in action for game {}: {}", gameId, e.getMessage(), e);
             taskErrorCounts.computeIfAbsent(taskName, k -> new AtomicLong(0)).incrementAndGet();

@@ -54,8 +54,12 @@ public class GameActionService {
             game.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
             gameRepository.save(game);
         } catch (Exception e) {
-            logger.error("Error placing bet: {}", e.getMessage());
-            throw new RuntimeException("Failed to place bet", e);
+            if (e.getMessage() != null && (e.getMessage().contains("server session pool is open") || e.getMessage().contains("state should be: open"))) {
+                logger.debug("Could not place bet (database shutting down): {}", e.getMessage());
+            } else {
+                logger.error("Error placing bet: {}", e.getMessage());
+                throw new RuntimeException("Failed to place bet", e);
+            }
         }
     }
 
@@ -86,8 +90,12 @@ public class GameActionService {
             game.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
             gameRepository.save(game);
         } catch (Exception e) {
-            logger.error("Error checking: {}", e.getMessage());
-            throw new RuntimeException("Failed to check", e);
+            if (e.getMessage() != null && (e.getMessage().contains("server session pool is open") || e.getMessage().contains("state should be: open"))) {
+                logger.debug("Could not check (database shutting down): {}", e.getMessage());
+            } else {
+                logger.error("Error checking: {}", e.getMessage());
+                throw new RuntimeException("Failed to check", e);
+            }
         }
     }
 
@@ -118,8 +126,12 @@ public class GameActionService {
             game.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
             gameRepository.save(game);
         } catch (Exception e) {
-            logger.error("Error folding: {}", e.getMessage());
-            throw new RuntimeException("Failed to fold", e);
+            if (e.getMessage() != null && (e.getMessage().contains("server session pool is open") || e.getMessage().contains("state should be: open"))) {
+                logger.debug("Could not fold (database shutting down): {}", e.getMessage());
+            } else {
+                logger.error("Error folding: {}", e.getMessage());
+                throw new RuntimeException("Failed to fold", e);
+            }
         }
     }
 }

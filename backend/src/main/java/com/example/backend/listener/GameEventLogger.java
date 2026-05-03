@@ -44,7 +44,11 @@ public class GameEventLogger {
             mongoTemplate.save(dbEvent, "game_events");
             logger.debug("Logged game event: {} for game {}", dbEvent.getEventType(), dbEvent.getGameId());
         } catch (Exception e) {
-            logger.error("Error logging game event: {}", e.getMessage(), e);
+            if (e.getMessage() != null && e.getMessage().contains("server session pool is open")) {
+                logger.debug("Could not log game event (MongoDB shutting down): {}", e.getMessage());
+            } else {
+                logger.error("Error logging game event: {}", e.getMessage(), e);
+            }
         }
     }
 
@@ -125,7 +129,11 @@ public class GameEventLogger {
                 });
             }
         } catch (Exception e) {
-            logger.error("Error updating player stats: {}", e.getMessage());
+            if (e.getMessage() != null && e.getMessage().contains("server session pool is open")) {
+                logger.debug("Could not update player stats (MongoDB shutting down): {}", e.getMessage());
+            } else {
+                logger.error("Error updating player stats: {}", e.getMessage());
+            }
         }
     }
 
