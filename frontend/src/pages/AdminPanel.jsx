@@ -19,7 +19,11 @@ import {
 } from 'lucide-react';
 import { formatBlinds } from '@/lib/utils';
 
-const STATUS_VARIANT = { WAITING: 'waiting', ACTIVE: 'active', COMPLETED: 'completed' };
+const STATUS_VARIANT = {
+  WAITING: 'waiting',
+  PRE_FLOP: 'active', FLOP: 'active', TURN: 'active', RIVER: 'active', SHOWDOWN: 'active',
+  FINISHED: 'completed', ENDED: 'completed', COMPLETED: 'completed',
+};
 
 function TableRow({ game, onDelete }) {
   return (
@@ -77,7 +81,7 @@ export default function AdminPanel() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
-  const isAdmin = user?.roles?.includes('ROLE_ADMIN');
+  const isAdmin = user?.roles?.some(r => r === 'ROLE_ADMIN' || r === 'ADMIN');
 
   const { data, loading, refetch } = useQuery(GET_GAMES, { skip: !isAdmin });
   const [deleteGameMutation] = useMutation(DELETE_GAME);
@@ -98,7 +102,7 @@ export default function AdminPanel() {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      await deleteGameMutation({ variables: { id: deleteTarget.id } });
+      await deleteGameMutation({ variables: { gameId: deleteTarget.id } });
       toast.success('Table deleted.');
       setDeleteTarget(null);
       refetch();
