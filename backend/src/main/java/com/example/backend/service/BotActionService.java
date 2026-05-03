@@ -26,10 +26,13 @@ public class BotActionService {
     private static final String FLASH_LITE_MODEL = "gemini-1.5-flash";
     private static final String PRO_MODEL = "gemini-1.5-pro";
     private static final String GEMINI_URL =
-            "https://generativelanguage.googleapis.com/v1/models/%s:generateContent?key=%s";
+            "https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s";
 
     @Value("${gemini.api.key:}")
     private String apiKey;
+
+    @Value("${gemini.enabled:true}")
+    private boolean geminiEnabled;
 
     private final GameService gameService;
     private final GameRepository gameRepository;
@@ -119,8 +122,8 @@ public class BotActionService {
     }
 
     private GeminiAction callGemini(String model, String system, String user) {
-        if (apiKey == null || apiKey.isBlank()) {
-            logger.warn("Gemini API key not set — bot using random fallback");
+        if (!geminiEnabled || apiKey == null || apiKey.isBlank()) {
+            logger.warn("Gemini is disabled or API key not set — bot using random fallback");
             return randomFallbackAction();
         }
         try {
@@ -128,7 +131,10 @@ public class BotActionService {
             Map<String, Object> body = Map.of(
                     "system_instruction", Map.of("parts", List.of(Map.of("text", system))),
                     "contents", List.of(Map.of("role", "user", "parts", List.of(Map.of("text", user)))),
-                    "generationConfig", Map.of("temperature", 0.4, "responseMimeType", "application/json")
+                    "generation_config", Map.of(
+                            "temperature", 0.4,
+                            "response_mime_type", "application/json"
+                    )
             );
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
