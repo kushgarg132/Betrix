@@ -26,7 +26,7 @@ public class BotActionService {
     private static final String FLASH_LITE_MODEL = "gemini-1.5-flash";
     private static final String PRO_MODEL = "gemini-1.5-pro";
     private static final String GEMINI_URL =
-            "https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s";
+            "https://generativelanguage.googleapis.com/v1/models/%s:generateContent?key=%s";
 
     @Value("${gemini.api.key:}")
     private String apiKey;
