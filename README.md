@@ -6,7 +6,7 @@ Betrix is a premium, full-stack Texas Hold'em poker platform designed for a high
 
 ## 🌐 Live Demo
 - **Platform:** [betrix-b3c24.web.app](https://betrix-b3c24.web.app/)
-- **API Docs:** [Swagger UI](http://localhost:8080/swagger-ui/index.html) (Local development)
+- **API Docs:** [Swagger UI](https://betrix-backend.onrender.com/swagger-ui/index.html)
 
 ## ✨ Features
 - **🤖 AI Opponents:** Play against intelligent bots powered by **Google Gemini AI**.
