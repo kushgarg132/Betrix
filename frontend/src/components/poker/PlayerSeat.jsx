@@ -182,8 +182,14 @@ export default function PlayerSeat({
             <PokerCard key={i} card={card} delay={i * 0.1} small />
           ))
         ) : player.hand && player.hand.length > 0 ? (
-          [0, 1].map(i => (
-            <PokerCard key={i} faceDown delay={i * 0.1} small />
+          player.hand.map((card, i) => (
+            <PokerCard
+              key={i}
+              card={card}
+              faceDown={!card || !card.rank}
+              delay={i * 0.1}
+              small
+            />
           ))
         ) : null}
       </div>

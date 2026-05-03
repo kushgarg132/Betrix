@@ -95,7 +95,12 @@ public class GameEventLogger {
     @EventListener
     public void onGameEnded(GameEndedEvent event) {
         // GAME_ENDED means a hand ended, not the table closed — do NOT clean up bots or sinks here.
-        notify(event.getGameId(), GameUpdate.GameUpdateType.GAME_ENDED, event.getGame());
+        java.util.Map<String, Object> payload = new java.util.HashMap<>();
+        payload.put("game", event.getGame());
+        payload.put("winners", event.getWinners());
+        payload.put("bestHand", event.getBestHand());
+
+        notify(event.getGameId(), GameUpdate.GameUpdateType.GAME_ENDED, payload);
         logger.debug("Hand ended in game {}", event.getGameId());
         updatePlayerStats(event);
     }

@@ -47,8 +47,10 @@ public class GameLifecycleService {
     }
 
     public Game getGameForPlayer(Game activeGame, String playerId) {
+        boolean isShowdown = activeGame.getStatus() == Game.GameStatus.SHOWDOWN;
+
         activeGame.getPlayers().forEach(player -> {
-            if (playerId == null || !playerId.equals(player.getId())) {
+            if ((playerId == null || !playerId.equals(player.getId())) && !isShowdown) {
                 player.hideDetails();
             }
         });
