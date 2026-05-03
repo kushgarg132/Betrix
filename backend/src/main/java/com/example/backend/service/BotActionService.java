@@ -23,8 +23,8 @@ import java.util.Map;
 public class BotActionService {
     private static final Logger logger = LoggerFactory.getLogger(BotActionService.class);
 
-    private static final String FLASH_LITE_MODEL = "gemini-2.0-flash-lite";
-    private static final String PRO_MODEL = "gemini-2.5-pro";
+    private static final String FLASH_LITE_MODEL = "gemini-1.5-flash";
+    private static final String PRO_MODEL = "gemini-1.5-pro";
     private static final String GEMINI_URL =
             "https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s";
 
@@ -174,7 +174,7 @@ public class BotActionService {
 
     private double callAmount(Game game, Player bot) {
         double alreadyBet = game.getCurrentBettingRound() != null
-                ? game.getCurrentBettingRound().getPlayerBets().getOrDefault(bot.getUsername(), 0.0)
+                ? game.getCurrentBettingRound().getPlayerBets().getOrDefault(bot.getId(), 0.0)
                 : 0.0;
         return Math.min(game.getCurrentBet() - alreadyBet, bot.getChips());
     }
