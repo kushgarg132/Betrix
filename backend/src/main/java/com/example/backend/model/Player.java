@@ -58,7 +58,6 @@ public class Player {
 
     public void hideDetails() {
         this.hand = new ArrayList<>();
-        this.id = null;
     }
 
     public void reset() {

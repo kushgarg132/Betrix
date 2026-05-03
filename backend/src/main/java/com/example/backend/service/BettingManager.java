@@ -159,7 +159,7 @@ public class BettingManager {
     public void placeBet(Game game, Player player, double amount, Game.PlayerAction action) {
         logger.info("Player '{}' is placing a bet of {} in game with ID: {}", player.getUsername(), amount,
                 game.getId());
-        double betPlacedAmount = game.getCurrentBettingRound().getPlayerBets().getOrDefault(player.getUsername(), 0.0);
+        double betPlacedAmount = game.getCurrentBettingRound().getPlayerBets().getOrDefault(player.getId(), 0.0);
         double betPlacedTotal = betPlacedAmount + amount;
         boolean isAllIn = false;
 
@@ -190,7 +190,7 @@ public class BettingManager {
             game.addToPot(amount);
         }
 
-        game.getCurrentBettingRound().getPlayerBets().put(player.getUsername(), betPlacedTotal);
+        game.getCurrentBettingRound().getPlayerBets().put(player.getId(), betPlacedTotal);
 
         // Move to next player after bet
         game.moveToNextPlayer();
@@ -264,7 +264,7 @@ public class BettingManager {
             if (!player.isActive() || player.isHasFolded())
                 continue;
 
-            Double playerBet = game.getCurrentBettingRound().getPlayerBets().getOrDefault(player.getUsername(), 0.0);
+            Double playerBet = game.getCurrentBettingRound().getPlayerBets().getOrDefault(player.getId(), 0.0);
             Game.PlayerAction lastAction = game.getLastActions().get(player.getUsername());
 
             if (notAllowedStatus.contains(lastAction) ||
@@ -499,7 +499,7 @@ public class BettingManager {
         // 2. Identify active players for this calculation (anyone who bet > 0 this
         // round)
         List<Player> contributingPlayers = game.getPlayers().stream()
-                .filter(p -> currentRoundBets.getOrDefault(p.getUsername(), 0.0) > 0)
+                .filter(p -> currentRoundBets.getOrDefault(p.getId(), 0.0) > 0)
                 .collect(Collectors.toList());
 
         if (contributingPlayers.isEmpty()) {
@@ -522,7 +522,7 @@ public class BettingManager {
             Set<String> levelEligible = new HashSet<>();
 
             for (Player p : game.getPlayers()) {
-                double pBet = currentRoundBets.getOrDefault(p.getUsername(), 0.0);
+                double pBet = currentRoundBets.getOrDefault(p.getId(), 0.0);
                 if (pBet >= level) {
                     levelTotal += contribution;
                     // Player is eligible if they are in the pot (not folded)

@@ -138,10 +138,46 @@ public class GameEventLogger {
     }
 
     private void notify(String gameId, GameUpdate.GameUpdateType type, Object payload) {
+        Object filteredPayload = payload;
+
+        try {
+            if (payload instanceof com.example.backend.entity.Game) {
+                com.example.backend.entity.Game game = (com.example.backend.entity.Game) payload;
+                com.example.backend.entity.Game copy = new com.example.backend.entity.Game(game);
+                boolean isShowdown = copy.getStatus() == com.example.backend.entity.Game.GameStatus.SHOWDOWN;
+                if (!isShowdown) {
+                    copy.getPlayers().forEach(Player::hideDetails);
+                }
+                copy.setDeck(null);
+                filteredPayload = copy;
+            } else if (payload instanceof Player) {
+                Player copy = new Player((Player) payload);
+                copy.hideDetails();
+                filteredPayload = copy;
+            } else if (payload instanceof java.util.Map) {
+                java.util.Map<?, ?> map = (java.util.Map<?, ?>) payload;
+                if (map.containsKey("game") && map.get("game") instanceof com.example.backend.entity.Game) {
+                    com.example.backend.entity.Game game = (com.example.backend.entity.Game) map.get("game");
+                    com.example.backend.entity.Game copy = new com.example.backend.entity.Game(game);
+                    boolean isShowdown = copy.getStatus() == com.example.backend.entity.Game.GameStatus.SHOWDOWN;
+                    if (!isShowdown) {
+                        copy.getPlayers().forEach(Player::hideDetails);
+                    }
+                    copy.setDeck(null);
+                    
+                    java.util.Map<Object, Object> mapCopy = new java.util.HashMap<>(map);
+                    mapCopy.put("game", copy);
+                    filteredPayload = mapCopy;
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Error filtering notification payload: {}", e.getMessage());
+        }
+
         notificationService.notifyGameUpdate(GameUpdate.builder()
                 .gameId(gameId)
                 .type(type)
-                .payload(payload)
+                .payload(filteredPayload)
                 .timestamp(OffsetDateTime.now(ZoneOffset.UTC))
                 .build());
     }
