@@ -28,8 +28,8 @@ function CreateGameForm({ onSubmit, loading, error }) {
 
   const handleCreate = () => {
     if (custom) {
-      const s = parseFloat(smallBlind);
-      const b = parseFloat(bigBlind);
+      const s = parseInt(smallBlind, 10);
+      const b = parseInt(bigBlind, 10);
       if (!s || s <= 0) { setLocalError('Enter a valid small blind.'); return; }
       if (!b || b <= 0) { setLocalError('Enter a valid big blind.'); return; }
       if (b < s) { setLocalError('Big blind must be ≥ small blind.'); return; }
