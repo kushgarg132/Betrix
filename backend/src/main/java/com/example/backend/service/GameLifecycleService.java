@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -46,7 +45,6 @@ public class GameLifecycleService {
         return games;
     }
 
-    @Transactional
     public void createGame(BlindPayload payload) {
         int small = payload.getSmallBlindAmount();
         int big = payload.getBigBlindAmount();
@@ -76,7 +74,6 @@ public class GameLifecycleService {
         return getGameForPlayer(game, playerId);
     }
 
-    @Transactional
     public Game joinGame(String gameId, String username) {
         try {
             boolean isGuest = username != null && (username.startsWith("guest-") || username.startsWith("bot-"));
@@ -114,7 +111,6 @@ public class GameLifecycleService {
         }
     }
 
-    @Transactional
     public void leaveGame(String gameId, String playerId) {
         logger.info("Player '{}' is leaving game '{}'", playerId, gameId);
         try {
@@ -164,7 +160,6 @@ public class GameLifecycleService {
         return game.getStatus() != Game.GameStatus.WAITING && game.getStatus() != Game.GameStatus.FINISHED;
     }
 
-    @Transactional
     public void sitOut(String gameId, String playerId) {
         try {
             Game game = gameValidatorService.validateGameExists(gameId);
@@ -180,7 +175,6 @@ public class GameLifecycleService {
         }
     }
 
-    @Transactional
     public void sitIn(String gameId, String playerId) {
         try {
             Game game = gameValidatorService.validateGameExists(gameId);
@@ -196,7 +190,6 @@ public class GameLifecycleService {
         }
     }
 
-    @Transactional
     public boolean deleteGame(String gameId) {
         try {
             Game game = gameValidatorService.validateGameExists(gameId);

@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -26,7 +25,6 @@ public class GameActionService {
     private final GameEventPublisher eventPublisher;
     private final GameScheduler gameScheduler;
 
-    @Transactional
     public void placeBet(String gameId, String playerId, long amount) {
         logger.info("Player '{}' is placing a bet of {} in game '{}'", playerId, amount, gameId);
         try {
@@ -63,7 +61,6 @@ public class GameActionService {
         }
     }
 
-    @Transactional
     public void check(String gameId, String playerId) {
         logger.info("Player '{}' is checking in game '{}'", playerId, gameId);
         try {
@@ -101,7 +98,6 @@ public class GameActionService {
     }
 
     /** Fold for a player who is leaving mid-hand and is not the one to act. */
-    @Transactional
     public void foldOutOfTurn(String gameId, String playerId) {
         logger.info("Player '{}' is folding out of turn in game '{}'", playerId, gameId);
         try {
@@ -123,7 +119,6 @@ public class GameActionService {
         }
     }
 
-    @Transactional
     public void fold(String gameId, String playerId) {
         logger.info("Player '{}' is folding in game '{}'", playerId, gameId);
         try {

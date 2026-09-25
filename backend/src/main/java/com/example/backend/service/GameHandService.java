@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,7 +30,6 @@ public class GameHandService {
     private final GameLifecycleService gameLifecycleService;
     private final GameScheduler gameScheduler;
 
-    @Transactional
     public void startNewHand(String gameId) {
         logger.info("Starting a new hand for game '{}'", gameId);
         try {
@@ -94,7 +92,6 @@ public class GameHandService {
         }
     }
 
-    @Transactional
     public void executeAllInAction(String gameId) {
         try {
             Game game = gameValidatorService.validateGameExists(gameId);
