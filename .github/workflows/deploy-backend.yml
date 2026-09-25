@@ -17,15 +17,13 @@ jobs:
   deploy:
     runs-on: [self-hosted, betrix-vm]
     steps:
-      # Dedicated deploy clone; its gitignored .env is created once by hand.
-      - name: Sync deploy clone
-        working-directory: /home/ubuntu/deploys/Betrix
-        run: |
-          git fetch origin master
-          git reset --hard origin/master
+      # Deploys straight from the runner workspace. The gitignored .env is placed
+      # there once by hand; clean: false keeps checkout from deleting it.
+      - uses: actions/checkout@v4
+        with:
+          clean: false
 
       - name: Rebuild and restart backend
-        working-directory: /home/ubuntu/deploys/Betrix
         run: docker compose up -d --build backend
 
       - name: Health check
