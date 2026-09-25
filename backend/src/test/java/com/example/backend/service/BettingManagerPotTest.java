@@ -15,15 +15,18 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 /** Chip conservation through showdown: chips in must equal chips out. */
 class BettingManagerPotTest {
 
     private BettingManager manager;
+    private com.example.backend.scheduler.GameScheduler scheduler;
 
     @BeforeEach
     void setUp() {
-        manager = new BettingManager(mock(GameEventPublisher.class), new HandEvaluator(), mock(GameScheduler.class));
+        scheduler = mock(com.example.backend.scheduler.GameScheduler.class);
+        manager = new BettingManager(mock(GameEventPublisher.class), new HandEvaluator(), scheduler);
     }
 
     private static Card c(Rank r, Suit s) {
@@ -127,5 +130,29 @@ class BettingManagerPotTest {
         // 99 split two ways: 50 to the first winner left of the dealer (b, seat 1), 49 to a
         assertEquals(1017, b.getChips(), 0.001);
         assertEquals(1016, a.getChips(), 0.001);
+    }
+
+    /**
+     * A corrupt player (no hole cards) makes HandEvaluator throw before anything is awarded.
+     * The old code caught this, zeroed the pot (destroying the chips) and left the game in
+     * WAITING with no next hand ever scheduled — a permanently stuck table. It must instead
+     * pay the pot out (evenly, since it cannot judge hands) and keep the game moving.
+     */
+    @Test
+    void aHandEvaluationFailureStillPaysThePotAndScheduleTheNextHandInsteadOfDestroyingChipsOrStalling() {
+        Player a = player("a", 1000, c(Rank.ACE, Suit.SPADES), c(Rank.ACE, Suit.HEARTS));
+        Player corrupt = new Player("b", "b", 1000);
+        corrupt.setHand(new ArrayList<>()); // missing hole cards: HandEvaluator.evaluateHand throws
+        Game g = riverGame(a, corrupt);
+
+        manager.placeBet(g, a, 50, null);
+        manager.placeBet(g, corrupt, 50, null);
+        manager.handleCurrentBettingRound(g, corrupt.getId());
+
+        assertEquals(2000, a.getChips() + corrupt.getChips(), 0.001, "the 100-chip pot must not vanish");
+        assertEquals(1000, a.getChips(), 0.001, "pot returned evenly: net zero for a two-way, equal-bet tie");
+        assertEquals(1000, corrupt.getChips(), 0.001);
+        assertEquals(Game.GameStatus.WAITING, g.getStatus());
+        verify(scheduler).scheduleNextHand(g.getId());
     }
 }

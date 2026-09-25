@@ -7,6 +7,7 @@ import com.example.backend.model.Card;
 import com.example.backend.model.Player;
 import com.example.backend.publisher.GameEventPublisher;
 import com.example.backend.repository.GameRepository;
+import com.example.backend.scheduler.GameScheduler;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +29,7 @@ public class GameHandService {
     private final BettingManager bettingManager;
     private final GameEventPublisher eventPublisher;
     private final GameLifecycleService gameLifecycleService;
+    private final GameScheduler gameScheduler;
 
     @Transactional
     public void startNewHand(String gameId) {
@@ -99,7 +101,17 @@ public class GameHandService {
             bettingManager.processAllInRound(game);
             gameRepository.save(game);
         } catch (Exception e) {
-            logger.error("Error executing all-in action: {}", e.getMessage());
+            logger.error("Error executing all-in action: {}", e.getMessage(), e);
+            // A failed run-out used to leave the table stuck forever (nothing scheduled). Send the
+            // hand back to WAITING and let the next hand start rather than lose the table.
+            try {
+                Game game = gameValidatorService.validateGameExists(gameId);
+                game.setStatus(Game.GameStatus.WAITING);
+                gameRepository.save(game);
+                gameScheduler.scheduleNextHand(gameId);
+            } catch (Exception recoveryFailure) {
+                logger.error("Could not recover game {} after all-in failure: {}", gameId, recoveryFailure.getMessage());
+            }
         }
     }
 }

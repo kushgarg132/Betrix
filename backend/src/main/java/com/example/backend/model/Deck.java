@@ -4,8 +4,7 @@ import lombok.Data;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
+import java.security.SecureRandom;
 
 @Data
 public class Deck {
@@ -26,8 +25,10 @@ public class Deck {
         shuffle();
     }
 
+    private static final SecureRandom RNG = new SecureRandom();
+
     public void shuffle() {
-        Collections.shuffle(cards, ThreadLocalRandom.current());
+        Collections.shuffle(cards, RNG);
     }
 
     public Card drawCard() {

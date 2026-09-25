@@ -468,8 +468,27 @@ public class BettingManager {
 
         } catch (Exception e) {
             logger.error("Error evaluating hands: {}", e.getMessage(), e);
+            // Cannot judge who won, but the chips are real: split the pot evenly rather than destroy
+            // it, and still move the game on instead of leaving it stuck forever.
+            splitPotEvenlyAsFallback(game, activePlayers);
             game.setPot(0);
+            game.getPots().clear();
+            game.getPots().add(new Pot(0));
+            game.removeLeavingPlayers();
             game.setStatus(Game.GameStatus.WAITING);
+            gameScheduler.scheduleNextHand(game.getId());
+        }
+    }
+
+    private void splitPotEvenlyAsFallback(Game game, List<Player> players) {
+        if (players.isEmpty()) {
+            return;
+        }
+        long total = game.getPot();
+        long share = total / players.size();
+        long remainder = total % players.size();
+        for (int i = 0; i < players.size(); i++) {
+            players.get(i).awardPot(share + (i < remainder ? 1 : 0));
         }
     }
 

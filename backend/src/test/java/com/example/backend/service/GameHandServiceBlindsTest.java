@@ -31,7 +31,7 @@ class GameHandServiceBlindsTest {
         BettingManager betting = new BettingManager(publisher, new HandEvaluator(), scheduler);
         GameActionService actions = new GameActionService(repo, validator, betting, publisher, scheduler);
         GameLifecycleService lifecycle = new GameLifecycleService(users, repo, validator, publisher, actions);
-        hands = new GameHandService(repo, validator, betting, publisher, lifecycle);
+        hands = new GameHandService(repo, validator, betting, publisher, lifecycle, scheduler);
     }
 
     private Game table(String... names) {
