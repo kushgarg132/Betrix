@@ -159,6 +159,8 @@ type GameSummary {
   bigBlindAmount: Int!
   pot: Int!
   createdAt: DateTime
+  """True if the caller is already seated at this table. Never reveals who else is seated."""
+  isYourGame: Boolean!
 }
 
 type User {
