@@ -2,7 +2,8 @@ package com.example.backend.service;
 
 import com.example.backend.entity.User;
 import com.example.backend.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -10,15 +11,22 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.Locale;
+import java.util.Set;
 
 @Service
+@RequiredArgsConstructor
 public class UserService implements UserDetailsService {
 
-    @Autowired
-    private UserRepository userRepository;
+    // Names that read as system or staff accounts. The message below is deliberately the same as
+    // for a taken name so this list can't be probed.
+    private static final Set<String> RESERVED = Set.of(
+            "admin", "administrator", "root", "system", "support", "betrix", "guest", "bot");
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private static final String TAKEN = "Username or email already in use";
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -27,8 +35,10 @@ public class UserService implements UserDetailsService {
     }
 
     public User createUser(String name,String username, String password, String email) {
-        if (userRepository.findByUsername(username).isPresent()) {
-            throw new IllegalArgumentException("Username already exists");
+        if (RESERVED.contains(username.toLowerCase(Locale.ROOT))
+                || userRepository.existsByUsernameIgnoreCase(username)
+                || userRepository.existsByEmailIgnoreCase(email)) {
+            throw new IllegalArgumentException(TAKEN);
         }
 
         User user = new User();
@@ -39,7 +49,12 @@ public class UserService implements UserDetailsService {
         user.setBalance(1000);
         user.setRoles(Collections.singletonList("USER"));
 
-        return userRepository.save(user);
+        try {
+            return userRepository.save(user);
+        } catch (DuplicateKeyException e) {
+            // two registrations raced past the check above; the unique index decided
+            throw new IllegalArgumentException(TAKEN);
+        }
     }
     public User addBalance(String username, int amount) {
         User user = userRepository.findByUsername(username).get();

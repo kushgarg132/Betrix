@@ -10,6 +10,8 @@ import com.example.backend.model.BotDifficulty;
 import com.example.backend.model.LoginInput;
 import com.example.backend.model.Player;
 import com.example.backend.model.RegisterInput;
+import com.example.backend.security.AuthRateLimiter;
+import com.example.backend.security.ClientIp;
 import com.example.backend.security.CurrentUser;
 import com.example.backend.security.JwtTokenProvider;
 import com.example.backend.service.BotService;
@@ -50,9 +52,11 @@ public class MutationResolver {
     private final GameNotificationService notificationService;
     private final BotService botService;
     private final GameValidatorService gameValidatorService;
+    private final AuthRateLimiter authRateLimiter;
 
     @MutationMapping
     public Map<String, Object> login(@Argument @Valid LoginInput input) {
+        authRateLimiter.check(ClientIp.current());
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(input.username(), input.password()));
@@ -69,11 +73,13 @@ public class MutationResolver {
 
     @MutationMapping
     public User register(@Argument @Valid RegisterInput input) {
+        authRateLimiter.check(ClientIp.current());
         return userService.createUser(input.name(), input.username(), input.password(), input.email());
     }
 
     @MutationMapping
     public Map<String, Object> guestLogin() {
+        authRateLimiter.check(ClientIp.current());
         String username = "guest-" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
         String token = jwtTokenProvider.generateGuestToken(username);
         return Map.of("token", token, "type", "Bearer");
