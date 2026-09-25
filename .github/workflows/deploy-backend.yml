@@ -1,12 +1,14 @@
 name: Deploy Backend to VM
 
+# Gated on "Backend CI": the deploy only runs after the tests passed for the exact commit that
+# was tested. Kept as its own workflow (not a `needs:` in the CI file) so that cancel/re-run of a
+# CI run can never interrupt a deploy midway through `docker compose build`.
+# workflow_dispatch stays as the manual fallback when CI or GitHub is misbehaving.
 on:
-  push:
+  workflow_run:
+    workflows: ["Backend CI"]
+    types: [completed]
     branches: [ master ]
-    paths:
-      - 'backend/**'
-      - 'docker-compose.yml'
-      - '.github/workflows/deploy-backend.yml'
   workflow_dispatch: {}
 
 concurrency:
@@ -15,21 +17,27 @@ concurrency:
 
 jobs:
   deploy:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: [self-hosted, betrix-vm]
     steps:
       # Deploys straight from the runner workspace. Secrets live in betrix.env in the
       # runner directory (outside the workspace, which checkout may wipe), created once by hand.
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Rebuild and restart backend
         run: |
           cp "$RUNNER_WORKSPACE/../../betrix.env" .env
           docker compose up -d --build backend
 
+      # /actuator/health includes the Mongo check, so a bad Atlas URI or IP allowlist fails here
       - name: Health check
         run: |
           for i in $(seq 1 30); do
-            if curl -fsS -o /dev/null http://127.0.0.1:8083/swagger-ui/index.html; then echo healthy; exit 0; fi
+            if curl -fsS --max-time 10 -o /dev/null http://127.0.0.1:8083/actuator/health; then echo healthy; exit 0; fi
             sleep 3
           done
           docker logs --tail 50 betrix-backend

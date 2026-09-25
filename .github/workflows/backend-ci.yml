@@ -1,0 +1,44 @@
+name: Backend CI
+
+# Runs the backend tests on a GitHub-hosted runner. deploy-backend.yml waits for this to
+# succeed (workflow_run), so a red test never reaches the VM. Path filter keeps frontend-only
+# pushes from triggering (and therefore from triggering a backend deploy).
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - 'backend/**'
+      - 'docker-compose.yml'
+      - '.github/workflows/backend-ci.yml'
+  pull_request:
+    branches: [ master ]
+    paths:
+      - 'backend/**'
+      - 'docker-compose.yml'
+      - '.github/workflows/backend-ci.yml'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+      - name: Test
+        run: ./gradlew test --no-daemon
+      - name: Upload test report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: backend/build/reports/tests/test
