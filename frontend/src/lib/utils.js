@@ -5,15 +5,20 @@ export function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
 
+function compact(n, div, suffix) {
+  return `${(n / div).toFixed(1).replace(/\.0$/, '')}${suffix}`;
+}
+
+// Play money: plain chip counts, never a currency sign.
 export function formatChips(amount) {
-  if (!amount && amount !== 0) return '—';
-  if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(1)}M`;
-  if (amount >= 1_000)     return `$${(amount / 1_000).toFixed(1)}K`;
-  return `$${amount.toLocaleString()}`;
+  if (amount == null) return '—';
+  if (amount >= 1_000_000) return compact(amount, 1_000_000, 'M');
+  if (amount >= 1_000)     return compact(amount, 1_000, 'K');
+  return amount.toLocaleString();
 }
 
 export function formatBlinds(small, big) {
-  return `$${small}/$${big}`;
+  return `${small}/${big}`;
 }
 
 export const SUIT_SYMBOLS = {

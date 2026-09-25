@@ -68,7 +68,7 @@ export default function GameLobby() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="font-serif text-3xl font-bold text-text">Game Lobby</h1>
+          <h1 className="font-display text-3xl font-bold text-text">Game Lobby</h1>
           <p className="text-text-muted text-sm mt-1">
             {loading ? 'Loading tables…' : `${games.length} table${games.length !== 1 ? 's' : ''} available`}
           </p>

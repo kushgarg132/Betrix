@@ -61,7 +61,7 @@ export default function WinnerOverlay({ game, visible }) {
               <Trophy className="text-gold" size={22} />
             </motion.div>
 
-            <h2 className="font-serif text-xl font-bold text-text mb-1">
+            <h2 className="font-display text-xl font-bold text-text mb-1">
               {hasWinners ? `${winners[0]?.username || 'Winner'} wins!` : 'Hand Complete'}
             </h2>
 

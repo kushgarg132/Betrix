@@ -47,7 +47,7 @@ export default function Navbar() {
           <div className="w-7 h-7 rounded-[var(--radius-sm)] bg-gold flex items-center justify-center shadow-[0_0_12px_rgba(212,168,67,0.5)]">
             <span className="text-text-inverse font-bold text-xs">B</span>
           </div>
-          <span className="font-serif text-xl font-bold text-text group-hover:text-gold transition-colors">
+          <span className="font-display text-xl font-bold text-text group-hover:text-gold transition-colors">
             Betrix
           </span>
         </Link>

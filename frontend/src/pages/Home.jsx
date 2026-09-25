@@ -133,7 +133,7 @@ export default function Home() {
                 <Star size={12} fill="currentColor" />
                 Texas Hold'em, Play Money
               </div>
-              <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-text leading-[1.1] text-balance">
+              <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-text leading-[1.1] text-balance">
                 Real Poker,{' '}
                 <span className="gold-text">No Money on the Line</span>
               </h1>
@@ -174,7 +174,7 @@ export default function Home() {
       <section className="py-16">
         <PageWrapper>
           <div className="text-center mb-10">
-            <h2 className="font-serif text-3xl font-bold text-text mb-3">Built for Serious Players</h2>
+            <h2 className="font-display text-3xl font-bold text-text mb-3">Built for Serious Players</h2>
             <p className="text-text-muted max-w-md mx-auto text-sm">
               Professional-grade poker with the speed and reliability you need to play your best game.
             </p>
@@ -204,7 +204,7 @@ export default function Home() {
         <section className="py-16 bg-gradient-to-t from-surface/40 to-transparent">
           <PageWrapper>
             <div className="text-center space-y-5">
-              <h2 className="font-serif text-3xl font-bold text-text">Ready to Play?</h2>
+              <h2 className="font-display text-3xl font-bold text-text">Ready to Play?</h2>
               <p className="text-text-muted text-sm">Create a free account and be at a table in under 60 seconds.</p>
               <Button size="xl" onClick={() => navigate('/register')} className="gap-2 mx-auto">
                 Start Playing Free <ArrowRight size={18} />

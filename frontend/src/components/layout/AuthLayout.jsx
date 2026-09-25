@@ -44,7 +44,7 @@ export default function AuthLayout({ children, title, subtitle, altText, altLink
         </div>
 
         <div className="mt-10 text-center px-8">
-          <h1 className="font-serif text-4xl font-bold text-text mb-3">
+          <h1 className="font-display text-4xl font-bold text-text mb-3">
             Play <span className="gold-text">Premium</span> Poker
           </h1>
           <p className="text-text-muted text-sm leading-relaxed max-w-xs">
@@ -63,7 +63,7 @@ export default function AuthLayout({ children, title, subtitle, altText, altLink
               <div className="w-7 h-7 rounded-[var(--radius-sm)] bg-gold flex items-center justify-center">
                 <span className="text-text-inverse font-bold text-xs">B</span>
               </div>
-              <span className="font-serif text-xl font-bold text-text">Betrix</span>
+              <span className="font-display text-xl font-bold text-text">Betrix</span>
             </Link>
             <h2 className="text-2xl font-semibold text-text">{title}</h2>
             {subtitle && <p className="text-text-muted text-sm mt-1">{subtitle}</p>}

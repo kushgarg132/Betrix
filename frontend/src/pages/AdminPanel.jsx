@@ -109,7 +109,7 @@ export default function AdminPanel() {
             <Shield size={18} className="text-gold" />
           </div>
           <div>
-            <h1 className="font-serif text-2xl font-bold text-text">Admin Panel</h1>
+            <h1 className="font-display text-2xl font-bold text-text">Admin Panel</h1>
             <p className="text-text-muted text-xs">
               {loading ? 'Loading…' : `${data?.games?.length ?? 0} total tables`}
             </p>

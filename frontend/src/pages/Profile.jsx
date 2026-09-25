@@ -59,13 +59,13 @@ export default function Profile() {
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
               <Avatar className="h-16 w-16 border-2 border-gold/40">
-                <AvatarFallback className="bg-gold/15 text-gold text-xl font-bold font-serif">
+                <AvatarFallback className="bg-gold/15 text-gold text-xl font-bold font-display">
                   {initials}
                 </AvatarFallback>
               </Avatar>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="font-serif text-2xl font-bold text-text">{user.name}</h1>
+                  <h1 className="font-display text-2xl font-bold text-text">{user.name}</h1>
                   {isAdmin && <Badge variant="warning" className="text-[10px]">Admin</Badge>}
                 </div>
                 <div className="flex items-center gap-3 mt-1.5 text-text-muted text-sm">
