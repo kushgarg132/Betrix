@@ -4,7 +4,8 @@ import { Toaster } from 'sonner';
 import PokerTable from './pages/PokerTable';
 import Home from './pages/Home';
 import GameLobby from './pages/GameLobby';
-import Navbar from './components/layout/Navbar';
+import TopBar from './components/layout/TopBar';
+import BottomTabBar from './components/layout/BottomTabBar';
 import Profile from './pages/Profile';
 import AdminPanel from './pages/AdminPanel';
 import NotFound from './pages/NotFound';
@@ -14,7 +15,7 @@ function App() {
   return (
     <Router>
       <div className="min-h-dvh flex flex-col bg-background text-text">
-        <Navbar />
+        <TopBar />
         <Routes>
           <Route path="/"        element={<Home />} />
           <Route path="/lobby"   element={<ProtectedRoute><GameLobby /></ProtectedRoute>} />
@@ -23,8 +24,9 @@ function App() {
           <Route path="/admin"   element={<AdminRoute><AdminPanel /></AdminRoute>} />
           <Route path="*"        element={<NotFound />} />
         </Routes>
+        <BottomTabBar />
         <Toaster
-          position="top-right"
+          position="top-center"
           toastOptions={{
             style: {
               background: 'var(--color-surface-elevated)',

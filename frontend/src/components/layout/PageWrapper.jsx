@@ -6,6 +6,7 @@ export default function PageWrapper({ children, className, fullWidth = false }) 
     <main className={cn(
       'flex-1',
       !fullWidth && 'max-w-7xl mx-auto w-full px-4 sm:px-6 py-6',
+      'pb-20 lg:pb-0',
       className
     )}>
       {children}

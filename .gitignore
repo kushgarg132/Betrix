@@ -5,3 +5,7 @@
 .env
 .env.*
 !.env.example
+
+# impeccable design-hook local/cache files (config.json is shared, keep tracked)
+.impeccable/hook.cache.json
+.impeccable/config.local.json
