@@ -114,7 +114,7 @@ public class GameLifecycleService {
                 game = gameValidatorService.validateGameExists(gameId);
             }
 
-            game.getPlayers().remove(player);
+            game.removePlayer(playerId);
 
             eventPublisher.publishEvent(new PlayerActionEvent(
                     gameId, player, PlayerActionEvent.ActionType.LEAVE, null, new Game(game)));

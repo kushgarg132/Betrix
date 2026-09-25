@@ -169,6 +169,33 @@ public class Game {
         return players.get(currentPlayerIndex).getId().equals(playerId);
     }
 
+    /** Removes a player by id, keeping the turn and dealer pointers on the same people. */
+    public void removePlayer(String playerId) {
+        int idx = -1;
+        for (int i = 0; i < players.size(); i++) {
+            if (players.get(i).getId().equals(playerId)) {
+                idx = i;
+                break;
+            }
+        }
+        if (idx < 0) {
+            return;
+        }
+        players.remove(idx);
+        if (idx < currentPlayerIndex) {
+            currentPlayerIndex--;
+        }
+        if (idx < dealerPosition) {
+            dealerPosition--;
+        }
+        if (!players.isEmpty()) {
+            dealerPosition %= players.size();
+            if (currentPlayerIndex >= players.size()) {
+                currentPlayerIndex = 0;
+            }
+        }
+    }
+
     public boolean isGameFull() {
         return players.size() >= MAX_PLAYERS;
     }
