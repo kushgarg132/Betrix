@@ -2,15 +2,20 @@ import React from 'react';
 import PlayerSeat from './PlayerSeat';
 import CommunityCards from './CommunityCards';
 import PotDisplay from './PotDisplay';
+import ShowdownReveal from './ShowdownReveal';
 import { seatLayout } from '@/lib/seatLayout';
+import { showdownHighlight, winnerIds } from '@/lib/showdown';
 
 /**
- * The felt + seats. `heroIndex`/`hand` come from useGame (Task 10); `highlight` (a Set of
- * "RANK-SUIT" keys, or null) lifts the hero's winning cards at showdown (wired in Task 14).
+ * The felt + seats. `heroIndex`/`hand` come from useGame (Task 10); `showdown` (null outside a
+ * reveal) drives the winning-cards highlight, winner glow, opponents' revealed hole cards, and
+ * the reveal banner itself.
  */
-export default function TableScene({ game, heroIndex, hand, highlight = null, orientation = 'portrait' }) {
+export default function TableScene({ game, heroIndex, hand, showdown = null, onShowdownDone, orientation = 'portrait' }) {
   const players = game?.players || [];
   const seats = seatLayout(players.length, heroIndex, orientation);
+  const highlight = showdownHighlight(showdown);
+  const winners = winnerIds(showdown);
 
   return (
     <div className="relative w-full aspect-[3/4] lg:aspect-[16/10]">
@@ -28,7 +33,7 @@ export default function TableScene({ game, heroIndex, hand, highlight = null, or
       {/* Pot + community cards */}
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 pointer-events-none px-4">
         <PotDisplay pot={game?.pot ?? 0} pots={game?.pots} />
-        <CommunityCards cards={game?.communityCards || []} />
+        <CommunityCards cards={game?.communityCards || []} highlight={highlight} />
       </div>
 
       {/* Seats — only seated players, positioned hero-relative */}
@@ -53,8 +58,12 @@ export default function TableScene({ game, heroIndex, hand, highlight = null, or
               isHero={isHero}
               isTurn={game?.currentPlayerIndex === actualIndex}
               isDealer={game?.dealerPosition === actualIndex}
+              isWinner={winners.has(player.id)}
               blind={blind}
               hand={isHero ? hand : null}
+              revealedHand={!isHero && showdown
+                ? (showdown.game?.players?.find((p) => p.id === player.id)?.hand || [])
+                : undefined}
               bet={game?.currentBettingRound?.bets?.[player.id] ?? 0}
               highlight={highlight}
               deadline={game?.currentPlayerActionDeadline}
@@ -63,6 +72,8 @@ export default function TableScene({ game, heroIndex, hand, highlight = null, or
           </div>
         );
       })}
+
+      {showdown && <ShowdownReveal showdown={showdown} onDone={onShowdownDone} />}
     </div>
   );
 }

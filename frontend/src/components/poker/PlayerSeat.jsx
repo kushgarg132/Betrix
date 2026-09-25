@@ -13,7 +13,7 @@ const BLIND_LABELS = {
 
 const BOT_BADGE_VARIANT = { HARD: 'danger', EASY: 'success', MEDIUM: 'warning' };
 
-export default function PlayerSeat({ player, isHero, isTurn, isDealer, blind, hand, bet, highlight, deadline, timeoutSeconds }) {
+export default function PlayerSeat({ player, isHero, isTurn, isDealer, isWinner, blind, hand, revealedHand, bet, highlight, deadline, timeoutSeconds }) {
   if (!player) return null;
 
   const hasFolded = player.hasFolded;
@@ -21,6 +21,10 @@ export default function PlayerSeat({ player, isHero, isTurn, isDealer, blind, ha
   const isSittingOut = player.isSittingOut;
   const isBot = player.isBot;
   const initials = getPlayerInitials(player.name);
+  // Hero's own cards while playing; an opponent's cards only once the showdown reveals them.
+  const visibleHand = isHero ? hand : (revealedHand !== undefined ? revealedHand : null);
+  // Mid-hand, still in it, nothing revealed yet: show the back of two cards at the seat.
+  const showFaceDownPlaceholder = !isHero && revealedHand === undefined && !hasFolded;
 
   return (
     <motion.div
@@ -34,7 +38,8 @@ export default function PlayerSeat({ player, isHero, isTurn, isDealer, blind, ha
         {isTurn && <TurnRing deadline={deadline} timeoutSeconds={timeoutSeconds} isHero={isHero} />}
         <div className={cn(
           'w-12 h-12 rounded-full flex items-center justify-center border-2 bg-surface-elevated overflow-hidden',
-          isHero ? 'border-neon-cyan glow-cyan' : 'border-border-strong'
+          isWinner ? 'border-neon-magenta glow-magenta'
+            : isHero ? 'border-neon-cyan glow-cyan' : 'border-border-strong'
         )}>
           <span className={cn('font-bold text-sm', isHero ? 'text-neon-cyan' : 'text-text')}>
             {initials}
@@ -68,9 +73,15 @@ export default function PlayerSeat({ player, isHero, isTurn, isDealer, blind, ha
             </Badge>
           )}
         </div>
-        <div className="font-mono tabular text-xs text-text-muted">
+        <motion.div
+          key={player.chips}
+          initial={{ scale: 1.25 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 0.35 }}
+          className="font-mono tabular text-xs text-text-muted"
+        >
           {formatChips(player.chips)}
-        </div>
+        </motion.div>
       </div>
 
       {/* Status tags */}
@@ -95,10 +106,10 @@ export default function PlayerSeat({ player, isHero, isTurn, isDealer, blind, ha
         )}
       </AnimatePresence>
 
-      {/* Hero's hole cards */}
-      {isHero && hand && hand.length > 0 && (
+      {/* Hero's hole cards, or an opponent's once the showdown reveals them */}
+      {visibleHand && visibleHand.length > 0 && (
         <div className="flex gap-1 -mt-1">
-          {hand.map((card, i) => {
+          {visibleHand.map((card, i) => {
             const key = card ? `${card.rank}-${card.suit}` : null;
             return (
               <PokerCard
@@ -110,6 +121,14 @@ export default function PlayerSeat({ player, isHero, isTurn, isDealer, blind, ha
               />
             );
           })}
+        </div>
+      )}
+
+      {/* Opponent still in the hand, nothing revealed yet: face-down placeholder */}
+      {showFaceDownPlaceholder && (
+        <div className="flex gap-1 -mt-1">
+          <PokerCard small faceDown />
+          <PokerCard small faceDown />
         </div>
       )}
     </motion.div>
