@@ -39,7 +39,7 @@ public class QueryResolver {
         String username = auth.getName();
         
         // Check if it's a guest user
-        if (username != null && username.startsWith("guest-")) {
+        if (com.example.backend.security.PlayerIdentity.isGuest(username)) {
             User guest = new User();
             guest.setId(username); // Use username as ID for guests
             guest.setUsername(username);

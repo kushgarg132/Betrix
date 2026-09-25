@@ -80,7 +80,7 @@ public class MutationResolver {
     @MutationMapping
     public Map<String, Object> guestLogin() {
         authRateLimiter.check(ClientIp.current());
-        String username = "guest-" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
+        String username = com.example.backend.security.PlayerIdentity.newGuestUsername();
         String token = jwtTokenProvider.generateGuestToken(username);
         return Map.of("token", token, "type", "Bearer");
     }

@@ -76,7 +76,7 @@ public class GameLifecycleService {
 
     public Game joinGame(String gameId, String username) {
         try {
-            boolean isGuest = username != null && (username.startsWith("guest-") || username.startsWith("bot-"));
+            boolean isGuest = com.example.backend.security.PlayerIdentity.isTransient(username);
             com.example.backend.entity.User user = null;
             if (!isGuest) {
                 user = userRepository.findByUsername(username).orElseThrow(() ->
@@ -90,7 +90,7 @@ public class GameLifecycleService {
                 return getGameForPlayer(game, game.getPlayerByUsername(username).getId());
             }
 
-            String displayName = username.startsWith("bot-") ? "Bot" : "Guest";
+            String displayName = com.example.backend.security.PlayerIdentity.isBot(username) ? "Bot" : "Guest";
             Player player = isGuest
                     ? new Player(displayName, username, buyIn)
                     : new Player(user.getName(), user.getUsername(), buyIn);

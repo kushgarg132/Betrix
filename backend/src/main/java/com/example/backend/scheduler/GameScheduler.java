@@ -158,7 +158,7 @@ public class GameScheduler {
             List<Game> stale = gameRepository.findAll().stream()
                     .filter(g -> g.getUpdatedAt() != null && g.getUpdatedAt().isBefore(cutoff))
                     .filter(g -> g.getPlayers().isEmpty()
-                            || g.getPlayers().stream().allMatch(p -> p.getUsername().startsWith("guest-")))
+                            || g.getPlayers().stream().allMatch(p -> com.example.backend.security.PlayerIdentity.isGuest(p.getUsername())))
                     .toList();
 
             for (Game g : stale) {

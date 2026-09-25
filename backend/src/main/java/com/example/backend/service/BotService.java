@@ -56,7 +56,7 @@ public class BotService {
 
     private Player addBotLocked(String gameId, BotDifficulty difficulty) {
         String diff = difficulty != null ? difficulty.name() : "MEDIUM";
-        String botUsername = "bot-" + UUID.randomUUID().toString().replace("-", "").substring(0, 6);
+        String botUsername = com.example.backend.security.PlayerIdentity.newBotUsername();
 
         // Join as bot (creates guest-style transient player)
         lifecycleService.joinGame(gameId, botUsername);
