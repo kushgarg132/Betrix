@@ -128,30 +128,13 @@ public class Game {
         this.autoStart = game.isAutoStart();
     }
 
-    // Add a bet amount to the appropriate pot
+    // Running total only. The per-pot split (main/side pots) is built once per betting round
+    // in BettingManager.updatePotAmounts; adding to pots here as well double-counted every bet.
     public void addToPot(double amount) {
         if (amount <= 0) {
             return; // Ignore zero or negative amounts
         }
-
         this.pot += amount;
-
-        // Add to the main pot by default
-        if (!pots.isEmpty()) {
-            pots.get(0).addAmount(amount);
-
-            // Make sure all active players are eligible for the main pot
-            players.stream()
-                    .filter(p -> p.isActive() && !p.isHasFolded())
-                    .forEach(p -> pots.get(0).addEligiblePlayer(p.getId()));
-        } else {
-            Pot mainPot = new Pot(amount);
-            // Add all active players to the main pot
-            players.stream()
-                    .filter(p -> p.isActive() && !p.isHasFolded())
-                    .forEach(p -> mainPot.addEligiblePlayer(p.getId()));
-            pots.add(mainPot);
-        }
     }
 
     // Create a side pot when a player goes all-in
