@@ -284,6 +284,7 @@ public class BettingManager {
     public void evaluateHandAndAwardPot(Game game) {
         logger.info("Evaluating hands and awarding pot for game with ID: {}", game.getId());
 
+        gameScheduler.cancelGameTimeout(game.getId());
         game.setCurrentPlayerIndex(-1);
         game.setStatus(Game.GameStatus.SHOWDOWN);
 

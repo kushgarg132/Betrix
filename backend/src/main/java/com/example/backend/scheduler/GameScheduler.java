@@ -48,8 +48,12 @@ public class GameScheduler {
     // Track games with scheduled next hand starts
     private final Map<String, ScheduledFuture<?>> scheduledGameStarts = new ConcurrentHashMap<>();
 
-    // Track players with scheduled timeout actions
+    // Pending turn timeout per game (only one player acts at a time), keyed by gameId
     private final Map<String, ScheduledFuture<?>> scheduledPlayerTimeouts = new ConcurrentHashMap<>();
+
+    // Bumped on every schedule/cancel; a timer only acts if its epoch is still the game's current one.
+    // future.cancel() cannot stop a timer that has already started, this can.
+    private final Map<String, Long> timeoutEpochs = new ConcurrentHashMap<>();
 
     // Performance metrics
     private final Map<String, AtomicLong> taskExecutionCounts = new ConcurrentHashMap<>();
@@ -264,23 +268,16 @@ public class GameScheduler {
             logger.info("Scheduling timeout for player {} in game {} after {}ms delay", playerId, gameId,
                     playerTimeoutDelay);
 
-            // Create a unique key for this timeout
-            String timeoutKey = gameId + ":" + playerId;
-
-            // Cancel any existing scheduled timeout for this player in this game
-            ScheduledFuture<?> existingTask = scheduledPlayerTimeouts.remove(timeoutKey);
-            if (existingTask != null && !existingTask.isDone()) {
-                existingTask.cancel(false);
-                logger.debug("Cancelled existing timeout task for player {} in game {}", playerId, gameId);
-            }
+            // Replaces whatever timeout the game had, whichever player it was for
+            long epoch = cancelGameTimeout(gameId);
 
             // Schedule the player timeout after delay
             ScheduledFuture<?> future = taskScheduler.schedule(() -> {
-                handlePlayerTimeOut(gameId, playerId);
+                handlePlayerTimeOut(gameId, playerId, epoch);
             }, Instant.now().plusMillis(playerTimeoutDelay));
 
             // Store the future for potential cancellation
-            scheduledPlayerTimeouts.put(timeoutKey, future);
+            scheduledPlayerTimeouts.put(gameId, future);
 
             // Update metrics
             taskExecutionCounts.get(taskName).incrementAndGet();
@@ -296,9 +293,13 @@ public class GameScheduler {
     // Track when time bank usage starts for specific players
     private final Map<String, Instant> timeBankStartTimes = new ConcurrentHashMap<>();
 
-    private void handlePlayerTimeOut(String gameId, String playerId) {
-        // Create a unique key for this timeout
+    private void handlePlayerTimeOut(String gameId, String playerId, long epoch) {
+        // Key for this player's time bank usage
         String timeoutKey = gameId + ":" + playerId;
+        if (!isCurrentTimeout(gameId, epoch)) {
+            logger.debug("Ignoring stale timeout for player {} in game {}", playerId, gameId);
+            return;
+        }
         try {
             Game game = gameRepository.findById(gameId).orElse(null);
             if (game != null && game.getStatus() != Game.GameStatus.WAITING) {
@@ -314,10 +315,10 @@ public class GameScheduler {
 
                         // Schedule final timeout for the rest of their time bank
                         ScheduledFuture<?> future = taskScheduler.schedule(() -> {
-                            handlePlayerTimeOut(gameId, playerId);
+                            handlePlayerTimeOut(gameId, playerId, epoch);
                         }, Instant.now().plusMillis(player.getTimeBankMs()));
 
-                        scheduledPlayerTimeouts.put(timeoutKey, future);
+                        scheduledPlayerTimeouts.put(gameId, future);
                         return; // Return early, don't fold yet
                     }
 
@@ -336,10 +337,26 @@ public class GameScheduler {
             logger.error("Error handling timeout for player {} in game {}: {}", playerId, gameId, e.getMessage(), e);
         } finally {
             // Remove from tracking map when done auto-folding (or if skip)
-            if (!timeBankStartTimes.containsKey(timeoutKey)) {
-                scheduledPlayerTimeouts.remove(timeoutKey);
+            if (isCurrentTimeout(gameId, epoch) && !timeBankStartTimes.containsKey(timeoutKey)) {
+                scheduledPlayerTimeouts.remove(gameId);
             }
         }
+    }
+
+    /** Cancels the game's pending timeout, and invalidates a copy that is already running. Returns the new epoch. */
+    public long cancelGameTimeout(String gameId) {
+        long epoch = timeoutEpochs.merge(gameId, 1L, Long::sum);
+        ScheduledFuture<?> existing = scheduledPlayerTimeouts.remove(gameId);
+        if (existing != null && !existing.isDone()) {
+            existing.cancel(false);
+            logger.debug("Cancelled scheduled timeout for game {}", gameId);
+        }
+        return epoch;
+    }
+
+    private boolean isCurrentTimeout(String gameId, long epoch) {
+        Long current = timeoutEpochs.get(gameId);
+        return current != null && current == epoch;
     }
 
     public long cancelPlayerTimeout(String gameId, String playerId) {
@@ -347,11 +364,7 @@ public class GameScheduler {
         String timeoutKey = gameId + ":" + playerId;
         long usedTimeBankMs = 0;
 
-        ScheduledFuture<?> existingTask = scheduledPlayerTimeouts.remove(timeoutKey);
-        if (existingTask != null && !existingTask.isDone()) {
-            existingTask.cancel(false);
-            logger.debug("Cancelled scheduled timeout for {}", timeoutKey);
-        }
+        cancelGameTimeout(gameId);
 
         // Calculate and return used time bank if applicable
         Instant tbStart = timeBankStartTimes.remove(timeoutKey);
