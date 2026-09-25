@@ -8,4 +8,7 @@ public interface UserRepository extends MongoRepository<User, String> {
     Optional<User> findByUsername(String username);
 
     Optional<User> findByGoogleSub(String googleSub);
+
+    /** Old password-era accounts (no googleSub) that still hold this email, for the legacy unique index. */
+    Optional<User> findByEmailIgnoreCaseAndGoogleSubIsNull(String email);
 }

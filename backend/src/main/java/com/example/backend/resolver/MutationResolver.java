@@ -71,7 +71,15 @@ public class MutationResolver {
                     .errorClassification(ErrorType.UNAUTHORIZED)
                     .build();
         }
-        User user = userService.signInWithGoogle(identity);
+        User user;
+        try {
+            user = userService.signInWithGoogle(identity);
+        } catch (org.springframework.dao.DuplicateKeyException e) {
+            throw GraphqlErrorException.newErrorException()
+                    .message("Could not sign in with this Google account. Try again.")
+                    .errorClassification(ErrorType.UNAUTHORIZED)
+                    .build();
+        }
         String jwt = jwtTokenProvider.generateToken(
                 new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities()));
         return Map.of("token", jwt, "type", "Bearer");

@@ -41,6 +41,10 @@ public class UserService implements UserDetailsService {
     /** Find the account for this Google identity, or create it; refresh profile fields and role every time. */
     public User signInWithGoogle(GoogleIdentity id) {
         User user = userRepository.findByGoogleSub(id.sub()).orElseGet(() -> {
+            // Legacy unique index on email (leftover from the deleted password-auth DataSeeder):
+            // an old, now-unreachable password account may still hold this email. Clear it so the
+            // new Google account can take the email without hitting that index.
+            releaseOrphanEmail(id.email());
             User u = new User();
             u.setGoogleSub(id.sub());
             u.setUsername(GOOGLE_PREFIX + id.sub());
@@ -55,8 +59,20 @@ public class UserService implements UserDetailsService {
         try {
             return userRepository.save(user);
         } catch (DuplicateKeyException e) {
-            // two first sign-ins raced; the unique googleSub index decided, use the winner's row
+            // two first sign-ins raced; the unique googleSub index decided, use the winner's row.
+            // If it's some other collision (e.g. the legacy email index against an unrelated
+            // account), there's no winner to recover here - let it propagate as-is.
             return userRepository.findByGoogleSub(id.sub()).orElseThrow(() -> e);
         }
+    }
+
+    private void releaseOrphanEmail(String email) {
+        if (email == null) {
+            return;
+        }
+        userRepository.findByEmailIgnoreCaseAndGoogleSubIsNull(email).ifPresent(orphan -> {
+            orphan.setEmail(null);
+            userRepository.save(orphan);
+        });
     }
 }
