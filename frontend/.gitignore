@@ -4,4 +4,4 @@
 .firebase/
 /build
 /node_modules
-.impeccable/
+.impeccable/.env.local
