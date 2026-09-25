@@ -90,6 +90,11 @@ public class HandEvaluator {
         boolean isFlush = isFlush(hand);
         boolean isStraight = isStraight(hand);
         
+        // Wheel (A-5-4-3-2): the ace plays low, so move it last to rank as a 5-high straight
+        if (isStraight && hand.get(0).getRank() == Card.Rank.ACE && hand.get(1).getRank() == Card.Rank.FIVE) {
+            hand.add(hand.remove(0));
+        }
+        
         // Count occurrences of each rank
         Map<Card.Rank, Integer> rankCounts = new HashMap<>();
         for (Card card : hand) {
@@ -106,7 +111,7 @@ public class HandEvaluator {
         
         // Royal flush
         if (isFlush && isStraight && hand.get(0).getRank() == Card.Rank.ACE) {
-            return new HandResult(HandResult.HandRank.FLUSH, hand);
+            return new HandResult(HandResult.HandRank.ROYAL_FLUSH, hand);
         }
         
         // Straight flush
