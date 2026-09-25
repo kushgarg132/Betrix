@@ -65,8 +65,10 @@ public class BettingManager {
     }
 
     private void setupPreFlopBetting(Game game) {
-        // Post small blind
+        // Post small blind. Posting moves the turn on: small blind -> big blind -> first to act. (setupNextRound
+        // just pointed the turn at the seat after the button, which is the big blind when heads-up.)
         Player smallBlind = findPlayerByUsername(game, game.getSmallBlindUserId());
+        game.setCurrentPlayerIndex(game.getPlayers().indexOf(smallBlind));
         placeBet(game, smallBlind, game.getSmallBlindAmount(), Game.PlayerAction.SMALL_BLIND);
 
         // Post big blind

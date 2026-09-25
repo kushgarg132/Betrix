@@ -320,6 +320,21 @@ public class Game {
                 this.players.size() >= 2;
     }
 
+    private boolean isDealtIn(Player p) {
+        return !p.isSittingOut() && p.getChips() > 0;
+    }
+
+    /** The next seat after {@code from} that is dealt in, going clockwise. */
+    private int nextDealtIn(int from) {
+        for (int i = 1; i <= players.size(); i++) {
+            int seat = (from + i) % players.size();
+            if (isDealtIn(players.get(seat))) {
+                return seat;
+            }
+        }
+        return from;
+    }
+
     public void resetForNewHand() {
         deck = new Deck();
         communityCards.clear();
@@ -330,17 +345,25 @@ public class Game {
         currentBet = 0;
         lastActions.clear();
         players.forEach(Player::reset);
-        // Rotate dealer position
-        dealerPosition = (dealerPosition + 1) % players.size();
+        // The button and blinds only move between players who are dealt in (not sitting out, have chips)
+        dealerPosition = nextDealtIn(dealerPosition);
 
-        // Set small and big blind positions
-        int smallBlindPosition = (dealerPosition + 1) % players.size();
-        int bigBlindPosition = (dealerPosition + 2) % players.size();
+        int smallBlindPosition;
+        int bigBlindPosition;
+        if (players.stream().filter(this::isDealtIn).count() == 2) {
+            // heads-up: the button posts the small blind
+            smallBlindPosition = dealerPosition;
+            bigBlindPosition = nextDealtIn(dealerPosition);
+        } else {
+            smallBlindPosition = nextDealtIn(dealerPosition);
+            bigBlindPosition = nextDealtIn(smallBlindPosition);
+        }
 
         smallBlindUserId = players.get(smallBlindPosition).getUsername();
         bigBlindUserId = players.get(bigBlindPosition).getUsername();
 
-        currentPlayerIndex = (dealerPosition + 1) % players.size();
+        // posting the small blind moves the turn on to the big blind, then to the first to act
+        currentPlayerIndex = smallBlindPosition;
 
         updateLastActivityTime();
         updatedAt = OffsetDateTime.now(ZoneOffset.UTC);
