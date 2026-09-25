@@ -17,14 +17,14 @@ jobs:
   deploy:
     runs-on: [self-hosted, betrix-vm]
     steps:
-      # Deploys straight from the runner workspace. The gitignored .env is placed
-      # there once by hand; clean: false keeps checkout from deleting it.
+      # Deploys straight from the runner workspace. Secrets live in betrix.env in the
+      # runner directory (outside the workspace, which checkout may wipe), created once by hand.
       - uses: actions/checkout@v4
-        with:
-          clean: false
 
       - name: Rebuild and restart backend
-        run: docker compose up -d --build backend
+        run: |
+          cp "$RUNNER_WORKSPACE/../../betrix.env" .env
+          docker compose up -d --build backend
 
       - name: Health check
         run: |
