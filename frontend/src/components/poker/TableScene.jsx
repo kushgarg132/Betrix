@@ -57,6 +57,8 @@ export default function TableScene({ game, heroIndex, hand, highlight = null, or
               hand={isHero ? hand : null}
               bet={game?.currentBettingRound?.bets?.[player.id] ?? 0}
               highlight={highlight}
+              deadline={game?.currentPlayerActionDeadline}
+              timeoutSeconds={game?.playerActionTimeoutSeconds}
             />
           </div>
         );

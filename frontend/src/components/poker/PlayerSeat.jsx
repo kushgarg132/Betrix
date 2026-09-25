@@ -4,6 +4,7 @@ import { cn, formatChips, getPlayerInitials } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import PokerCard from './PokerCard';
 import PokerChip from './PokerChip';
+import TurnRing from './TurnRing';
 
 const BLIND_LABELS = {
   'small-blind': 'SB',
@@ -12,7 +13,7 @@ const BLIND_LABELS = {
 
 const BOT_BADGE_VARIANT = { HARD: 'danger', EASY: 'success', MEDIUM: 'warning' };
 
-export default function PlayerSeat({ player, isHero, isTurn, isDealer, blind, hand, bet, highlight }) {
+export default function PlayerSeat({ player, isHero, isTurn, isDealer, blind, hand, bet, highlight, deadline, timeoutSeconds }) {
   if (!player) return null;
 
   const hasFolded = player.hasFolded;
@@ -28,8 +29,9 @@ export default function PlayerSeat({ player, isHero, isTurn, isDealer, blind, ha
       transition={{ duration: 0.3 }}
       className={cn('relative flex flex-col items-center gap-1.5', hasFolded && 'opacity-40 grayscale')}
     >
-      {/* Avatar — relative, so Task 12's TurnRing can overlay it absolutely */}
+      {/* Avatar — relative, so TurnRing can overlay it absolutely */}
       <div className="relative">
+        {isTurn && <TurnRing deadline={deadline} timeoutSeconds={timeoutSeconds} isHero={isHero} />}
         <div className={cn(
           'w-12 h-12 rounded-full flex items-center justify-center border-2 bg-surface-elevated overflow-hidden',
           isHero ? 'border-neon-cyan glow-cyan' : 'border-border-strong'

@@ -23,6 +23,8 @@ export const PLAYER_FIELDS = gql`
     hasFolded
     lastWinAmount
     isSittingOut
+    isBot
+    botDifficulty
     bestHand {
       rank
       highCards {
