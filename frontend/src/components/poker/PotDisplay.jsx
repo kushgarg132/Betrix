@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { formatChips } from '@/lib/utils';
+import { cn, formatChips } from '@/lib/utils';
 
 export default function PotDisplay({ pot, pots }) {
   // Side pots are pots beyond the first (main pot).
@@ -21,7 +21,11 @@ export default function PotDisplay({ pot, pots }) {
         initial={{ scale: 1.15, opacity: 0.7 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.25 }}
-        className="px-4 py-1.5 rounded-full bg-surface-overlay/80 border border-neon-magenta/40 glow-magenta text-center"
+        className={cn(
+          'px-4 py-1.5 rounded-full bg-surface-overlay/80 border text-center',
+          // Glow is a live-state signal (no pot yet = resting UI, not a win/active pot).
+          pot > 0 ? 'border-neon-magenta/40 glow-magenta' : 'border-border'
+        )}
       >
         <span className="text-xs text-text-muted uppercase tracking-widest mr-1.5">Pot</span>
         <span className="font-mono tabular font-bold text-neon-magenta text-sm">{formatChips(pot)}</span>

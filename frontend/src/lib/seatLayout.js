@@ -12,6 +12,8 @@ export function seatLayout(seatCount, heroIndex, orientation = 'portrait') {
     const step = (i - anchor + seatCount) % seatCount;
     // Start at the bottom (90° in screen coordinates, y down) and go clockwise on screen.
     const angle = Math.PI / 2 + (step * 2 * Math.PI) / seatCount;
-    return { left: 50 + rx * Math.cos(angle), top: 50 + ry * Math.sin(angle) };
+    // `angle` is kept alongside the position so a seat can point something (the bet chip) back
+    // toward the table center without re-deriving its place on the ellipse.
+    return { left: 50 + rx * Math.cos(angle), top: 50 + ry * Math.sin(angle), angle };
   });
 }

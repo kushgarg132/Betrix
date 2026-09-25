@@ -65,6 +65,7 @@ export default function TableScene({ game, heroIndex, hand, showdown = null, onS
                 ? (showdown.game?.players?.find((p) => p.id === player.id)?.hand || [])
                 : undefined}
               bet={game?.currentBettingRound?.bets?.[player.id] ?? 0}
+              seatAngle={pos.angle}
               highlight={highlight}
               deadline={game?.currentPlayerActionDeadline}
               timeoutSeconds={game?.playerActionTimeoutSeconds}

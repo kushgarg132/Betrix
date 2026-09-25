@@ -44,7 +44,7 @@ function TableRow({ game, onDelete }) {
       <td className="px-4 py-3 text-right">
         <Button
           variant="ghost"
-          size="icon-sm"
+          size="icon"
           onClick={() => onDelete(game)}
           className="text-text-dim hover:text-danger hover:bg-danger-muted transition-colors"
           aria-label={`Delete game ${game.id?.slice(0, 8)}`}

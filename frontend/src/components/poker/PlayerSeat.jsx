@@ -13,7 +13,7 @@ const BLIND_LABELS = {
 
 const BOT_BADGE_VARIANT = { HARD: 'danger', EASY: 'success', MEDIUM: 'warning' };
 
-export default function PlayerSeat({ player, isHero, isTurn, isDealer, isWinner, blind, hand, revealedHand, bet, highlight, deadline, timeoutSeconds }) {
+export default function PlayerSeat({ player, isHero, isTurn, isDealer, isWinner, blind, hand, revealedHand, bet, highlight, deadline, timeoutSeconds, seatAngle = Math.PI / 2 }) {
   if (!player) return null;
 
   const hasFolded = player.hasFolded;
@@ -25,6 +25,12 @@ export default function PlayerSeat({ player, isHero, isTurn, isDealer, isWinner,
   const visibleHand = isHero ? hand : (revealedHand !== undefined ? revealedHand : null);
   // Mid-hand, still in it, nothing revealed yet: show the back of two cards at the seat.
   const showFaceDownPlaceholder = !isHero && revealedHand === undefined && !hasFolded;
+  // Pull the bet chip toward the table center rather than a flat south offset — a bottom-half
+  // seat (hero included) has the pot *above* it, so the chip anchors off the top edge instead of
+  // the bottom there; every seat also gets a small sideways nudge from its own angle on the
+  // ellipse (seatLayout.js) so a left/right seat's chip leans center-ward too.
+  const betPullUp = Math.sin(seatAngle) > 0;
+  const betX = `calc(-50% + ${-Math.cos(seatAngle) * 22}px)`;
 
   return (
     <motion.div
@@ -92,14 +98,15 @@ export default function PlayerSeat({ player, isHero, isTurn, isDealer, isWinner,
         <Badge variant="surface">AWAY</Badge>
       )}
 
-      {/* Current bet — sits toward the table center */}
+      {/* Current bet — sits toward the table center, direction from the seat's angle */}
       <AnimatePresence>
         {bet > 0 && (
           <motion.div
-            initial={{ opacity: 0, y: -8, scale: 0.8 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
-            className="absolute -bottom-9"
+            className={cn('absolute left-1/2', betPullUp ? '-top-10' : '-bottom-9')}
+            style={{ x: betX }}
           >
             <PokerChip amount={bet} size="sm" animate />
           </motion.div>

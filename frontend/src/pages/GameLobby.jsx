@@ -63,7 +63,7 @@ export default function GameLobby() {
       ) : sorted.length === 0 ? (
         <EmptyLobbyState onCreate={openModal} />
       ) : (
-        <ul className="grid gap-2 md:grid-cols-2">
+        <ul className="grid gap-2 md:grid-cols-2 pb-36 lg:pb-0">
           {sorted.map((game) => (
             <li key={game.id}>
               <GameCard game={game} onJoin={() => navigate(`/game/${game.id}`)} />

@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-25T00:00:00Z",
+  "title": "Design System: Betrix",
+  "extensions": {
+    "colorMeta": {
+      "neon-cyan": { "role": "primary", "displayName": "Neon Cyan", "canonical": "#22e4ff", "tonalRamp": ["#031a1f", "#063947", "#0a5a6f", "#0f7f9c", "#1aa9c9", "#22e4ff", "#7cf0ff", "#c9f9ff"] },
+      "neon-magenta": { "role": "primary", "displayName": "Neon Magenta", "canonical": "#ff2bd6", "tonalRamp": ["#2a0521", "#4d0a3d", "#7a1062", "#ad1889", "#df20b1", "#ff2bd6", "#ff77e5", "#ffc2f4"] },
+      "danger": { "role": "secondary", "displayName": "Danger Red", "canonical": "#ff4d6d", "tonalRamp": ["#2b0a10", "#4d121c", "#7a1c2c", "#ad283e", "#df3454", "#ff4d6d", "#ff8ba0", "#ffc7d1"] },
+      "success": { "role": "secondary", "displayName": "Success Green", "canonical": "#3dffa0", "tonalRamp": ["#03291a", "#054d31", "#08794d", "#0bad6e", "#1cdd91", "#3dffa0", "#8bffc6", "#c9ffe3"] },
+      "warning": { "role": "secondary", "displayName": "Warning Amber", "canonical": "#ffb020", "tonalRamp": ["#2b1c02", "#4d3204", "#7a4f07", "#ad700a", "#df930f", "#ffb020", "#ffcc6b", "#ffe6b3"] },
+      "background": { "role": "neutral", "displayName": "Void Black", "canonical": "#07070f", "tonalRamp": ["#000000", "#040408", "#07070f", "#0e0e1a", "#161628", "#1f1f38", "#3a3a5c", "#6a6a94"] },
+      "surface": { "role": "neutral", "displayName": "Ink Surface", "canonical": "#0e0e1a", "tonalRamp": ["#020204", "#07070f", "#0e0e1a", "#161628", "#1f1f38", "#2c2c4a", "#4a4a70", "#8080a8"] },
+      "surface-elevated": { "role": "neutral", "displayName": "Raised Surface", "canonical": "#161628", "tonalRamp": ["#05050a", "#0e0e1a", "#161628", "#1f1f38", "#2c2c4a", "#3d3d5e", "#5c5c82", "#9a9ac0"] },
+      "surface-overlay": { "role": "neutral", "displayName": "Overlay Surface", "canonical": "#1f1f38", "tonalRamp": ["#08081080", "#161628", "#1f1f38", "#2c2c4a", "#3d3d5e", "#54547a", "#7a7aa8", "#b8b8d8"] },
+      "text": { "role": "neutral", "displayName": "Primary Text", "canonical": "#f2f3ff", "tonalRamp": ["#a3a6c8", "#b8bad8", "#cdd0e8", "#e0e2f2", "#f2f3ff", "#f6f7ff", "#fafaff", "#ffffff"] },
+      "text-muted": { "role": "neutral", "displayName": "Muted Text", "canonical": "#a3a6c8", "tonalRamp": ["#4a4c68", "#6a6c8c", "#8286ac", "#a3a6c8", "#bcbfd8", "#d4d6e8", "#e8e9f4", "#f5f5fa"] },
+      "text-dim": { "role": "neutral", "displayName": "Dim Text", "canonical": "#8286ac", "tonalRamp": ["#3a3c50", "#565870", "#6a6c8c", "#8286ac", "#9c9fc0", "#b8badc", "#d0d2ea", "#e8e9f6"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Wordmark, page titles, showdown hand-name banner. Space Grotesk only." },
+      "body": { "displayName": "Body", "purpose": "All UI copy, labels, descriptions. Inter." },
+      "mono": { "displayName": "Numeric Mono", "purpose": "Chip counts, pot amount, bet slider, countdown timers. Always tabular-nums; never used for prose." }
+    },
+    "shadows": [
+      { "name": "glow-sm", "value": "0 0 6px color-mix(in oklab, var(--color-neon-cyan) 55%, transparent)", "purpose": "Focus ring companion glow." },
+      { "name": "glow-md", "value": "0 0 14px color-mix(in oklab, var(--color-neon-cyan) 50%, transparent)", "purpose": "Primary button hover, table rail." },
+      { "name": "glow-lg", "value": "0 0 28px color-mix(in oklab, var(--color-neon-cyan) 45%, transparent)", "purpose": "Table floor ambient glow." },
+      { "name": "glow-magenta-md", "value": "0 0 16px color-mix(in oklab, var(--color-neon-magenta) 55%, transparent)", "purpose": "Live pot, showdown banner, winning seat/cards." }
+    ],
+    "motion": [
+      { "name": "ease-out-expo", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Default easing for state/entrance transitions." },
+      { "name": "duration-fast", "value": "120ms", "purpose": "Micro-interactions (button active state)." },
+      { "name": "duration-base", "value": "200ms", "purpose": "Dialogs, sheets, standard transitions." },
+      { "name": "duration-slow", "value": "400ms", "purpose": "Card deals, larger entrance motion." }
+    ],
+    "breakpoints": [
+      { "name": "mobile", "value": "375px" },
+      { "name": "tablet", "value": "768px" },
+      { "name": "desktop", "value": "1024px" },
+      { "name": "wide", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-default",
+      "description": "Cyan-filled primary action button; gains a cyan glow on hover.",
+      "html": "<button class=\"ds-btn-primary\">Play as guest</button>",
+      "css": ".ds-btn-primary { background: #22e4ff; color: #07070f; font-weight: 600; height: 44px; padding: 0 16px; border-radius: 8px; border: none; font-family: Inter, system-ui, sans-serif; font-size: 14px; cursor: pointer; transition: box-shadow 150ms, transform 150ms; } .ds-btn-primary:hover { box-shadow: 0 0 14px rgba(34,228,255,0.5); } .ds-btn-primary:focus-visible { outline: 2px solid #22e4ff; outline-offset: 2px; box-shadow: 0 0 6px rgba(34,228,255,0.55); } .ds-btn-primary:active { transform: scale(0.97); }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary action, cyan border on transparent fill.",
+      "html": "<button class=\"ds-btn-outline\">Join</button>",
+      "css": ".ds-btn-outline { background: transparent; color: #22e4ff; border: 1px solid #22e4ff; height: 44px; padding: 0 16px; border-radius: 8px; font-family: Inter, system-ui, sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: background 150ms; } .ds-btn-outline:hover { background: rgba(34,228,255,0.1); }"
+    },
+    {
+      "name": "Status Badge",
+      "kind": "chip",
+      "refersTo": "badge-default",
+      "description": "Pill status indicator, tinted by semantic hue (shown here in warning/amber for 'Waiting for players').",
+      "html": "<span class=\"ds-badge-warning\">Waiting for players</span>",
+      "css": ".ds-badge-warning { display: inline-flex; align-items: center; gap: 4px; border-radius: 9999px; padding: 2px 10px; font-size: 12px; font-weight: 600; background: rgba(255,176,32,0.15); color: #ffb020; border: 1px solid rgba(255,176,32,0.4); font-family: Inter, system-ui, sans-serif; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input-default",
+      "description": "Standard form field with cyan focus border.",
+      "html": "<input class=\"ds-input\" placeholder=\"Table name\" />",
+      "css": ".ds-input { height: 44px; width: 100%; border-radius: 8px; border: 1px solid rgba(255,255,255,0.14); background: #0e0e1a; color: #f2f3ff; padding: 0 12px; font-family: Inter, system-ui, sans-serif; font-size: 14px; } .ds-input::placeholder { color: #8286ac; } .ds-input:focus-visible { outline: none; border-color: #22e4ff; }"
+    },
+    {
+      "name": "Poker Chip",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "Circular denomination token with dashed inner ring and tabular-mono amount label.",
+      "html": "<div class=\"ds-chip\">10K</div>",
+      "css": ".ds-chip { position: relative; width: 48px; height: 48px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; border: 2px solid rgba(255,176,32,0.5); background: #ffb020; color: #07070f; font-family: 'JetBrains Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; box-shadow: 0 4px 10px rgba(0,0,0,0.4); } .ds-chip::before { content: ''; position: absolute; inset: 4px; border-radius: 9999px; border: 1px dashed rgba(7,7,15,0.4); }"
+    },
+    {
+      "name": "Poker Card (face up)",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "Playing card face with corner pip and centered suit; red suit shown.",
+      "html": "<div class=\"ds-card\"><span class=\"ds-card-pip\">K♥</span></div>",
+      "css": ".ds-card { position: relative; width: 56px; height: 80px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.14); background: #f2f3ff; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.4); } .ds-card-pip { position: absolute; top: 4px; left: 6px; font-weight: 700; font-size: 14px; color: #ff4d6d; font-family: Inter, system-ui, sans-serif; line-height: 1; }"
+    },
+    {
+      "name": "Connection Pill",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "Reconnecting state indicator; hidden entirely when online.",
+      "html": "<div class=\"ds-connpill\" role=\"status\" aria-live=\"polite\">Reconnecting…</div>",
+      "css": ".ds-connpill { display: inline-flex; align-items: center; gap: 6px; border-radius: 9999px; padding: 0 12px; height: 32px; font-size: 12px; font-weight: 500; background: rgba(255,176,32,0.15); color: #ffb020; border: 1px solid rgba(255,176,32,0.4); font-family: Inter, system-ui, sans-serif; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Blackout Arcade Table",
+    "overview": "Betrix is a single dark room lit by exactly two neon signs. Everything is black-on-black by default — background, surfaces, borders — and stays that way until something is actually happening: a hand is live, it's your turn, a pot is being won. Only then does cyan or magenta switch on, and the glow itself is the entire vocabulary of 'this matters right now.' The rest of the interface (lobby rows, profile stats, form fields) is flat, high-contrast, and calm, because the product's own users play long sit-down sessions on a phone and the arcade energy has to survive an hour of reading, not just a first screenshot. The previous direction (serif display type, gold/amber accents, felt-green table) was fully replaced, not retinted — Playfair Display and every felt/rim/gold token are gone from the codebase. The redesign is deliberately restrained about where neon appears: it is a signal system layered on a dark-mode utility app, not a wall-to-wall glow effect.",
+    "keyCharacteristics": [
+      "Pure black-adjacent surfaces (#07070f → #1f1f38) with no warm tones anywhere",
+      "Exactly two glow hues, cyan and magenta, gated strictly to live state",
+      "Three-tier semantic color (danger/success/warning) that is loud in hue but never glows, keeping it visually subordinate to the two real signals",
+      "Three-font system with a hard division of labor: display for identity/scale, body for reading, tabular mono for anything numeric that changes in real time (chips, timers)",
+      "Soft, continuous corner radii everywhere (no sharp corners, no neobrutalist hard-offset shadows) — the game-UI mood comes from glow and type, not geometry"
+    ],
+    "rules": [
+      { "name": "The Two-Hue Signal Rule", "body": "Cyan and magenta are the only colors in the product that ever glow, and glow is applied only to live state — an active turn, a focused control, a live pot, a win. A resting cyan button or an idle magenta label never carries the glow shadow.", "section": "colors" },
+      { "name": "The No-Dollar-Sign Rule", "body": "Every chip amount is a plain number with a K/M suffix rendered in tabular mono, never a currency symbol, anywhere. A durable product constraint (play money only), not a style preference.", "section": "colors" },
+      { "name": "The Tabular-Numbers Rule", "body": "Any number that can change while the user is looking at it is set in JetBrains Mono with tabular-nums, so digit width never shifts and the layout doesn't jitter during live play.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "Surfaces are flat at rest; tonal layering, not shadow, carries hierarchy. The glow shadows exist only as a response to live state, never as an ambient card-lift effect.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do gate glow strictly to live state (active turn, focus, live pot, win) — never apply a glow shadow to resting UI.",
+      "Do render every chip amount as a plain number with K/M suffix in tabular mono; never a $ sign.",
+      "Do keep danger/success/warning flat (no glow) so cyan and magenta remain the only two colors that signal \"look here.\"",
+      "Do use the four-step tonal surface ramp for hierarchy instead of shadows.",
+      "Do keep table action buttons at 48px minimum height and every other interactive target at 44px minimum."
+    ],
+    "donts": [
+      "Don't add a third glowing hue.",
+      "Don't reach for a hard-offset/neobrutalist shadow anywhere in this system.",
+      "Don't generalize the Home wordmark's neonFlicker animation into a system-wide text-motion pattern — it's a single deliberate hero flourish, not a reusable token.",
+      "Don't introduce felt, gold, rim, or serif-display tokens; that identity was fully and deliberately removed by this redesign."
+    ]
+  }
+}

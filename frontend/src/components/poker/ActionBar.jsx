@@ -96,7 +96,7 @@ export default function ActionBar({ game, hero, heroIndex, isMyTurn, online, act
             </Button>
           ) : (
             <Button
-              variant="ghost"
+              variant="surface"
               className="w-full h-12"
               disabled={disabled}
               onClick={() => actions.sitOut()?.catch((e) => toast.error(e.message))}
