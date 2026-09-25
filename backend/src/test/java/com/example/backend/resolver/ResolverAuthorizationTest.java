@@ -9,6 +9,7 @@ import com.example.backend.repository.GameEventRepository;
 import com.example.backend.repository.GameRepository;
 import com.example.backend.repository.UserRepository;
 import com.example.backend.security.AuthRateLimiter;
+import com.example.backend.security.GoogleIdTokenVerifier;
 import com.example.backend.security.JwtTokenProvider;
 import com.example.backend.service.BotService;
 import com.example.backend.service.GameNotificationService;
@@ -65,7 +66,8 @@ class ResolverAuthorizationTest {
         botService = mock(BotService.class);
         notifications = mock(GameNotificationService.class);
         mutations = new MutationResolver(mock(AuthenticationManager.class), mock(JwtTokenProvider.class),
-                mock(UserService.class), gameService, notifications, botService, validator, new AuthRateLimiter(1000));
+                mock(UserService.class), gameService, notifications, botService, validator, new AuthRateLimiter(1000),
+                mock(GoogleIdTokenVerifier.class));
         queries = new QueryResolver(gameService, mock(UserRepository.class), mock(GameEventRepository.class),
                 mock(GameReplayService.class), validator);
         subscriptions = new SubscriptionResolver(validator);

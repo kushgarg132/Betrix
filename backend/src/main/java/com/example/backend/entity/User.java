@@ -23,6 +23,9 @@ public class User implements UserDetails {
     private String username;
     private String password;
     private String email;
+    @org.springframework.data.mongodb.core.index.Indexed(unique = true, sparse = true)
+    private String googleSub;
+    private String avatarUrl;
     private int balance;
     private List<String> roles;
     private Date registrationDate = new Date(LocalDateTime.now(ZoneOffset.UTC).toInstant(java.time.ZoneOffset.UTC).toEpochMilli());

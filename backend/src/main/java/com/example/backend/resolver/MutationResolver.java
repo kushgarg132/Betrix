@@ -13,6 +13,7 @@ import com.example.backend.model.RegisterInput;
 import com.example.backend.security.AuthRateLimiter;
 import com.example.backend.security.ClientIp;
 import com.example.backend.security.CurrentUser;
+import com.example.backend.security.GoogleIdTokenVerifier;
 import com.example.backend.security.JwtTokenProvider;
 import com.example.backend.service.BotService;
 import com.example.backend.service.GameNotificationService;
@@ -53,6 +54,7 @@ public class MutationResolver {
     private final BotService botService;
     private final GameValidatorService gameValidatorService;
     private final AuthRateLimiter authRateLimiter;
+    private final GoogleIdTokenVerifier googleIdTokenVerifier;
 
     @MutationMapping
     public Map<String, Object> login(@Argument @Valid LoginInput input) {
@@ -83,6 +85,24 @@ public class MutationResolver {
         String username = com.example.backend.security.PlayerIdentity.newGuestUsername();
         String token = jwtTokenProvider.generateGuestToken(username);
         return Map.of("token", token, "type", "Bearer");
+    }
+
+    @MutationMapping
+    public Map<String, Object> googleLogin(@Argument String idToken) {
+        authRateLimiter.check(ClientIp.current());
+        GoogleIdTokenVerifier.GoogleIdentity identity;
+        try {
+            identity = googleIdTokenVerifier.verify(idToken);
+        } catch (BadCredentialsException e) {
+            throw GraphqlErrorException.newErrorException()
+                    .message("Google sign-in failed. Try again.")
+                    .errorClassification(ErrorType.UNAUTHORIZED)
+                    .build();
+        }
+        User user = userService.signInWithGoogle(identity);
+        String jwt = jwtTokenProvider.generateToken(
+                new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities()));
+        return Map.of("token", jwt, "type", "Bearer");
     }
 
     @MutationMapping

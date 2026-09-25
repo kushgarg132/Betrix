@@ -86,6 +86,14 @@ class AuthApiTest {
     }
 
     @Test
+    void aMalformedGoogleTokenIsUnauthorized() throws Exception {
+        String body = graphql("mutation { googleLogin(idToken: \"not-a-jwt\") { token } }");
+
+        assertTrue(body.contains("\"classification\":\"UNAUTHORIZED\""), body);
+        assertTrue(body.contains("Google sign-in failed"), body);
+    }
+
+    @Test
     void devToolingIsOffByDefault() throws Exception {
         String introspection = graphql("{ __schema { types { name } } }");
         assertFalse(introspection.contains("\"types\""), introspection);

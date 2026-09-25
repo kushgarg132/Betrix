@@ -29,7 +29,7 @@ class UserServiceRegistrationTest {
         PasswordEncoder encoder = mock(PasswordEncoder.class);
         when(encoder.encode(anyString())).thenReturn("hashed");
         when(repo.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
-        service = new UserService(repo, encoder);
+        service = new UserService(repo, encoder, "");
     }
 
     @Test

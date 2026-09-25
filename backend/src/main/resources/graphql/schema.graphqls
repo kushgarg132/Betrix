@@ -168,6 +168,7 @@ type User {
   name: String!
   username: String!
   email: String
+  avatarUrl: String
   balance: Int! @deprecated(reason: "Play money: chips belong to a table and every player sits down with the same buy-in. Will be removed.")
   roles: [String!]!
   registrationDate: DateTime
@@ -268,6 +269,9 @@ type Mutation {
 
   """Create a guest session. Returns JWT."""
   guestLogin: AuthPayload!
+
+  """Sign in with a Google ID token (from Google Identity Services). Returns JWT."""
+  googleLogin(idToken: String!): AuthPayload!
 
   """Create a new poker game with specified blinds."""
   createGame(input: BlindInput!): Game!
