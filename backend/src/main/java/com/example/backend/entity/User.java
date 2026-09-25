@@ -21,7 +21,6 @@ public class User implements UserDetails {
     private String id;
     private String name;
     private String username;
-    private String password;
     private String email;
     @org.springframework.data.mongodb.core.index.Indexed(unique = true, sparse = true)
     private String googleSub;
@@ -35,6 +34,12 @@ public class User implements UserDetails {
     private int handsPlayed = 0;
     private int handsWon = 0;
     private int netProfit = 0;
+
+    /** Google or guest sign-in only: there is no password. */
+    @Override
+    public String getPassword() {
+        return null;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -22,7 +22,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -65,7 +64,7 @@ class ResolverAuthorizationTest {
         gameService = mock(GameService.class);
         botService = mock(BotService.class);
         notifications = mock(GameNotificationService.class);
-        mutations = new MutationResolver(mock(AuthenticationManager.class), mock(JwtTokenProvider.class),
+        mutations = new MutationResolver(mock(JwtTokenProvider.class),
                 mock(UserService.class), gameService, notifications, botService, validator, new AuthRateLimiter(1000),
                 mock(GoogleIdTokenVerifier.class));
         queries = new QueryResolver(gameService, mock(UserRepository.class), mock(GameEventRepository.class),

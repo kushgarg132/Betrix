@@ -208,18 +208,6 @@ type ChatMessage {
 
 # ─── Inputs ─────────────────────────────────────────────
 
-input LoginInput {
-  username: String!
-  password: String!
-}
-
-input RegisterInput {
-  name: String!
-  username: String!
-  password: String!
-  email: String!
-}
-
 input BlindInput {
   smallBlindAmount: Int!
   bigBlindAmount: Int!
@@ -261,12 +249,6 @@ type Query {
 # ─── Mutations ──────────────────────────────────────────
 
 type Mutation {
-  """Authenticate with username/password. Returns JWT."""
-  login(input: LoginInput!): AuthPayload!
-
-  """Register a new user account."""
-  register(input: RegisterInput!): User!
-
   """Create a guest session. Returns JWT."""
   guestLogin: AuthPayload!
 

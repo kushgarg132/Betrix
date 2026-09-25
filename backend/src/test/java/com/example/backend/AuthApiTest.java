@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
@@ -18,11 +19,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
-/** Registration, CORS and rate limiting through the real security chain and GraphQL endpoint. */
+/** Google sign-in, CORS and rate limiting through the real security chain and GraphQL endpoint. */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @TestPropertySource(properties = "app.rate-limit.auth-per-minute=2")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class AuthApiTest {
 
     private static final String FIREBASE = "https://betrix-b3c24.web.app";
@@ -64,22 +66,12 @@ class AuthApiTest {
     }
 
     @Test
-    void invalidRegistrationIsABadRequestThatSaysWhichField() throws Exception {
-        String body = graphql("mutation { register(input: {name: \"Al\", username: \"bad name!\", "
-                + "password: \"secret1\", email: \"a@b.co\"}) { id } }");
-
-        assertTrue(body.contains("\"classification\":\"BAD_REQUEST\""), body);
-        assertTrue(body.toLowerCase().contains("username"), body);
-    }
-
-    @Test
     void authAttemptsFromOneIpAreRateLimited() throws Exception {
-        String register = "mutation { register(input: {name: \"Alice\", username: \"alice_1\", "
-                + "password: \"secret123\", email: \"alice@example.com\"}) { id } }";
+        String google = "mutation { googleLogin(idToken: \"x\") { token } }";
 
-        graphql(register);
-        graphql(register);
-        String third = graphql(register);
+        graphql(google);
+        graphql(google);
+        String third = graphql(google);
 
         assertTrue(third.contains("\"classification\":\"TOO_MANY_REQUESTS\""), third);
         assertTrue(third.contains("Too many attempts"), third);

@@ -8,8 +8,4 @@ public interface UserRepository extends MongoRepository<User, String> {
     Optional<User> findByUsername(String username);
 
     Optional<User> findByGoogleSub(String googleSub);
-
-    boolean existsByUsernameIgnoreCase(String username);
-
-    boolean existsByEmailIgnoreCase(String email);
 }

@@ -7,9 +7,7 @@ import com.example.backend.model.BlindPayload;
 import com.example.backend.model.ChatMessagePayload;
 import com.example.backend.model.GameUpdate;
 import com.example.backend.model.BotDifficulty;
-import com.example.backend.model.LoginInput;
 import com.example.backend.model.Player;
-import com.example.backend.model.RegisterInput;
 import com.example.backend.security.AuthRateLimiter;
 import com.example.backend.security.ClientIp;
 import com.example.backend.security.CurrentUser;
@@ -21,13 +19,11 @@ import com.example.backend.service.GameValidatorService;
 import com.example.backend.service.GameService;
 import com.example.backend.service.UserService;
 import graphql.GraphqlErrorException;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.execution.ErrorType;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -46,7 +42,6 @@ public class MutationResolver {
 
     private static final int MAX_CHAT_LENGTH = 500;
 
-    private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserService userService;
     private final GameService gameService;
@@ -55,29 +50,6 @@ public class MutationResolver {
     private final GameValidatorService gameValidatorService;
     private final AuthRateLimiter authRateLimiter;
     private final GoogleIdTokenVerifier googleIdTokenVerifier;
-
-    @MutationMapping
-    public Map<String, Object> login(@Argument @Valid LoginInput input) {
-        authRateLimiter.check(ClientIp.current());
-        try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(input.username(), input.password()));
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            String jwt = jwtTokenProvider.generateToken(authentication);
-            return Map.of("token", jwt, "type", "Bearer");
-        } catch (BadCredentialsException e) {
-            throw GraphqlErrorException.newErrorException()
-                    .message("Invalid username or password.")
-                    .errorClassification(ErrorType.UNAUTHORIZED)
-                    .build();
-        }
-    }
-
-    @MutationMapping
-    public User register(@Argument @Valid RegisterInput input) {
-        authRateLimiter.check(ClientIp.current());
-        return userService.createUser(input.name(), input.username(), input.password(), input.email());
-    }
 
     @MutationMapping
     public Map<String, Object> guestLogin() {
