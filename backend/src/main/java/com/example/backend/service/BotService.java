@@ -9,13 +9,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import jakarta.annotation.PreDestroy;
+
 import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class BotService {
@@ -27,6 +29,15 @@ public class BotService {
     private final org.springframework.scheduling.TaskScheduler taskScheduler;
 
     private final ConcurrentHashMap<String, Set<String>> activeBots = new ConcurrentHashMap<>();
+
+    // A bot turn can wait seconds on an external API. Keep that off the shared scheduler, whose
+    // threads also fire player timeouts and hand starts.
+    private final AtomicInteger botThreadCount = new AtomicInteger();
+    private final ExecutorService botTurns = Executors.newFixedThreadPool(4, r -> {
+        Thread t = new Thread(r, "bot-turn-" + botThreadCount.incrementAndGet());
+        t.setDaemon(true);
+        return t;
+    });
 
     public BotService(GameLifecycleService lifecycleService, GameRepository gameRepository, 
                       BotActionService botActionService, org.springframework.scheduling.TaskScheduler taskScheduler) {
@@ -79,19 +90,24 @@ public class BotService {
             if (game.getCurrentPlayerIndex() == botIndex && isBotTurn(game, botIndex)) {
                 long delayMs = 1200 + (long) (Math.random() * 1800);
                 try {
-                    taskScheduler.schedule(() -> {
+                    taskScheduler.schedule(() -> botTurns.execute(() -> {
                         try {
                             botActionService.takeTurn(gameId, botId);
                         } catch (Exception e) {
                             logger.error("Error in bot turn for bot {} in game {}: {}", botId, gameId, e.getMessage());
                         }
-                    }, java.time.Instant.now().plusMillis(delayMs));
+                    }), java.time.Instant.now().plusMillis(delayMs));
                     logger.debug("Bot {} turn scheduled in {}ms in game {}", botId, delayMs, gameId);
-                } catch (org.springframework.core.task.TaskRejectedException e) {
+                } catch (java.util.concurrent.RejectedExecutionException e) { // includes Spring TaskRejectedException
                     logger.debug("Bot turn scheduling rejected for game {} (likely shutting down)", gameId);
                 }
             }
         }
+    }
+
+    @PreDestroy
+    public void shutdown() {
+        botTurns.shutdown();
     }
 
     public void cleanupGame(String gameId) {

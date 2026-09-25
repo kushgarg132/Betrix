@@ -5,39 +5,48 @@ import com.example.backend.model.Player;
 import com.example.backend.repository.GameRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 import java.util.List;
 import java.util.Map;
 
 @Service
-@RequiredArgsConstructor
 public class BotActionService {
     private static final Logger logger = LoggerFactory.getLogger(BotActionService.class);
 
-    private static final String FLASH_LITE_MODEL = "gemini-1.5-flash";
-    private static final String PRO_MODEL = "gemini-1.5-pro";
     private static final String GEMINI_URL =
-            "https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s";
-
-    @Value("${gemini.api.key:}")
-    private String apiKey;
-
-    @Value("${gemini.enabled:true}")
-    private boolean geminiEnabled;
+            "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent";
 
     private final GameService gameService;
     private final GameRepository gameRepository;
+    private final RestClient geminiClient;
+    private final String apiKey;
+    private final boolean geminiEnabled;
+    private final String model;
+    private final String hardModel;
+    private final CallBudget budget;
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final RestTemplate restTemplate = new RestTemplate();
+
+    public BotActionService(GameService gameService, GameRepository gameRepository, RestClient geminiRestClient,
+            @Value("${gemini.api.key:}") String apiKey,
+            @Value("${gemini.enabled:true}") boolean geminiEnabled,
+            @Value("${gemini.model:gemini-2.5-flash}") String model,
+            @Value("${gemini.model-hard:gemini-2.5-pro}") String hardModel,
+            @Value("${gemini.max-calls-per-minute:30}") int maxCallsPerMinute) {
+        this.gameService = gameService;
+        this.gameRepository = gameRepository;
+        this.geminiClient = geminiRestClient;
+        this.apiKey = apiKey;
+        this.geminiEnabled = geminiEnabled;
+        this.model = model;
+        this.hardModel = hardModel;
+        this.budget = new CallBudget(maxCallsPerMinute);
+    }
 
     public void takeTurn(String gameId, String botPlayerId) {
         try {
@@ -57,9 +66,9 @@ public class BotActionService {
             }
 
             String difficulty = bot.getBotDifficulty() != null ? bot.getBotDifficulty() : "MEDIUM";
-            String model = "HARD".equals(difficulty) ? PRO_MODEL : FLASH_LITE_MODEL;
+            String modelId = "HARD".equals(difficulty) ? hardModel : model;
 
-            GeminiAction action = callGemini(model, buildSystemPrompt(difficulty), buildGameStatePrompt(game, bot));
+            GeminiAction action = callGemini(modelId, buildSystemPrompt(difficulty), buildGameStatePrompt(game, bot));
             executeAction(gameId, game, bot, action);
         } catch (Exception e) {
             logger.error("Bot turn error for player {} in game {}: {}", botPlayerId, gameId, e.getMessage());
@@ -123,11 +132,14 @@ public class BotActionService {
 
     private GeminiAction callGemini(String model, String system, String user) {
         if (!geminiEnabled || apiKey == null || apiKey.isBlank()) {
-            logger.warn("Gemini is disabled or API key not set — bot using random fallback");
+            logger.debug("Gemini is disabled or API key not set, bot using random fallback");
+            return randomFallbackAction();
+        }
+        if (!budget.tryAcquire()) {
+            logger.debug("Gemini call budget used up for this minute, bot using random fallback");
             return randomFallbackAction();
         }
         try {
-            String url = GEMINI_URL.formatted(model, apiKey);
             Map<String, Object> body = Map.of(
                     "system_instruction", Map.of("parts", List.of(Map.of("text", system))),
                     "contents", List.of(Map.of("role", "user", "parts", List.of(Map.of("text", user)))),
@@ -136,10 +148,14 @@ public class BotActionService {
                             "response_mime_type", "application/json"
                     )
             );
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            String response = restTemplate.postForObject(
-                    url, new HttpEntity<>(objectMapper.writeValueAsString(body), headers), String.class);
+            // key in a header, not the URL: URLs end up in exception messages and logs
+            String response = geminiClient.post()
+                    .uri(GEMINI_URL, model)
+                    .header("x-goog-api-key", apiKey)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(body)
+                    .retrieve()
+                    .body(String.class);
             JsonNode root = objectMapper.readTree(response);
             String text = root.at("/candidates/0/content/parts/0/text").asText();
             return objectMapper.readValue(text, GeminiAction.class);
