@@ -35,7 +35,7 @@ export default function AddBotButton({ gameId, disabled }) {
             type="button"
             onClick={() => setSelected(d.value)}
             className={cn(
-              'flex-1 py-1 text-xs font-bold rounded-[var(--radius-sm)] border transition-all duration-150',
+              'flex-1 h-11 flex items-center justify-center text-xs font-bold rounded-[var(--radius-sm)] border transition-all duration-150',
               d.color,
               selected === d.value ? 'ring-1 ring-current' : 'opacity-60'
             )}
@@ -45,7 +45,6 @@ export default function AddBotButton({ gameId, disabled }) {
         ))}
       </div>
       <Button
-        size="sm"
         variant="outline"
         className="w-full gap-1.5"
         onClick={handleAdd}

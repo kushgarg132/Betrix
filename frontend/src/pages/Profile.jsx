@@ -75,7 +75,7 @@ export default function Profile() {
         {isGuest && (
           <div className="bg-surface border border-border rounded-[var(--radius-xl)] p-5 flex items-center justify-between gap-4 flex-wrap">
             <p className="text-text-muted text-sm">Sign in with Google to keep your stats</p>
-            <Button onClick={handleSignIn} size="sm">Sign in</Button>
+            <Button onClick={handleSignIn}>Sign in</Button>
           </div>
         )}
       </div>

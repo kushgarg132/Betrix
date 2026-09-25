@@ -80,7 +80,7 @@ function ChatTabs({ messages, heroId, onSend }) {
   return (
     <Tabs defaultValue="chat" className="flex flex-col flex-1 min-h-0">
       <div className="px-3 pt-3 shrink-0">
-        <TabsList className="w-full grid grid-cols-2 h-9">
+        <TabsList className="w-full grid grid-cols-2 h-11">
           <TabsTrigger value="chat" className="gap-1">
             <MessageSquare size={13} /> Chat
           </TabsTrigger>

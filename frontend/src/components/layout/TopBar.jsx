@@ -56,7 +56,7 @@ export default function TopBar() {
         <DropdownMenuTrigger asChild>
           <button
             aria-label="Account menu"
-            className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan"
+            className="rounded-full p-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-cyan"
           >
             <Avatar className="h-8 w-8">
               {user?.avatarUrl && <AvatarImage src={user.avatarUrl} alt="" />}

@@ -13,20 +13,22 @@ const AuthProvider = ({ children }) => {
   });
 
   const hasToken = !!localStorage.getItem('token');
-  const { data: meData, error: meError, refetch: refetchMe } = useQuery(GET_ME, { skip: !hasToken });
+  const { data: meData, refetch: refetchMe } = useQuery(GET_ME, { skip: !hasToken });
 
   useEffect(() => {
-    if (!hasToken || (!meData && !meError)) return;
-    if (meData?.me) {
+    // Only an authoritative `me: null` means the token is really invalid (expired, rotated
+    // secret, deleted account) - log out for that. A query error (network blip, backend
+    // restart, 5xx) says nothing about the token's validity, so it must NOT clear a perfectly
+    // good session; leave the token and user alone and let the next query attempt retry.
+    if (!hasToken || !meData) return;
+    if (meData.me) {
       setUser(meData.me);
       localStorage.setItem('user', JSON.stringify(meData.me));
       return;
     }
-    // A token the server no longer accepts (expired, signed with a rotated secret, deleted account)
-    // resolves `me` to null. Drop it instead of leaving the app half signed-in.
     logout();
     toast.error('Session expired. Sign in again.', { id: 'session-expired' });
-  }, [meData, meError]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [meData]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const token = localStorage.getItem('token');

@@ -130,7 +130,7 @@ export default function ActionBar({ game, hero, heroIndex, isMyTurn, online, act
                     key={i}
                     type="button"
                     onClick={() => handleSnap(snap)}
-                    className={`flex-1 py-1.5 rounded-[var(--radius)] text-xs font-semibold border transition-all duration-150 ${
+                    className={`flex-1 h-11 flex items-center justify-center rounded-[var(--radius)] text-xs font-semibold border transition-all duration-150 ${
                       raiseAmount === snap
                         ? 'bg-neon-cyan text-text-inverse border-neon-cyan'
                         : 'bg-surface text-text-muted border-border hover:text-text'

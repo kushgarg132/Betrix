@@ -21,10 +21,12 @@ export default function PokerTable() {
   const [chatOpen, setChatOpen] = useState(false);
   const [seenChat, setSeenChat] = useState(0);
   // Holds the showdown reveal on screen even after a fast bot table starts the next hand
-  // underneath — betting state keeps moving, only the overlay is held.
+  // underneath — betting state keeps moving, only the overlay is held. Cached from t.showdown
+  // rather than read live, since the reducer clears t.showdown as soon as the next hand starts.
   const [revealing, setRevealing] = useState(false);
+  const [revealPayload, setRevealPayload] = useState(null);
 
-  useEffect(() => { if (t.showdown) setRevealing(true); }, [t.showdown]);
+  useEffect(() => { if (t.showdown) { setRevealPayload(t.showdown); setRevealing(true); } }, [t.showdown]);
   useEffect(() => { if (chatOpen || desktop) setSeenChat(t.chat.length); }, [chatOpen, desktop, t.chat.length]);
   useEffect(() => {
     if (t.status === 'error') { toast.error(t.error); navigate('/lobby', { replace: true }); }
@@ -56,8 +58,8 @@ export default function PokerTable() {
           <div className="flex-1 flex items-center justify-center p-4 pb-40 lg:pb-4 min-h-0">
             <div className="w-full max-w-md lg:max-w-4xl">
               <TableScene game={t.game} heroIndex={t.heroIndex} hand={t.hand}
-                showdown={revealing ? t.showdown : null}
-                onShowdownDone={() => { setRevealing(false); t.clearShowdown(); }}
+                showdown={revealing ? revealPayload : null}
+                onShowdownDone={() => { setRevealing(false); setRevealPayload(null); t.clearShowdown(); }}
                 orientation={desktop ? 'landscape' : 'portrait'} />
             </div>
           </div>
