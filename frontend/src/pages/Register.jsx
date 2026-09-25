@@ -62,7 +62,7 @@ export default function Register() {
       toast.success('Joined as guest!');
       navigate('/lobby');
     } catch (err) {
-      setError(err?.message || 'Guest login failed.');
+      setErrors([err?.message || 'Guest login failed.']);
     } finally {
       setGuestLoading(false);
     }
