@@ -32,6 +32,10 @@ import static org.springframework.http.HttpMethod.POST;
 class BotActionServiceGeminiTest {
 
     private static final String BASE = "https://generativelanguage.googleapis.com/v1beta/models/";
+    private static String raise(int amount) {
+        return "{\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"{\\\"action\\\":\\\"RAISE\\\",\\\"amount\\\":" + amount + "}\"}]}}]}";
+    }
+
     private static final String FOLD = "{\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"{\\\"action\\\":\\\"FOLD\\\",\\\"amount\\\":0}\"}]}}]}";
 
     private GameService gameService;
@@ -117,5 +121,27 @@ class BotActionServiceGeminiTest {
 
         server.verify(); // no expectations were set, so any request would already have failed
         assertTrue(Mockito.mockingDetails(gameService).getInvocations().size() >= 2);
+    }
+
+    /** An illegal raise size used to make executeAction fail and the bot fold; it should raise the legal minimum. */
+    @Test
+    void aRaiseBelowTheMinimumIsBumpedToTheMinimumInsteadOfBeingRefused() {
+        game.setCurrentBet(20); // big blind 20, bot has nothing in
+        server.expect(requestTo(BASE + "flash-model:generateContent")).andRespond(withSuccess(raise(25), MediaType.APPLICATION_JSON));
+
+        service("secret-key", true, 30).takeTurn(game.getId(), bot.getId());
+
+        verify(gameService).placeBet(game.getId(), bot.getId(), 40L); // current bet 20 + one big blind
+    }
+
+    @Test
+    void aBigRaiseIsPlayedAsAskedAsTotalChipsInForTheRound() {
+        game.setCurrentBet(20);
+        game.getCurrentBettingRound().getBets().put(bot.getId(), 20L); // bot posted the big blind
+        server.expect(requestTo(BASE + "flash-model:generateContent")).andRespond(withSuccess(raise(100), MediaType.APPLICATION_JSON));
+
+        service("secret-key", true, 30).takeTurn(game.getId(), bot.getId());
+
+        verify(gameService).placeBet(game.getId(), bot.getId(), 80L); // to 100 total = 80 more
     }
 }

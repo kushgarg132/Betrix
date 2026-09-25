@@ -183,6 +183,14 @@ public class BettingManager {
             game.getLastActions().put(player.getUsername(), Game.PlayerAction.RAISE);
         }
 
+        if (betPlacedTotal > game.getCurrentBet()) {
+            long raiseSize = betPlacedTotal - game.getCurrentBet();
+            long minRaise = game.getMinRaiseAmount() > 0 ? game.getMinRaiseAmount() : game.getBigBlindAmount();
+            if (raiseSize >= minRaise) {
+                // a short all-in raise below the minimum does not reopen the betting at a new size
+                game.setMinRaiseAmount(raiseSize);
+            }
+        }
         game.setCurrentBet(max(betPlacedTotal, game.getCurrentBet()));
 
         player.placeBet(amount);

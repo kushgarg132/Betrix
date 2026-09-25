@@ -111,6 +111,13 @@ public class GameValidatorService {
         } else if (betPlacedTotal < game.getCurrentBet() && player.getChips() > amount) {
             logger.error("Bet amount must be at least the current bet amount to call");
             throw new IllegalArgumentException("Insufficient bet amount");
+        } else if (betPlacedTotal > game.getCurrentBet() && player.getChips() > amount) {
+            long minRaise = game.getMinRaiseAmount() > 0 ? game.getMinRaiseAmount() : game.getBigBlindAmount();
+            long raiseSize = betPlacedTotal - game.getCurrentBet();
+            if (raiseSize < minRaise) {
+                logger.error("Raise must add at least {}", minRaise);
+                throw new IllegalArgumentException("Raise must be at least " + minRaise + " more than the current bet");
+            }
         }
     }
 }

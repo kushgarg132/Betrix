@@ -179,9 +179,16 @@ public class BotActionService {
                 }
                 case "CALL"  -> gameService.placeBet(gameId, bot.getId(), callAmount(game, bot));
                 case "RAISE" -> {
-                    long raiseAmount = Math.min(action.amount(), bot.getChips());
-                    if (raiseAmount > game.getCurrentBet()) {
-                        gameService.placeBet(gameId, bot.getId(), raiseAmount);
+                    // Gemini is told to answer with the TOTAL chips it wants in for the round, not
+                    // the amount to add — clamp that total to a legal raise, then convert to the
+                    // increment placeBet expects.
+                    long already = alreadyBet(game, bot);
+                    long maxTotal = already + bot.getChips();
+                    long minRaise = game.getMinRaiseAmount() > 0 ? game.getMinRaiseAmount() : game.getBigBlindAmount();
+                    long minTotal = Math.min(game.getCurrentBet() + minRaise, maxTotal);
+                    long total = Math.min(Math.max(action.amount(), minTotal), maxTotal);
+                    if (total > game.getCurrentBet()) {
+                        gameService.placeBet(gameId, bot.getId(), total - already);
                     } else {
                         gameService.placeBet(gameId, bot.getId(), callAmount(game, bot));
                     }
@@ -195,10 +202,13 @@ public class BotActionService {
     }
 
     private long callAmount(Game game, Player bot) {
-        long alreadyBet = game.getCurrentBettingRound() != null
+        return Math.min(game.getCurrentBet() - alreadyBet(game, bot), bot.getChips());
+    }
+
+    private long alreadyBet(Game game, Player bot) {
+        return game.getCurrentBettingRound() != null
                 ? game.getCurrentBettingRound().getBets().getOrDefault(bot.getId(), 0L)
                 : 0L;
-        return Math.min(game.getCurrentBet() - alreadyBet, bot.getChips());
     }
 
     private GeminiAction randomFallbackAction() {

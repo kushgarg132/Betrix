@@ -62,6 +62,9 @@ public class Game {
     private long smallBlindAmount;
     private long bigBlindAmount;
     private long currentBet;
+    // The smallest a raise may add on top of currentBet: the last full raise's size, or the
+    // big blind at the start of a round. 0 means "use the big blind" (games built directly in tests).
+    private long minRaiseAmount;
     private Map<String, PlayerAction> lastActions;
 
     public enum GameStatus {
@@ -114,6 +117,7 @@ public class Game {
         this.createdAt = game.getCreatedAt() != null ? game.getCreatedAt() : OffsetDateTime.now(ZoneOffset.UTC);
         this.updatedAt = game.getUpdatedAt() != null ? game.getUpdatedAt() : OffsetDateTime.now(ZoneOffset.UTC);
         this.currentBet = game.getCurrentBet() != -1 ? game.getCurrentBet() : 0;
+        this.minRaiseAmount = game.getMinRaiseAmount();
         this.lastActions = game.getLastActions() != null ? new HashMap<>(game.getLastActions()) : new HashMap<>();
         this.smallBlindAmount = game.getSmallBlindAmount();
         this.bigBlindAmount = game.getBigBlindAmount();
@@ -339,6 +343,7 @@ public class Game {
         deck = new Deck();
         communityCards.clear();
         pot = 0;
+        minRaiseAmount = bigBlindAmount;
         pots.clear();
         pots.add(new Pot(0)); // Reset with a fresh main pot
         currentBettingRound = new BettingRound();
@@ -372,6 +377,7 @@ public class Game {
     public void setupNextRound() {
         currentBettingRound = new BettingRound();
         currentBet = 0;
+        minRaiseAmount = bigBlindAmount;
 
         // Reset player actions for the new round
         for (Player player : players) {
