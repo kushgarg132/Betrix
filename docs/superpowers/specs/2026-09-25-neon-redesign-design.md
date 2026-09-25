@@ -71,7 +71,7 @@ The current left sidebar is removed; its controls move to `TableTopBar` and `Act
 - Rate limiting: the existing auth-mutation rate limit also covers `googleLogin`.
 - Config: `GOOGLE_CLIENT_ID` and `APP_ADMIN_EMAILS` in backend env (`betrix.env` in the runner dir for prod); `VITE_GOOGLE_CLIENT_ID` in the frontend build (Firebase workflow). Startup fails fast if `GOOGLE_CLIENT_ID` is blank, matching the JWT secret validation; the test profile sets a dummy value so `contextLoads` still runs without real credentials.
 - Frontend: load Google Identity Services script (`https://accounts.google.com/gsi/client`) on Home only, render its button, send the credential to `googleLogin`, store the returned JWT the same way guest login does.
-- Manual prerequisite (Kush): create an OAuth 2.0 Web client in Google Cloud Console. Authorized JavaScript origins: `https://betrix-b3c24.web.app`, `https://betrix-b3c24.firebaseapp.com`, `http://localhost:5173`, and the preview channel URL once created.
+- Manual prerequisite (Kush): create an OAuth 2.0 Web client in Google Cloud Console. Authorized JavaScript origins: `https://betrix-b3c24.web.app`, `https://betrix-b3c24.firebaseapp.com`, `http://localhost:3000` (the Vite dev port in `vite.config.js`), and the preview channel URL once created.
 
 ## 5. States, errors, accessibility
 
