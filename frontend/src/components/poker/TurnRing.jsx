@@ -29,7 +29,10 @@ export default function TurnRing({ deadline, timeoutSeconds, size = 56, isHero =
       <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--color-border-strong)" strokeWidth="3" />
       <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth="3" strokeLinecap="round"
         strokeDasharray={c} strokeDashoffset={c * (1 - fraction)}
-        style={{ filter: `drop-shadow(0 0 4px ${color})`, transition: 'stroke-dashoffset 250ms linear' }} />
+        style={{
+          filter: urgent ? undefined : `drop-shadow(0 0 4px ${color})`,
+          transition: 'stroke-dashoffset 250ms linear',
+        }} />
       {remainingMs != null && urgent && <title>{Math.ceil(remainingMs / 1000)}s left</title>}
     </svg>
   );

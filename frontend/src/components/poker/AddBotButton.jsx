@@ -7,9 +7,9 @@ import { Button } from '@/components/ui/button';
 import { ADD_BOT } from '@/graphql/mutations';
 
 const DIFFICULTIES = [
-  { value: 'EASY',   label: 'Easy',   color: 'text-emerald-400 border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20' },
-  { value: 'MEDIUM', label: 'Medium', color: 'text-amber-400  border-amber-500/40  bg-amber-500/10  hover:bg-amber-500/20'  },
-  { value: 'HARD',   label: 'Hard',   color: 'text-red-400    border-red-500/40    bg-red-500/10    hover:bg-red-500/20'    },
+  { value: 'EASY',   label: 'Easy',   color: 'text-success border-success/40 bg-success/10 hover:bg-success/20' },
+  { value: 'MEDIUM', label: 'Medium', color: 'text-warning border-warning/40 bg-warning/10 hover:bg-warning/20' },
+  { value: 'HARD',   label: 'Hard',   color: 'text-danger  border-danger/40  bg-danger/10  hover:bg-danger/20'  },
 ];
 
 export default function AddBotButton({ gameId, disabled }) {
@@ -27,14 +27,15 @@ export default function AddBotButton({ gameId, disabled }) {
 
   return (
     <div className="space-y-2">
-      <p className="text-[10px] font-semibold text-text-dim uppercase tracking-wider">Difficulty</p>
+      <p className="text-xs font-semibold text-text-dim uppercase tracking-wider">Difficulty</p>
       <div className="flex gap-1">
         {DIFFICULTIES.map(d => (
           <button
             key={d.value}
+            type="button"
             onClick={() => setSelected(d.value)}
             className={cn(
-              'flex-1 py-1 text-[10px] font-bold rounded border transition-all duration-150',
+              'flex-1 py-1 text-xs font-bold rounded-[var(--radius-sm)] border transition-all duration-150',
               d.color,
               selected === d.value ? 'ring-1 ring-current' : 'opacity-60'
             )}
@@ -46,7 +47,7 @@ export default function AddBotButton({ gameId, disabled }) {
       <Button
         size="sm"
         variant="outline"
-        className="w-full gap-1.5 text-xs border-white/20 hover:border-gold/50 hover:text-gold"
+        className="w-full gap-1.5"
         onClick={handleAdd}
         disabled={disabled || loading}
         aria-label="Add bot player"
