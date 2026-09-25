@@ -3,6 +3,7 @@ package com.example.backend.scheduler;
 import com.example.backend.entity.Game;
 import com.example.backend.model.Player;
 import com.example.backend.repository.GameRepository;
+import com.example.backend.service.GameLocks;
 import com.example.backend.service.GameService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ScheduledFuture;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeastOnce;
@@ -27,6 +29,7 @@ import static org.mockito.Mockito.when;
 class GameSchedulerTimeoutTest {
 
     private GameService gameService;
+    private GameLocks locks;
     private TaskScheduler taskScheduler;
     private GameScheduler scheduler;
     private Game game;
@@ -39,7 +42,8 @@ class GameSchedulerTimeoutTest {
         gameService = mock(GameService.class);
         taskScheduler = mock(TaskScheduler.class);
         when(taskScheduler.schedule(any(Runnable.class), any(Instant.class))).thenReturn(mock(ScheduledFuture.class));
-        scheduler = new GameScheduler(repo, gameService, taskScheduler);
+        locks = new GameLocks();
+        scheduler = new GameScheduler(repo, gameService, taskScheduler, locks);
         scheduler.initMetrics();
 
         x = new Player("x", "x", 1000);
@@ -99,6 +103,40 @@ class GameSchedulerTimeoutTest {
         scheduler.cancelGameTimeout(game.getId());
 
         scheduledRunnables(1).get(0).run();
+
+        verify(gameService, never()).fold(anyString(), anyString());
+    }
+
+    /**
+     * A user action holds the game lock and bumps the epoch (cancelling the turn timer). A timer that fired
+     * a moment earlier and is waiting for that lock must find its epoch stale and do nothing.
+     */
+    @Test
+    void aTimerWaitingBehindAnActionDoesNotFoldAfterTheActionCancelledIt() throws Exception {
+        game.setCurrentPlayerIndex(1);
+        scheduler.schedulePlayerTimeout(game.getId(), y.getId());
+        Runnable timer = scheduledRunnables(1).get(0);
+
+        java.util.concurrent.CountDownLatch actionHoldsLock = new java.util.concurrent.CountDownLatch(1);
+        java.util.concurrent.CountDownLatch letActionFinish = new java.util.concurrent.CountDownLatch(1);
+        Thread action = new Thread(() -> locks.run(game.getId(), () -> {
+            actionHoldsLock.countDown();
+            try { letActionFinish.await(); } catch (InterruptedException ignored) { }
+            scheduler.cancelPlayerTimeout(game.getId(), y.getId());
+        }));
+        action.start();
+        actionHoldsLock.await();
+
+        Thread timerThread = new Thread(timer);
+        timerThread.start();
+        for (int i = 0; i < 50 && timerThread.getState() != Thread.State.WAITING; i++) {
+            Thread.sleep(20);
+        }
+        assertEquals(Thread.State.WAITING, timerThread.getState(), "the timer should be blocked behind the action");
+
+        letActionFinish.countDown();
+        action.join(5000);
+        timerThread.join(5000);
 
         verify(gameService, never()).fold(anyString(), anyString());
     }

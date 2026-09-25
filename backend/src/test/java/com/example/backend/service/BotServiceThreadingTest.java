@@ -30,7 +30,7 @@ class BotServiceThreadingTest {
         BotActionService actions = mock(BotActionService.class);
         GameLifecycleService lifecycle = mock(GameLifecycleService.class);
         GameRepository repo = mock(GameRepository.class);
-        BotService bots = new BotService(lifecycle, repo, actions, scheduler);
+        BotService bots = new BotService(lifecycle, repo, actions, scheduler, new GameLocks());
 
         Game game = new Game(10, 20);
         Player bot = new Player("Bot", "bot-1", 1000);

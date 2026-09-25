@@ -27,6 +27,7 @@ public class BotService {
     private final GameRepository gameRepository;
     private final BotActionService botActionService;
     private final org.springframework.scheduling.TaskScheduler taskScheduler;
+    private final GameLocks locks;
 
     private final ConcurrentHashMap<String, Set<String>> activeBots = new ConcurrentHashMap<>();
 
@@ -40,14 +41,20 @@ public class BotService {
     });
 
     public BotService(GameLifecycleService lifecycleService, GameRepository gameRepository, 
-                      BotActionService botActionService, org.springframework.scheduling.TaskScheduler taskScheduler) {
+                      BotActionService botActionService, org.springframework.scheduling.TaskScheduler taskScheduler,
+                      GameLocks locks) {
         this.lifecycleService = lifecycleService;
         this.gameRepository = gameRepository;
         this.botActionService = botActionService;
         this.taskScheduler = taskScheduler;
+        this.locks = locks;
     }
 
     public Player addBot(String gameId, BotDifficulty difficulty) {
+        return locks.run(gameId, () -> addBotLocked(gameId, difficulty));
+    }
+
+    private Player addBotLocked(String gameId, BotDifficulty difficulty) {
         String diff = difficulty != null ? difficulty.name() : "MEDIUM";
         String botUsername = "bot-" + UUID.randomUUID().toString().replace("-", "").substring(0, 6);
 
@@ -72,7 +79,7 @@ public class BotService {
 
     public void removeBot(String gameId, String botPlayerId) {
         try {
-            lifecycleService.leaveGame(gameId, botPlayerId);
+            locks.run(gameId, () -> lifecycleService.leaveGame(gameId, botPlayerId));
         } catch (Exception e) {
             logger.warn("Could not remove bot {} from game {}: {}", botPlayerId, gameId, e.getMessage());
         }

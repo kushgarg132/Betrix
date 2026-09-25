@@ -14,6 +14,7 @@ public class GameServiceImpl implements GameService {
     private final GameLifecycleService lifecycleService;
     private final GameHandService handService;
     private final GameActionService actionService;
+    private final GameLocks locks;
 
     @Override
     public List<Game> getAllGames() {
@@ -27,7 +28,7 @@ public class GameServiceImpl implements GameService {
 
     @Override
     public Game joinGame(String gameId, String username) {
-        return lifecycleService.joinGame(gameId, username);
+        return locks.run(gameId, () -> lifecycleService.joinGame(gameId, username));
     }
 
     @Override
@@ -42,46 +43,46 @@ public class GameServiceImpl implements GameService {
 
     @Override
     public void leaveGame(String gameId, String playerId) {
-        lifecycleService.leaveGame(gameId, playerId);
+        locks.run(gameId, () -> lifecycleService.leaveGame(gameId, playerId));
     }
 
     @Override
     public void sitOut(String gameId, String playerId) {
-        lifecycleService.sitOut(gameId, playerId);
+        locks.run(gameId, () -> lifecycleService.sitOut(gameId, playerId));
     }
 
     @Override
     public void sitIn(String gameId, String playerId) {
-        lifecycleService.sitIn(gameId, playerId);
+        locks.run(gameId, () -> lifecycleService.sitIn(gameId, playerId));
     }
 
     @Override
     public boolean deleteGame(String gameId) {
-        return lifecycleService.deleteGame(gameId);
+        return locks.run(gameId, () -> lifecycleService.deleteGame(gameId));
     }
 
     @Override
     public void startNewHand(String gameId) {
-        handService.startNewHand(gameId);
+        locks.run(gameId, () -> handService.startNewHand(gameId));
     }
 
     @Override
     public void executeAllInAction(String gameId) {
-        handService.executeAllInAction(gameId);
+        locks.run(gameId, () -> handService.executeAllInAction(gameId));
     }
 
     @Override
     public void placeBet(String gameId, String playerId, long amount) {
-        actionService.placeBet(gameId, playerId, amount);
+        locks.run(gameId, () -> actionService.placeBet(gameId, playerId, amount));
     }
 
     @Override
     public void check(String gameId, String playerId) {
-        actionService.check(gameId, playerId);
+        locks.run(gameId, () -> actionService.check(gameId, playerId));
     }
 
     @Override
     public void fold(String gameId, String playerId) {
-        actionService.fold(gameId, playerId);
+        locks.run(gameId, () -> actionService.fold(gameId, playerId));
     }
 }

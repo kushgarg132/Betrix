@@ -4,6 +4,7 @@ import com.example.backend.entity.Game;
 import com.example.backend.model.Player;
 import com.example.backend.repository.GameRepository;
 import com.example.backend.resolver.SubscriptionResolver;
+import com.example.backend.service.GameLocks;
 import com.example.backend.service.GameService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -41,6 +42,7 @@ public class GameScheduler {
     private final GameRepository gameRepository;
     private final GameService gameService;
     private final TaskScheduler taskScheduler;
+    private final GameLocks locks;
 
     private final AtomicReference<Long> currentPlayerTimeoutInterval = new AtomicReference<>(5000L);
     private final AtomicReference<Long> currentGameStartInterval = new AtomicReference<>(8000L);
@@ -61,10 +63,12 @@ public class GameScheduler {
     private final Map<String, AtomicLong> taskErrorCounts = new ConcurrentHashMap<>();
     private final Map<String, Instant> taskLastExecutions = new ConcurrentHashMap<>();
 
-    public GameScheduler(GameRepository gameRepository, @Lazy GameService gameService, TaskScheduler taskScheduler) {
+    public GameScheduler(GameRepository gameRepository, @Lazy GameService gameService, TaskScheduler taskScheduler,
+            GameLocks locks) {
         this.gameRepository = gameRepository;
         this.gameService = gameService;
         this.taskScheduler = taskScheduler;
+        this.locks = locks;
     }
 
     @PostConstruct
@@ -294,6 +298,11 @@ public class GameScheduler {
     private final Map<String, Instant> timeBankStartTimes = new ConcurrentHashMap<>();
 
     private void handlePlayerTimeOut(String gameId, String playerId, long epoch) {
+        // Under the game lock, so an action that got there first has already cancelled this timer (bumped the epoch)
+        locks.run(gameId, () -> handlePlayerTimeOutLocked(gameId, playerId, epoch));
+    }
+
+    private void handlePlayerTimeOutLocked(String gameId, String playerId, long epoch) {
         // Key for this player's time bank usage
         String timeoutKey = gameId + ":" + playerId;
         if (!isCurrentTimeout(gameId, epoch)) {
