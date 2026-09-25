@@ -59,10 +59,11 @@ public class GameLifecycleService {
     }
 
     public Game getGameForPlayer(Game activeGame, String playerId) {
-        boolean isShowdown = activeGame.getStatus() == Game.GameStatus.SHOWDOWN;
+        boolean reveal = activeGame.showdownRevealsHands();
 
         activeGame.getPlayers().forEach(player -> {
-            if ((playerId == null || !playerId.equals(player.getId())) && !isShowdown) {
+            boolean isViewer = playerId != null && playerId.equals(player.getId());
+            if (!isViewer && (!reveal || player.isHasFolded())) {
                 player.hideDetails();
             }
         });

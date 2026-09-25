@@ -212,6 +212,26 @@ public class Game {
         return MAX_PLAYERS;
     }
 
+    /** Hole cards are turned face up only at a real showdown: two or more players still in the hand. */
+    public boolean showdownRevealsHands() {
+        return status == GameStatus.SHOWDOWN && players.stream()
+                .filter(p -> !p.isHasFolded() && p.getHand() != null && !p.getHand().isEmpty())
+                .count() > 1;
+    }
+
+    /** A copy safe to show or store for everyone: no deck, and hole cards only where showdownRevealsHands allows. */
+    public Game publicCopy() {
+        Game copy = new Game(this);
+        boolean reveal = copy.showdownRevealsHands();
+        copy.getPlayers().forEach(p -> {
+            if (!reveal || p.isHasFolded()) {
+                p.hideDetails();
+            }
+        });
+        copy.setDeck(null);
+        return copy;
+    }
+
     public boolean hasPlayer(String username) {
         return players.stream().anyMatch(p -> p.getUsername().equals(username));
     }

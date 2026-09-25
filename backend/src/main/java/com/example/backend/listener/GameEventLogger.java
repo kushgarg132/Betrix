@@ -40,7 +40,11 @@ public class GameEventLogger {
             dbEvent.setGameId(event.getGameId());
             dbEvent.setTimestamp(event.getTimestamp());
             dbEvent.setEventType(event.getClass().getSimpleName());
-            dbEvent.setEventData(event);
+            com.example.backend.event.GameEvent safe = GameEventSanitizer.sanitize(event);
+            if (safe == null) {
+                return;
+            }
+            dbEvent.setEventData(safe);
             mongoTemplate.save(dbEvent, "game_events");
             logger.debug("Logged game event: {} for game {}", dbEvent.getEventType(), dbEvent.getGameId());
         } catch (Exception e) {
@@ -99,10 +103,12 @@ public class GameEventLogger {
     @EventListener
     public void onGameEnded(GameEndedEvent event) {
         // GAME_ENDED means a hand ended, not the table closed — do NOT clean up bots or sinks here.
+        // same redaction as the stored copy: winners' cards and best hand only after a real showdown
+        GameEndedEvent visible = (GameEndedEvent) GameEventSanitizer.sanitize(event);
         java.util.Map<String, Object> payload = new java.util.HashMap<>();
-        payload.put("game", event.getGame());
-        payload.put("winners", event.getWinners());
-        payload.put("bestHand", event.getBestHand());
+        payload.put("game", visible.getGame());
+        payload.put("winners", visible.getWinners());
+        payload.put("bestHand", visible.getBestHand());
 
         notify(event.getGameId(), GameUpdate.GameUpdateType.GAME_ENDED, payload);
         logger.debug("Hand ended in game {}", event.getGameId());
@@ -142,14 +148,7 @@ public class GameEventLogger {
 
         try {
             if (payload instanceof com.example.backend.entity.Game) {
-                com.example.backend.entity.Game game = (com.example.backend.entity.Game) payload;
-                com.example.backend.entity.Game copy = new com.example.backend.entity.Game(game);
-                boolean isShowdown = copy.getStatus() == com.example.backend.entity.Game.GameStatus.SHOWDOWN;
-                if (!isShowdown) {
-                    copy.getPlayers().forEach(Player::hideDetails);
-                }
-                copy.setDeck(null);
-                filteredPayload = copy;
+                filteredPayload = ((com.example.backend.entity.Game) payload).publicCopy();
             } else if (payload instanceof Player) {
                 Player copy = new Player((Player) payload);
                 copy.hideDetails();
@@ -158,13 +157,8 @@ public class GameEventLogger {
                 java.util.Map<?, ?> map = (java.util.Map<?, ?>) payload;
                 if (map.containsKey("game") && map.get("game") instanceof com.example.backend.entity.Game) {
                     com.example.backend.entity.Game game = (com.example.backend.entity.Game) map.get("game");
-                    com.example.backend.entity.Game copy = new com.example.backend.entity.Game(game);
-                    boolean isShowdown = copy.getStatus() == com.example.backend.entity.Game.GameStatus.SHOWDOWN;
-                    if (!isShowdown) {
-                        copy.getPlayers().forEach(Player::hideDetails);
-                    }
-                    copy.setDeck(null);
-                    
+                    com.example.backend.entity.Game copy = game.publicCopy();
+
                     java.util.Map<Object, Object> mapCopy = new java.util.HashMap<>(map);
                     mapCopy.put("game", copy);
                     filteredPayload = mapCopy;

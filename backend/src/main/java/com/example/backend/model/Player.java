@@ -58,6 +58,7 @@ public class Player {
 
     public void hideDetails() {
         this.hand = new ArrayList<>();
+        this.bestHand = null; // the evaluated best hand includes the hole cards
     }
 
     public void reset() {
