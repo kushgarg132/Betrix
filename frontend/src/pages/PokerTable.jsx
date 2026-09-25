@@ -5,7 +5,7 @@ import { AuthContext } from '@/context/AuthContext';
 import { useGame } from '@/hooks/useGame';
 import { toast } from 'sonner';
 
-import OvalTable from '@/components/poker/OvalTable';
+import TableScene from '@/components/poker/TableScene';
 import BettingControls from '@/components/poker/BettingControls';
 import AddBotButton from '@/components/poker/AddBotButton';
 import { Button } from '@/components/ui/button';
@@ -554,7 +554,7 @@ const PokerTable = () => {
           <div className="flex-1 flex items-center justify-center px-4 py-4 relative">
             <div className="w-full max-w-3xl">
               <div className="relative">
-                <OvalTable
+                <TableScene
                   game={game}
                   currentPlayer={currentPlayer}
                   isMyTurn={isMyTurn}

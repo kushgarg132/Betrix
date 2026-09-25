@@ -1,46 +1,39 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
+import { cn, formatChips } from '@/lib/utils';
 
-const CHIP_COLORS = [
-  { min: 0,    max: 4,     bg: '#f5f5f0', border: '#ccc',   text: '#333',   label: 'W' },
-  { min: 5,    max: 24,    bg: '#dc2626', border: '#b91c1c', text: '#fff',   label: 'R' },
-  { min: 25,   max: 99,    bg: '#2563eb', border: '#1d4ed8', text: '#fff',   label: 'B' },
-  { min: 100,  max: 499,   bg: '#16a34a', border: '#15803d', text: '#fff',   label: 'G' },
-  { min: 500,  max: 999,   bg: '#7c3aed', border: '#6d28d9', text: '#fff',   label: 'P' },
-  { min: 1000, max: Infinity, bg: '#1c1c1c', border: '#d4a843', text: '#d4a843', label: 'K' },
+// Denomination -> chip token. Literal class names (not built from a template string) so
+// Tailwind's scanner can see them.
+const CHIP_TIERS = [
+  { min: 0,   className: 'bg-chip-1 border-chip-1/50' },
+  { min: 25,  className: 'bg-chip-2 border-chip-2/50' },
+  { min: 100, className: 'bg-chip-3 border-chip-3/50' },
+  { min: 500, className: 'bg-chip-4 border-chip-4/50' },
 ];
 
-function getChipColor(amount) {
-  return CHIP_COLORS.find(c => amount >= c.min && amount <= c.max) || CHIP_COLORS[0];
+function chipClassName(amount) {
+  let cls = CHIP_TIERS[0].className;
+  for (const tier of CHIP_TIERS) if (amount >= tier.min) cls = tier.className;
+  return cls;
 }
 
+const SIZES = { sm: 'w-8 h-8 text-xs', md: 'w-12 h-12 text-xs', lg: 'w-16 h-16 text-sm' };
+
 export default function PokerChip({ amount, size = 'md', animate = false, className }) {
-  const chip = getChipColor(amount);
-  const sizes = { sm: 'w-8 h-8 text-[9px]', md: 'w-12 h-12 text-xs', lg: 'w-16 h-16 text-sm' };
+  const label = formatChips(amount);
 
   const chipEl = (
     <div
       className={cn(
-        'relative rounded-full flex items-center justify-center font-bold select-none',
-        'chip-shine',
-        sizes[size],
+        'relative rounded-full flex items-center justify-center font-bold select-none border-2 text-background shadow-lg',
+        chipClassName(amount),
+        SIZES[size],
         className
       )}
-      style={{
-        background: chip.bg,
-        border: `3px solid ${chip.border}`,
-        boxShadow: `0 2px 8px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.2)`,
-        color: chip.text,
-      }}
-      title={`$${amount}`}
+      title={label}
     >
-      {/* Inner ring pattern */}
-      <div
-        className="absolute inset-1 rounded-full border opacity-30"
-        style={{ borderColor: chip.text, borderStyle: 'dashed', borderWidth: '1px' }}
-      />
-      <span className="relative z-10 font-bold">${amount >= 1000 ? `${Math.floor(amount/1000)}K` : amount}</span>
+      <div className="absolute inset-1 rounded-full border border-dashed border-background/40" />
+      <span className="relative z-10 font-mono tabular">{label}</span>
     </div>
   );
 

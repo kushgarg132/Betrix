@@ -21,14 +21,14 @@ export default function PotDisplay({ pot, pots }) {
         initial={{ scale: 1.15, opacity: 0.7 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.25 }}
-        className="px-4 py-1.5 rounded-full bg-black/40 border border-white/10 text-center"
+        className="px-4 py-1.5 rounded-full bg-surface-overlay/80 border border-neon-magenta/40 glow-magenta text-center"
       >
-        <span className="text-xs text-white/60 uppercase tracking-widest mr-1.5">Pot</span>
-        <span className="font-bold text-gold text-sm">{formatChips(pot)}</span>
+        <span className="text-xs text-text-muted uppercase tracking-widest mr-1.5">Pot</span>
+        <span className="font-mono tabular font-bold text-neon-magenta text-sm">{formatChips(pot)}</span>
       </motion.div>
 
       {sidePots.map((p, i) => (
-        <div key={i} className="text-[10px] text-white/40">
+        <div key={i} className="text-xs text-text-dim font-mono tabular">
           Side pot {i + 1}: {formatChips(p.amount)}
         </div>
       ))}

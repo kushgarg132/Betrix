@@ -12,7 +12,7 @@ export default function CommunityCards({ cards = [] }) {
         ) : (
           <div
             key={i}
-            className="w-14 h-20 rounded-[var(--radius-sm)] border border-dashed border-white/15 bg-white/5"
+            className="w-14 h-20 rounded-[var(--radius-sm)] border border-dashed border-border-strong bg-surface-elevated/30"
           />
         )
       ))}
