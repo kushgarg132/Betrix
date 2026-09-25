@@ -29,6 +29,9 @@ function App() {
           <BottomTabBar />
           <Toaster
             position="top-center"
+            // clear the 56px top bars (app TopBar and TableTopBar) so toasts never cover leave/chat
+            offset={72}
+            mobileOffset={{ top: 72 }}
             toastOptions={{
               style: {
                 background: 'var(--color-surface-elevated)',
