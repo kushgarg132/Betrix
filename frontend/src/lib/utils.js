@@ -50,6 +50,21 @@ export const STATUS_LABELS = {
   ENDED:            'Hand Complete',
 };
 
+// One source of truth for status -> badge variant, used by GameCard and AdminPanel. They used to
+// each keep their own copy; AdminPanel's had drifted and used the wrong (pre-_BETTING) status
+// names, so real in-progress games fell back to the plain 'surface' badge.
+export const STATUS_BADGE_VARIANT = {
+  WAITING:          'waiting',
+  STARTING:         'waiting',
+  PRE_FLOP_BETTING: 'active',
+  FLOP_BETTING:     'active',
+  TURN_BETTING:     'active',
+  RIVER_BETTING:    'active',
+  SHOWDOWN:         'active',
+  FINISHED:         'completed',
+  ENDED:            'completed',
+};
+
 export const ACTION_LABELS = {
   NONE:       '',
   SMALL_BLIND:'Small Blind',

@@ -10,6 +10,7 @@ import Navbar from './components/layout/Navbar';
 import Profile from './pages/Profile';
 import AdminPanel from './pages/AdminPanel';
 import NotFound from './pages/NotFound';
+import { AdminRoute, ProtectedRoute } from './components/routing/ProtectedRoute';
 
 function App() {
   return (
@@ -20,10 +21,10 @@ function App() {
           <Route path="/"        element={<Home />} />
           <Route path="/login"   element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/lobby"   element={<GameLobby />} />
-          <Route path="/game/:gameId" element={<PokerTable />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/admin"   element={<AdminPanel />} />
+          <Route path="/lobby"   element={<ProtectedRoute><GameLobby /></ProtectedRoute>} />
+          <Route path="/game/:gameId" element={<ProtectedRoute><PokerTable /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/admin"   element={<AdminRoute><AdminPanel /></AdminRoute>} />
           <Route path="*"        element={<NotFound />} />
         </Routes>
         <Toaster

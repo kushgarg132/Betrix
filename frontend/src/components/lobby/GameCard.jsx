@@ -6,22 +6,9 @@ import { Users, ArrowRight, ChevronDown, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { formatBlinds, cn, STATUS_LABELS } from '@/lib/utils';
+import { formatBlinds, cn, STATUS_LABELS, STATUS_BADGE_VARIANT } from '@/lib/utils';
 import { ADD_BOT } from '@/graphql/mutations';
 import { toast } from 'sonner';
-
-const STATUS_VARIANT = {
-  WAITING:          'waiting',
-  STARTING:         'waiting',
-  PRE_FLOP_BETTING: 'active',
-  FLOP_BETTING:     'active',
-  TURN_BETTING:     'active',
-  RIVER_BETTING:    'active',
-  SHOWDOWN:         'active',
-  FINISHED:         'completed',
-  ACTIVE:           'active',
-  COMPLETED:        'completed',
-};
 
 const BOT_DIFFICULTIES = [
   { value: 'EASY',   label: 'Easy',   cls: 'text-emerald-400 hover:bg-emerald-500/10' },
@@ -71,7 +58,7 @@ export default function GameCard({ game, index, isPlayerInGame }) {
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 flex-wrap">
-          <Badge variant={STATUS_VARIANT[game.status] || 'surface'}>
+          <Badge variant={STATUS_BADGE_VARIANT[game.status] || 'surface'}>
             {isActive && <LivePulse />}
             {STATUS_LABELS[game.status] ?? game.status}
           </Badge>

@@ -1,8 +1,6 @@
-import React, { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client/react';
 import { motion } from 'framer-motion';
-import { AuthContext } from '@/context/AuthContext';
 import { GET_GAMES } from '@/graphql/queries';
 import { DELETE_GAME } from '@/graphql/mutations';
 import { toast } from 'sonner';
@@ -17,13 +15,7 @@ import {
 import {
   Search, Trash2, RefreshCw, Shield, Loader2, Users,
 } from 'lucide-react';
-import { formatBlinds } from '@/lib/utils';
-
-const STATUS_VARIANT = {
-  WAITING: 'waiting',
-  PRE_FLOP: 'active', FLOP: 'active', TURN: 'active', RIVER: 'active', SHOWDOWN: 'active',
-  FINISHED: 'completed', ENDED: 'completed', COMPLETED: 'completed',
-};
+import { formatBlinds, STATUS_BADGE_VARIANT } from '@/lib/utils';
 
 function TableRow({ game, onDelete }) {
   return (
@@ -35,7 +27,7 @@ function TableRow({ game, onDelete }) {
     >
       <td className="px-4 py-3 text-xs font-mono text-text-dim">{game.id?.slice(0, 12)}…</td>
       <td className="px-4 py-3">
-        <Badge variant={STATUS_VARIANT[game.status] || 'surface'}>{game.status}</Badge>
+        <Badge variant={STATUS_BADGE_VARIANT[game.status] || 'surface'}>{game.status}</Badge>
       </td>
       <td className="px-4 py-3">
         <div className="flex items-center gap-1.5 text-sm text-text">
@@ -75,19 +67,14 @@ function TableRowSkeleton() {
 }
 
 export default function AdminPanel() {
-  const navigate = useNavigate();
-  const { user } = useContext(AuthContext);
+  // Auth and the admin-role check both live in the <AdminRoute> wrapper (see App.jsx) now — this
+  // component is only ever reached once that has already passed.
   const [search, setSearch] = useState('');
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
-  const isAdmin = user?.roles?.some(r => r === 'ROLE_ADMIN' || r === 'ADMIN');
-
-  const { data, loading, refetch } = useQuery(GET_GAMES, { skip: !isAdmin });
+  const { data, loading, refetch } = useQuery(GET_GAMES);
   const [deleteGameMutation] = useMutation(DELETE_GAME);
-
-  if (!user) { navigate('/login'); return null; }
-  if (!isAdmin) { navigate('/'); return null; }
 
   const games = (data?.games || []).filter(g => {
     if (!search.trim()) return true;

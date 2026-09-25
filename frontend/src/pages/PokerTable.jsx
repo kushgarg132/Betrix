@@ -58,7 +58,9 @@ function ChatPanel({ messages, onSend }) {
           <p className="text-text-dim text-xs text-center mt-6">No messages yet</p>
         ) : (
           messages.map((m, i) => (
-            <div key={i} className="text-xs">
+            // No id on ChatMessage: timestamp+sender is stable and unique enough in practice
+            // (falls back to the index only if either is missing, so it never breaks rendering).
+            <div key={m.timestamp && m.senderId ? `${m.timestamp}-${m.senderId}` : i} className="text-xs">
               <span className="text-gold font-semibold">{m.username}: </span>
               <span className="text-text-muted">{m.message}</span>
             </div>
@@ -319,7 +321,7 @@ function StartHandOverlay({ game, onStart, currentPlayer }) {
 const PokerTable = () => {
   const { gameId } = useParams();
   const navigate = useNavigate();
-  const { user, isLoggedIn } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
 
   const [game, setGame] = useState(null);
   const [error, setError] = useState(null);
@@ -346,13 +348,9 @@ const PokerTable = () => {
   } = useGame(gameId, currentPlayer.id);
 
   /* ── Join on mount ── */
+  // Auth is gated by <ProtectedRoute> (App.jsx) before this component ever mounts; only the
+  // AuthContext user object loading asynchronously is left to wait for below.
   useEffect(() => {
-    // If we're not logged in, redirect to login
-    if (!isLoggedIn) {
-      navigate('/login', { state: { from: `/game/${gameId}` } });
-      return;
-    }
-
     const doJoin = async () => {
       try {
         setLoading(true);
@@ -389,63 +387,74 @@ const PokerTable = () => {
     if (gameId && user) {
       doJoin();
     }
-  }, [gameId, user, isLoggedIn, navigate]);
+  }, [gameId, user]);
 
 
   /* ── Game-wide subscription ── */
+  // setGame's updater must stay pure (no setCurrentPlayer/toast calls inside it): React 18
+  // StrictMode double-invokes updater functions in dev specifically to catch this, and it did —
+  // a CARDS_DEALT or PLAYER_JOINED update would set the hand/show the toast twice per event.
   useEffect(() => {
-    if (gameUpdate) {
-      setGame(prevGame => {
-        if (!gameUpdate.type) return gameUpdate;
-        const { type, payload } = gameUpdate;
-        switch (type) {
-          case GAME_STATUS.CARDS_DEALT:
-            setCurrentPlayer(prev => Array.isArray(payload) ? { ...prev, hand: payload } : prev);
-            return prevGame;
-          case GAME_STATUS.COMMUNITY_CARDS:
-            return { ...prevGame, communityCards: Array.isArray(payload) ? payload : (prevGame?.communityCards || []) };
-          case GAME_STATUS.PLAYER_JOINED:
-            toast.info(`${payload?.username || 'A player'} joined.`);
-            return { ...prevGame, players: [...(prevGame?.players || []), payload] };
-          case GAME_STATUS.PLAYER_ACTION: {
-            const g = payload.game || payload;
-            return { ...g, communityCards: g.communityCards || [], players: g.players || [] };
-          }
-          case GAME_STATUS.GAME_STARTED:
-          case GAME_STATUS.ROUND_STARTED:
-            return { ...payload, communityCards: payload.communityCards || [], players: payload.players || [] };
-          case GAME_STATUS.GAME_ENDED: {
-            const g = payload.game || payload;
-            const winners = payload.winners || [];
-            if (winners.length) toast.success(`${winners[0]?.username} wins ${formatChips(winners[0]?.lastWinAmount)}!`);
-            return { ...g, winners, bestHand: payload.bestHand || null, status: 'ENDED' };
-          }
-          default:
-            return payload.game || payload || prevGame;
-        }
-      });
+    if (!gameUpdate) return;
+    if (!gameUpdate.type) { setGame(gameUpdate); return; }
+    const { type, payload } = gameUpdate;
+
+    if (type === GAME_STATUS.CARDS_DEALT) {
+      if (Array.isArray(payload)) setCurrentPlayer(prev => ({ ...prev, hand: payload }));
+      return;
     }
+    if (type === GAME_STATUS.PLAYER_JOINED) {
+      toast.info(`${payload?.username || 'A player'} joined.`);
+    }
+    if (type === GAME_STATUS.GAME_ENDED) {
+      const winners = payload.winners || [];
+      if (winners.length) toast.success(`${winners[0]?.username} wins ${formatChips(winners[0]?.lastWinAmount)}!`);
+    }
+
+    setGame(prevGame => {
+      switch (type) {
+        case GAME_STATUS.COMMUNITY_CARDS:
+          return { ...prevGame, communityCards: Array.isArray(payload) ? payload : (prevGame?.communityCards || []) };
+        case GAME_STATUS.PLAYER_JOINED:
+          return { ...prevGame, players: [...(prevGame?.players || []), payload] };
+        case GAME_STATUS.PLAYER_ACTION: {
+          const g = payload.game || payload;
+          return { ...g, communityCards: g.communityCards || [], players: g.players || [] };
+        }
+        case GAME_STATUS.GAME_STARTED:
+        case GAME_STATUS.ROUND_STARTED:
+          return { ...payload, communityCards: payload.communityCards || [], players: payload.players || [] };
+        case GAME_STATUS.GAME_ENDED: {
+          const g = payload.game || payload;
+          return { ...g, winners: payload.winners || [], bestHand: payload.bestHand || null, status: 'ENDED' };
+        }
+        default:
+          return payload.game || payload || prevGame;
+      }
+    });
   }, [gameUpdate]);
 
   /* ── Player-specific subscription ── */
   useEffect(() => {
-    if (playerUpdate) {
-      setGame(prevGame => {
-        if (!playerUpdate.type) return playerUpdate;
-        const { type, payload } = playerUpdate;
-        switch (type) {
-          case GAME_STATUS.CARDS_DEALT:
-            setCurrentPlayer(prev => Array.isArray(payload) ? { ...prev, hand: payload } : prev);
-            return prevGame;
-          case GAME_STATUS.PLAYER_ACTION: {
-            const g = payload.game || payload;
-            return { ...g, communityCards: g.communityCards || [], players: g.players || [] };
-          }
-          default:
-            return payload.game || payload || prevGame;
-        }
-      });
+    if (!playerUpdate) return;
+    if (!playerUpdate.type) { setGame(playerUpdate); return; }
+    const { type, payload } = playerUpdate;
+
+    if (type === GAME_STATUS.CARDS_DEALT) {
+      if (Array.isArray(payload)) setCurrentPlayer(prev => ({ ...prev, hand: payload }));
+      return;
     }
+
+    setGame(prevGame => {
+      switch (type) {
+        case GAME_STATUS.PLAYER_ACTION: {
+          const g = payload.game || payload;
+          return { ...g, communityCards: g.communityCards || [], players: g.players || [] };
+        }
+        default:
+          return payload.game || payload || prevGame;
+      }
+    });
   }, [playerUpdate]);
 
   /* ── Track turn ── */
