@@ -112,7 +112,7 @@ Each step leaves the app building and working.
 ## 8. Release
 
 - Preview: `firebase hosting:channel:deploy redesign`, pointed at a separate backend run from the `redesign` worktree on a spare host port (not the live container). The preview is served over HTTPS, so that backend gets its own Nginx site + Let's Encrypt cert (`betrix-preview.161.118.167.148.nip.io`, WebSocket location for `/graphql` as in `betrix.conf`), and its CORS allow-list includes the preview channel origin. Removed after merge.
-- Merge to `master` only after Kush (a) confirms the Atlas password and Gemini key were rotated, (b) creates the Google OAuth client and provides the client ID, (c) approves the preview. One push then deploys backend and frontend together via the existing pipelines.
+- Merge to `master` only after Kush (a) creates the Google OAuth client and provides the client ID, (b) approves the preview. Kush chose not to rotate the Atlas password and Gemini key that are in public git history (2026-09-25); recommended mitigations are an Atlas IP allowlist limited to the VM and API restrictions plus a quota on the Gemini key. One push then deploys backend and frontend together via the existing pipelines.
 
 ## Out of scope
 
