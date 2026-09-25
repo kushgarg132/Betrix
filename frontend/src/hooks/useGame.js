@@ -1,86 +1,75 @@
-import { useQuery, useMutation, useSubscription } from '@apollo/client/react';
-import { GET_GAME, GET_GAME_FOR_PLAYER } from '../graphql/queries';
+import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
+import { useMutation, useSubscription } from '@apollo/client/react';
 import { JOIN_GAME, PLAYER_ACTION, LEAVE_GAME, SIT_OUT, SIT_IN, START_HAND, SEND_CHAT } from '../graphql/mutations';
 import { GAME_UPDATED, PLAYER_UPDATED } from '../graphql/subscriptions';
+import { heroIndex as findHero, initialTableState, tableReducer } from '../lib/gameReducer';
+
+const BETTING = ['PRE_FLOP_BETTING', 'FLOP_BETTING', 'TURN_BETTING', 'RIVER_BETTING'];
 
 /**
- * Hook that provides all game operations and real-time subscriptions.
- *
- * `playerId` (the caller's own seat, found locally by matching the logged-in username against
- * game.players) is only used here to decide which query/subscription to use and to skip the
- * player-private ones until it's known — it is never sent to the server. Every mutation and the
- * player-scoped query/subscription resolve the acting player from the auth token server-side.
+ * Everything the table screen needs: join, both subscriptions folded through tableReducer, the
+ * hero's seat and turn, and the mutations. The acting player is always resolved server-side from
+ * the auth token; nothing here sends a player id.
  */
-export function useGame(gameId, playerId) {
-  const hasToken = !!localStorage.getItem('token');
+export function useGame(gameId, username) {
+  const [state, dispatch] = useReducer(tableReducer, initialTableState);
+  const [status, setStatus] = useState('joining');
+  const [error, setError] = useState(null);
 
-  // Query: fetch game state — only when authenticated
-  const {
-    data: gameData,
-    loading: gameLoading,
-    error: gameError,
-    refetch: refetchGame,
-  } = useQuery(
-    playerId ? GET_GAME_FOR_PLAYER : GET_GAME,
-    {
-      variables: playerId ? { gameId } : { id: gameId },
-      skip: !gameId || !hasToken,
-    }
-  );
+  const [joinGame] = useMutation(JOIN_GAME);
+  const [playerAction] = useMutation(PLAYER_ACTION);
+  const [leaveGame] = useMutation(LEAVE_GAME);
+  const [sitOutM] = useMutation(SIT_OUT);
+  const [sitInM] = useMutation(SIT_IN);
+  const [startHandM] = useMutation(START_HAND);
+  const [sendChatM] = useMutation(SEND_CHAT);
 
-  // Subscription: game-wide updates — only when authenticated
-  const { data: gameUpdateData } = useSubscription(GAME_UPDATED, {
+  useEffect(() => {
+    if (!gameId || !username) return;
+    let cancelled = false;
+    setStatus('joining');
+    joinGame({ variables: { gameId } })
+      .then(({ data }) => {
+        if (cancelled) return;
+        const g = data?.joinGame;
+        if (!g || findHero(g, username) === -1) throw new Error('Could not take a seat at this table.');
+        dispatch({ type: 'joined', game: g });
+        setStatus('ready');
+      })
+      .catch((e) => { if (!cancelled) { setError(e.message || 'Failed to join the table.'); setStatus('error'); } });
+    return () => { cancelled = true; };
+  }, [gameId, username, joinGame]);
+
+  const ready = status === 'ready';
+  useSubscription(GAME_UPDATED, {
     variables: { gameId },
-    skip: !gameId || !hasToken,
+    skip: !ready,
+    onData: ({ data }) => data.data?.gameUpdated && dispatch({ type: 'update', update: data.data.gameUpdated }),
+  });
+  useSubscription(PLAYER_UPDATED, {
+    variables: { gameId },
+    skip: !ready,
+    onData: ({ data }) => data.data?.playerUpdated && dispatch({ type: 'update', update: data.data.playerUpdated }),
   });
 
-  // Subscription: player-specific updates (private hand)
-  const { data: playerUpdateData } = useSubscription(PLAYER_UPDATED, {
-    variables: { gameId },
-    skip: !gameId || !playerId || !hasToken,
-  });
+  const heroIndex = findHero(state.game, username);
+  const hero = heroIndex >= 0 ? state.game.players[heroIndex] : null;
+  const isMyTurn = !!(hero && BETTING.includes(state.game.status)
+    && state.game.currentPlayerIndex === heroIndex && !hero.hasFolded && !hero.isSittingOut);
 
-  // Mutations
-  const [joinGameMutation] = useMutation(JOIN_GAME);
-  const [playerActionMutation] = useMutation(PLAYER_ACTION);
-  const [leaveGameMutation] = useMutation(LEAVE_GAME);
-  const [sitOutMutation] = useMutation(SIT_OUT);
-  const [sitInMutation] = useMutation(SIT_IN);
-  const [startHandMutation] = useMutation(START_HAND);
-  const [sendChatMutation] = useMutation(SEND_CHAT);
+  const vars = { variables: { gameId } };
+  const actions = useMemo(() => ({
+    bet: (amount) => playerAction({ variables: { gameId, input: { actionType: 'BET', amount } } }),
+    check: () => playerAction({ variables: { gameId, input: { actionType: 'CHECK' } } }),
+    fold: () => playerAction({ variables: { gameId, input: { actionType: 'FOLD' } } }),
+    leave: () => leaveGame(vars),
+    sitOut: () => sitOutM(vars),
+    sitIn: () => sitInM(vars),
+    startHand: () => startHandM(vars),
+    sendChat: (message) => sendChatM({ variables: { gameId, message } }),
+  }), [gameId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const joinGame = () => joinGameMutation({ variables: { gameId } });
+  const clearShowdown = useCallback(() => dispatch({ type: 'update', update: { type: 'SHOWDOWN_SEEN' } }), []);
 
-  const doAction = (actionType, amount) =>
-    playerActionMutation({
-      variables: {
-        gameId,
-        input: { actionType, amount },
-      },
-    });
-
-  const leaveGame = () => leaveGameMutation({ variables: { gameId } });
-  const sitOut = () => sitOutMutation({ variables: { gameId } });
-  const sitIn = () => sitInMutation({ variables: { gameId } });
-
-  const startHand = () => startHandMutation({ variables: { gameId } });
-
-  const sendChat = (message) =>
-    sendChatMutation({ variables: { gameId, message } });
-
-  return {
-    game: gameData?.game || gameData?.gameForPlayer || null,
-    gameLoading,
-    gameError,
-    refetchGame,
-    gameUpdate: gameUpdateData?.gameUpdated || null,
-    playerUpdate: playerUpdateData?.playerUpdated || null,
-    joinGame,
-    doAction,
-    leaveGame,
-    sitOut,
-    sitIn,
-    startHand,
-    sendChat,
-  };
+  return { status, error, ...state, clearShowdown, heroIndex, hero, isMyTurn, actions };
 }
