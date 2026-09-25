@@ -4,8 +4,6 @@ import { Toaster } from 'sonner';
 import PokerTable from './pages/PokerTable';
 import Home from './pages/Home';
 import GameLobby from './pages/GameLobby';
-import Login from './pages/Login';
-import Register from './pages/Register';
 import Navbar from './components/layout/Navbar';
 import Profile from './pages/Profile';
 import AdminPanel from './pages/AdminPanel';
@@ -19,8 +17,6 @@ function App() {
         <Navbar />
         <Routes>
           <Route path="/"        element={<Home />} />
-          <Route path="/login"   element={<Login />} />
-          <Route path="/register" element={<Register />} />
           <Route path="/lobby"   element={<ProtectedRoute><GameLobby /></ProtectedRoute>} />
           <Route path="/game/:gameId" element={<ProtectedRoute><PokerTable /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />

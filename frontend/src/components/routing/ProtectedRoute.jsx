@@ -3,8 +3,8 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '@/context/AuthContext';
 
 /**
- * Gate a route on being logged in. Redirects to /login (preserving the page the visitor wanted,
- * so Login can send them back) instead of rendering.
+ * Gate a route on being logged in. Redirects to / (Home, preserving the page the visitor wanted,
+ * so it can send them back after sign-in) instead of rendering.
  *
  * Redirecting via <Navigate> rather than calling navigate() in a page component's render body
  * matters: navigate() during render is a side effect happening outside React's render cycle,
@@ -15,18 +15,18 @@ export function ProtectedRoute({ children }) {
   const location = useLocation();
 
   if (!isLoggedIn) {
-    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+    return <Navigate to="/" state={{ from: location.pathname }} replace />;
   }
   return children;
 }
 
-/** ProtectedRoute, plus an admin role check. Non-admins are sent home, not to /login. */
+/** ProtectedRoute, plus an admin role check. Non-admins are sent home. */
 export function AdminRoute({ children }) {
   const { isLoggedIn, user } = useContext(AuthContext);
   const location = useLocation();
 
   if (!isLoggedIn) {
-    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+    return <Navigate to="/" state={{ from: location.pathname }} replace />;
   }
   const isAdmin = user?.roles?.some((r) => r === 'ROLE_ADMIN' || r === 'ADMIN');
   if (!isAdmin) {

@@ -82,6 +82,7 @@ export const GET_ME = gql`
       name
       username
       email
+      avatarUrl
       roles
       handsPlayed
       handsWon

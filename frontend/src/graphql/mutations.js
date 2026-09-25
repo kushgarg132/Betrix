@@ -1,22 +1,11 @@
 import { gql } from '@apollo/client';
 import { GAME_FIELDS } from './queries';
 
-export const LOGIN = gql`
-  mutation Login($input: LoginInput!) {
-    login(input: $input) {
+export const GOOGLE_LOGIN = gql`
+  mutation GoogleLogin($idToken: String!) {
+    googleLogin(idToken: $idToken) {
       token
       type
-    }
-  }
-`;
-
-export const REGISTER = gql`
-  mutation Register($input: RegisterInput!) {
-    register(input: $input) {
-      id
-      name
-      username
-      email
     }
   }
 `;

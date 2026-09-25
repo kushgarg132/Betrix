@@ -10,7 +10,6 @@ function renderAt(path, authValue, element, routePath = path) {
       <AuthContext.Provider value={authValue}>
         <Routes>
           <Route path={routePath} element={element} />
-          <Route path="/login" element={<div>login page</div>} />
           <Route path="/" element={<div>home page</div>} />
         </Routes>
       </AuthContext.Provider>
@@ -19,11 +18,11 @@ function renderAt(path, authValue, element, routePath = path) {
 }
 
 describe('ProtectedRoute', () => {
-  it('redirects a logged-out visitor to /login instead of rendering the page', () => {
+  it('redirects a logged-out visitor to the home page instead of rendering the page', () => {
     renderAt('/profile', { isLoggedIn: false, user: null },
       <ProtectedRoute><div>secret profile</div></ProtectedRoute>, '/profile');
 
-    expect(screen.getByText('login page')).toBeInTheDocument();
+    expect(screen.getByText('home page')).toBeInTheDocument();
     expect(screen.queryByText('secret profile')).not.toBeInTheDocument();
   });
 
@@ -36,11 +35,11 @@ describe('ProtectedRoute', () => {
 });
 
 describe('AdminRoute', () => {
-  it('redirects a logged-out visitor to /login', () => {
+  it('redirects a logged-out visitor to the home page', () => {
     renderAt('/admin', { isLoggedIn: false, user: null },
       <AdminRoute><div>admin panel</div></AdminRoute>, '/admin');
 
-    expect(screen.getByText('login page')).toBeInTheDocument();
+    expect(screen.getByText('home page')).toBeInTheDocument();
   });
 
   it('redirects a logged-in non-admin to / instead of rendering the panel', () => {
