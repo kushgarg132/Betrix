@@ -69,6 +69,24 @@ export const PLAYER_ACTION = gql`
   }
 `;
 
+export const LEAVE_GAME = gql`
+  mutation LeaveGame($gameId: ID!) {
+    leaveGame(gameId: $gameId)
+  }
+`;
+
+export const SIT_OUT = gql`
+  mutation SitOut($gameId: ID!) {
+    sitOut(gameId: $gameId)
+  }
+`;
+
+export const SIT_IN = gql`
+  mutation SitIn($gameId: ID!) {
+    sitIn(gameId: $gameId)
+  }
+`;
+
 export const START_HAND = gql`
   mutation StartHand($gameId: ID!) {
     startHand(gameId: $gameId)
@@ -76,8 +94,8 @@ export const START_HAND = gql`
 `;
 
 export const SEND_CHAT = gql`
-  mutation SendChat($gameId: ID!, $message: String!, $playerId: ID!) {
-    sendChat(gameId: $gameId, message: $message, playerId: $playerId) {
+  mutation SendChat($gameId: ID!, $message: String!) {
+    sendChat(gameId: $gameId, message: $message) {
       senderId
       senderName
       message

@@ -338,6 +338,9 @@ const PokerTable = () => {
     playerUpdate,
     joinGame,
     doAction,
+    leaveGame,
+    sitOut: sitOutMutation,
+    sitIn: sitInMutation,
     startHand,
     sendChat,
   } = useGame(gameId, currentPlayer.id);
@@ -470,9 +473,9 @@ const PokerTable = () => {
   const placeBet = useCallback((amount) => doAction('BET', amount), [doAction]);
   const fold = useCallback(() => doAction('FOLD'), [doAction]);
   const check = useCallback(() => doAction('CHECK'), [doAction]);
-  const leaveTable = useCallback(async () => { await doAction('LEAVE'); navigate('/lobby'); }, [doAction, navigate]);
-  const sitOut = useCallback(() => doAction('SIT_OUT'), [doAction]);
-  const sitIn = useCallback(() => doAction('SIT_IN'), [doAction]);
+  const leaveTable = useCallback(async () => { await leaveGame(); navigate('/lobby'); }, [leaveGame, navigate]);
+  const sitOut = useCallback(() => sitOutMutation(), [sitOutMutation]);
+  const sitIn = useCallback(() => sitInMutation(), [sitInMutation]);
   const sendChatMessage = useCallback((message) => sendChat(message), [sendChat]);
 
   const getDisplayPosition = useCallback((actualIndex) => {

@@ -12,8 +12,8 @@ export const GAME_UPDATED = gql`
 `;
 
 export const PLAYER_UPDATED = gql`
-  subscription PlayerUpdated($gameId: ID!, $playerId: ID!) {
-    playerUpdated(gameId: $gameId, playerId: $playerId) {
+  subscription PlayerUpdated($gameId: ID!) {
+    playerUpdated(gameId: $gameId) {
       gameId
       type
       payload

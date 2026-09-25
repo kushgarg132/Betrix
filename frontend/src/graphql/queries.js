@@ -117,8 +117,8 @@ export const GET_GAME = gql`
 `;
 
 export const GET_GAME_FOR_PLAYER = gql`
-  query GetGameForPlayer($gameId: ID!, $playerId: ID!) {
-    gameForPlayer(gameId: $gameId, playerId: $playerId) {
+  query GetGameForPlayer($gameId: ID!) {
+    gameForPlayer(gameId: $gameId) {
       ...GameFields
     }
   }
