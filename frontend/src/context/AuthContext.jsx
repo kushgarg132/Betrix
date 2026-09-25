@@ -57,14 +57,6 @@ const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
-  const updateBalance = (newBalance) => {
-    if (user) {
-      const updatedUser = { ...user, balance: newBalance };
-      setUser(updatedUser);
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-    }
-  };
-
   const refreshUserData = async () => {
     try {
       const { data } = await refetchMe();
@@ -86,7 +78,6 @@ const AuthProvider = ({ children }) => {
       setUser,
       login,
       logout,
-      updateBalance,
       refreshUserData
     }}>
       {children}

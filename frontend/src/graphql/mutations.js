@@ -54,15 +54,6 @@ export const DELETE_GAME = gql`
   }
 `;
 
-export const ADD_BALANCE = gql`
-  mutation AddBalance($amount: Int!) {
-    addBalance(amount: $amount) {
-      id
-      balance
-    }
-  }
-`;
-
 export const PLAYER_ACTION = gql`
   mutation PlayerAction($gameId: ID!, $input: PlayerActionInput!) {
     playerAction(gameId: $gameId, input: $input)
