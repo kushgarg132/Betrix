@@ -22,16 +22,16 @@ const authLink = setContext((_, { headers }) => {
 });
 
 // WebSocket link for subscriptions
-const wsLink = new GraphQLWsLink(
-  createClient({
-    url: `${API_CONFIG.buildBaseHost().replace('http', 'ws')}/graphql`,
-    connectionParams: () => {
-      const token = localStorage.getItem('token');
-      return { Authorization: token ? `Bearer ${token}` : '' };
-    },
-    shouldRetry: () => true,
-  })
-);
+export const wsClient = createClient({
+  url: `${API_CONFIG.buildBaseHost().replace('http', 'ws')}/graphql`,
+  connectionParams: () => {
+    const token = localStorage.getItem('token');
+    return { Authorization: token ? `Bearer ${token}` : '' };
+  },
+  shouldRetry: () => true,
+});
+
+const wsLink = new GraphQLWsLink(wsClient);
 
 // Split: subscriptions → WS, everything else → HTTP
 const splitLink = split(
