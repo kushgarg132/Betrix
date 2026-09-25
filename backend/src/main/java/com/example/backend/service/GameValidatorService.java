@@ -7,6 +7,7 @@ import com.example.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -56,6 +57,24 @@ public class GameValidatorService {
                     logger.error("Player not found in game: {}", playerId);
                     return new RuntimeException("Player not found in game: " + playerId);
                 });
+    }
+
+    /** The caller may only act as their own seat. Unknown seat and someone else's seat look the same. */
+    public Player validatePlayerOwnedBy(Game game, String playerId, String username) {
+        if (username != null && playerId != null) {
+            for (Player p : game.getPlayers()) {
+                if (playerId.equals(p.getId()) && username.equals(p.getUsername())) {
+                    return p;
+                }
+            }
+        }
+        throw new AccessDeniedException("Not your seat");
+    }
+
+    public void validateSeated(Game game, String username) {
+        if (username == null || !game.hasPlayer(username)) {
+            throw new AccessDeniedException("Not seated at this table");
+        }
     }
 
     public void validatePlayerTurn(Game game, String playerId) {

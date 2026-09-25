@@ -5,8 +5,10 @@ import com.example.backend.entity.GameEvent;
 import com.example.backend.entity.User;
 import com.example.backend.repository.GameEventRepository;
 import com.example.backend.repository.UserRepository;
+import com.example.backend.security.CurrentUser;
 import com.example.backend.service.GameReplayService;
 import com.example.backend.service.GameService;
+import com.example.backend.service.GameValidatorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -25,6 +27,7 @@ public class QueryResolver {
     private final UserRepository userRepository;
     private final GameEventRepository gameEventRepository;
     private final GameReplayService gameReplayService;
+    private final GameValidatorService gameValidatorService;
 
     @QueryMapping
     public User me() {
@@ -63,29 +66,31 @@ public class QueryResolver {
     @QueryMapping
     @PreAuthorize("isAuthenticated()")
     public Game gameForPlayer(@Argument String gameId, @Argument String playerId) {
+        gameValidatorService.validatePlayerOwnedBy(
+                gameValidatorService.validateGameExists(gameId), playerId, CurrentUser.username());
         return gameService.getGameForPlayer(gameId, playerId);
     }
 
     @QueryMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('ADMIN')")
     public List<GameEvent> gameEvents(@Argument String gameId) {
         return gameEventRepository.findByGameIdOrderByTimestampAsc(gameId);
     }
 
     @QueryMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('ADMIN')")
     public List<GameEvent> gameEventsByType(@Argument String gameId, @Argument String eventType) {
         return gameEventRepository.findByGameIdAndEventTypeOrderByTimestampAsc(gameId, eventType);
     }
 
     @QueryMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('ADMIN')")
     public Game replayGame(@Argument String gameId) {
         return gameReplayService.replayGame(gameId);
     }
 
     @QueryMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('ADMIN')")
     public Game replayGameUntilEvent(@Argument String gameId, @Argument String eventId) {
         return gameReplayService.replayGameUntilEvent(gameId, eventId);
     }

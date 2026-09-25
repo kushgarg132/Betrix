@@ -1,8 +1,12 @@
 package com.example.backend.resolver;
 
+import com.example.backend.config.WebSocketAuthInterceptor;
 import com.example.backend.model.GameUpdate;
+import com.example.backend.security.CurrentUser;
+import com.example.backend.service.GameValidatorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
+import org.springframework.graphql.data.method.annotation.ContextValue;
 import org.springframework.graphql.data.method.annotation.SubscriptionMapping;
 import org.springframework.stereotype.Controller;
 import reactor.core.publisher.Flux;
@@ -14,6 +18,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Controller
 @RequiredArgsConstructor
 public class SubscriptionResolver {
+
+    private final GameValidatorService gameValidatorService;
 
     // Game-level sinks: one per gameId
     private static final Map<String, Sinks.Many<GameUpdate>> gameSinks = new ConcurrentHashMap<>();
@@ -27,7 +33,11 @@ public class SubscriptionResolver {
     }
 
     @SubscriptionMapping
-    public Flux<GameUpdate> playerUpdated(@Argument String gameId, @Argument String playerId) {
+    public Flux<GameUpdate> playerUpdated(@Argument String gameId, @Argument String playerId,
+            @ContextValue(name = WebSocketAuthInterceptor.USERNAME, required = false) String wsUsername) {
+        // private stream (hole cards): only the seat's owner may listen
+        String caller = wsUsername != null ? wsUsername : CurrentUser.username();
+        gameValidatorService.validatePlayerOwnedBy(gameValidatorService.validateGameExists(gameId), playerId, caller);
         String key = gameId + ":" + playerId;
         return getOrCreatePlayerSink(key).asFlux();
     }

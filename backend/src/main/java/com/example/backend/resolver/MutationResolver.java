@@ -10,9 +10,11 @@ import com.example.backend.model.BotDifficulty;
 import com.example.backend.model.LoginInput;
 import com.example.backend.model.Player;
 import com.example.backend.model.RegisterInput;
+import com.example.backend.security.CurrentUser;
 import com.example.backend.security.JwtTokenProvider;
 import com.example.backend.service.BotService;
 import com.example.backend.service.GameNotificationService;
+import com.example.backend.service.GameValidatorService;
 import com.example.backend.service.GameService;
 import com.example.backend.service.UserService;
 import graphql.GraphqlErrorException;
@@ -39,12 +41,15 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class MutationResolver {
 
+    private static final int MAX_CHAT_LENGTH = 500;
+
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserService userService;
     private final GameService gameService;
     private final GameNotificationService notificationService;
     private final BotService botService;
+    private final GameValidatorService gameValidatorService;
 
     @MutationMapping
     public Map<String, Object> login(@Argument @Valid LoginInput input) {
@@ -111,6 +116,8 @@ public class MutationResolver {
     @PreAuthorize("isAuthenticated()")
     public boolean playerAction(@Argument String gameId, @Argument Map<String, Object> input) {
         String playerId = (String) input.get("playerId");
+        gameValidatorService.validatePlayerOwnedBy(
+                gameValidatorService.validateGameExists(gameId), playerId, CurrentUser.username());
         String actionType = (String) input.get("actionType");
         Number amount = (Number) input.get("amount");
 
@@ -128,6 +135,7 @@ public class MutationResolver {
     @MutationMapping
     @PreAuthorize("isAuthenticated()")
     public boolean startHand(@Argument String gameId) {
+        gameValidatorService.validateSeated(gameValidatorService.validateGameExists(gameId), CurrentUser.username());
         gameService.startNewHand(gameId);
         return true;
     }
@@ -135,12 +143,19 @@ public class MutationResolver {
     @MutationMapping
     @PreAuthorize("isAuthenticated()")
     public Player addBot(@Argument String gameId, @Argument BotDifficulty difficulty) {
+        gameValidatorService.validateSeated(gameValidatorService.validateGameExists(gameId), CurrentUser.username());
         return botService.addBot(gameId, difficulty);
     }
 
     @MutationMapping
     @PreAuthorize("isAuthenticated()")
     public Boolean removeBot(@Argument String gameId, @Argument String botPlayerId) {
+        Game game = gameValidatorService.validateGameExists(gameId);
+        gameValidatorService.validateSeated(game, CurrentUser.username());
+        Player target = game.getPlayerById(botPlayerId);
+        if (target == null || !target.isBot()) {
+            throw new IllegalArgumentException("Not a bot at this table");
+        }
         botService.removeBot(gameId, botPlayerId);
         return true;
     }
@@ -151,9 +166,15 @@ public class MutationResolver {
             @Argument String gameId,
             @Argument String message,
             @Argument String playerId) {
+        Player sender = gameValidatorService.validatePlayerOwnedBy(
+                gameValidatorService.validateGameExists(gameId), playerId, CurrentUser.username());
+        if (message == null || message.isBlank() || message.length() > MAX_CHAT_LENGTH) {
+            throw new IllegalArgumentException("Message must be 1-" + MAX_CHAT_LENGTH + " characters");
+        }
         ChatMessagePayload chat = new ChatMessagePayload();
         chat.setSenderId(playerId);
-        chat.setMessage(message);
+        chat.setSenderName(sender.getName());
+        chat.setMessage(message.strip());
         chat.setTimestamp(OffsetDateTime.now());
 
         notificationService.notifyGameUpdate(
