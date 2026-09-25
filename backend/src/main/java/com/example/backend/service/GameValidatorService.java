@@ -1,6 +1,8 @@
 package com.example.backend.service;
 
 import com.example.backend.entity.Game;
+import com.example.backend.exception.GameNotFoundException;
+import com.example.backend.exception.GameStateException;
 import com.example.backend.model.Player;
 import com.example.backend.repository.GameRepository;
 import com.example.backend.repository.UserRepository;
@@ -26,21 +28,21 @@ public class GameValidatorService {
         return gameRepository.findById(gameId)
                 .orElseThrow(() -> {
                     logger.error("Game not found with ID: {}", gameId);
-                    return new RuntimeException("Game not found: " + gameId);
+                    return new GameNotFoundException("Game not found: " + gameId);
                 });
     }
 
     public void validateGameNotFull(Game game) {
         if (game.isGameFull()) {
             logger.error("Game is full");
-            throw new RuntimeException("Game is full");
+            throw new GameStateException("Game is full");
         }
     }
 
     public void validateGameStatus(Game game, Game.GameStatus expectedStatus) {
         if (game.getStatus() != expectedStatus) {
             logger.error("Invalid game status: expected {}, but was {}", expectedStatus, game.getStatus());
-            throw new RuntimeException("Invalid game status");
+            throw new GameStateException("Invalid game status");
         }
     }
 
@@ -55,7 +57,7 @@ public class GameValidatorService {
                 .findFirst()
                 .orElseThrow(() -> {
                     logger.error("Player not found in game: {}", playerId);
-                    return new RuntimeException("Player not found in game: " + playerId);
+                    return new GameNotFoundException("Player not found in game: " + playerId);
                 });
     }
 
@@ -80,14 +82,14 @@ public class GameValidatorService {
     public void validatePlayerTurn(Game game, String playerId) {
         if (!game.isPlayersTurn(playerId)) {
             logger.error("Not player's turn");
-            throw new RuntimeException("Not player's turn");
+            throw new GameStateException("Not player's turn");
         }
     }
 
     public void validatePlayerNotFolded(Player player) {
         if (player.isHasFolded()) {
             logger.error("Player has folded");
-            throw new RuntimeException("Player has folded");
+            throw new GameStateException("Player has folded");
         }
     }
 

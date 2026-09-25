@@ -2,6 +2,7 @@ package com.example.backend.service;
 
 import com.example.backend.entity.Game;
 import com.example.backend.event.CardsDealtEvent;
+import com.example.backend.exception.GameStateException;
 import com.example.backend.event.GameStartedEvent;
 import com.example.backend.model.Card;
 import com.example.backend.model.Player;
@@ -56,7 +57,7 @@ public class GameHandService {
             }
 
             if (game.getStatus() != Game.GameStatus.WAITING) {
-                throw new RuntimeException("Game already in progress");
+                throw new GameStateException("Game already in progress");
             }
 
             game.resetForNewHand();

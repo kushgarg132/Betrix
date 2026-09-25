@@ -2,6 +2,7 @@ package com.example.backend.service;
 
 import com.example.backend.entity.Game;
 import com.example.backend.model.BotDifficulty;
+import com.example.backend.exception.GameNotFoundException;
 import com.example.backend.model.Player;
 import com.example.backend.repository.GameRepository;
 import lombok.RequiredArgsConstructor;
@@ -63,7 +64,7 @@ public class BotService {
 
         // Re-fetch game to get the actual player with its persisted ID
         Game game = gameRepository.findById(gameId)
-                .orElseThrow(() -> new RuntimeException("Game not found: " + gameId));
+                .orElseThrow(() -> new GameNotFoundException("Game not found: " + gameId));
 
         Player actual = game.getPlayerByUsername(botUsername);
         if (actual == null) throw new RuntimeException("Bot player not found after join");

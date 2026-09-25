@@ -1,5 +1,7 @@
 package com.example.backend.config;
 
+import com.example.backend.exception.GameNotFoundException;
+import com.example.backend.exception.GameStateException;
 import graphql.GraphQLError;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -56,10 +58,15 @@ public class GraphQLExceptionHandler extends DataFetcherExceptionResolverAdapter
                     .message(cause.getMessage())
                     .build();
         }
-        if (cause instanceof RuntimeException && cause.getMessage() != null
-                && cause.getMessage().startsWith("Game not found")) {
+        if (cause instanceof GameNotFoundException) {
             return GraphqlErrorBuilder.newError(env)
                     .errorType(ErrorType.NOT_FOUND)
+                    .message(cause.getMessage())
+                    .build();
+        }
+        if (cause instanceof GameStateException) {
+            return GraphqlErrorBuilder.newError(env)
+                    .errorType(ErrorType.BAD_REQUEST)
                     .message(cause.getMessage())
                     .build();
         }
