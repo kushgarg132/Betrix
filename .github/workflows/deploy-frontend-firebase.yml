@@ -30,7 +30,7 @@ jobs:
 
       - name: Build frontend
         env:
-          VITE_SERVER_HOST: 'https://betrix-backend.onrender.com'
+          VITE_SERVER_HOST: 'https://betrix.161.118.167.148.nip.io'
           VITE_SERVER_PORT: ''
         run: npm run build
 

@@ -12,7 +12,7 @@ env:
   # Configure environment variables.
   # See https://firebase.google.com/docs/app-hosting/configure#user-defined-environment
   - variable: VITE_SERVER_HOST
-    value: 'https://betrix-backend.onrender.com'
+    value: 'https://betrix.161.118.167.148.nip.io'
     availability:
       - BUILD
       - RUNTIME
