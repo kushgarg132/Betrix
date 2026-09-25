@@ -103,6 +103,7 @@ export const GET_GAMES = gql`
       bigBlindAmount
       pot
       createdAt
+      isYourGame
     }
   }
 `;

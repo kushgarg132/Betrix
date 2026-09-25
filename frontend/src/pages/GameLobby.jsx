@@ -42,8 +42,6 @@ export default function GameLobby() {
 
   const games = data?.games || [];
 
-  const isPlayerInGame = (_game) => false;
-
   const openModal = () => { setCreateError(''); setModalOpen(true); };
   const closeModal = () => setModalOpen(false);
 
@@ -107,7 +105,7 @@ export default function GameLobby() {
               key={game.id}
               game={game}
               index={i}
-              isPlayerInGame={isPlayerInGame(game)}
+              isPlayerInGame={game.isYourGame}
             />
           ))}
         </div>

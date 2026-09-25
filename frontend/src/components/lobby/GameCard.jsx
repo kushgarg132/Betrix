@@ -32,6 +32,8 @@ export default function GameCard({ game, index, isPlayerInGame }) {
 
   const fillPct = Math.round((game.playerCount / game.maxPlayers) * 100);
   const isFull = game.playerCount >= game.maxPlayers;
+  // There is no spectate mode: a full table the caller isn't seated at just isn't joinable.
+  const blockedByFullTable = isFull && !isPlayerInGame;
   const ACTIVE_STATUSES = ['PRE_FLOP_BETTING', 'FLOP_BETTING', 'TURN_BETTING', 'RIVER_BETTING', 'SHOWDOWN', 'ACTIVE'];
   const isActive = ACTIVE_STATUSES.includes(game.status);
   const isWaiting = game.status === 'WAITING' || game.status === 'STARTING';
@@ -95,15 +97,17 @@ export default function GameCard({ game, index, isPlayerInGame }) {
         indicatorClassName={isFull ? 'bg-danger' : isActive ? 'bg-success' : 'bg-gold'}
       />
 
-      {/* Join button */}
+      {/* Join button — no "Spectate": it used to say that for a full table but just tried to
+          join and failed, since there is no read-only spectate mode. */}
       <Button
         variant={isPlayerInGame ? 'default' : 'outline'}
-        className="w-full gap-2 group-hover:border-gold transition-colors"
+        className="w-full gap-2 group-hover:border-gold transition-colors disabled:opacity-50 disabled:pointer-events-none"
         onClick={handleJoin}
-        aria-label={isPlayerInGame ? `Return to your table` : `Join game ${game.id?.slice(0, 8)}`}
+        disabled={blockedByFullTable}
+        aria-label={isPlayerInGame ? 'Return to your table' : blockedByFullTable ? 'Table is full' : `Join game ${game.id?.slice(0, 8)}`}
       >
-        <span>{isPlayerInGame ? 'Return to Table' : isFull ? 'Spectate' : 'Join Table'}</span>
-        <ArrowRight size={15} className="group-hover:translate-x-0.5 transition-transform" />
+        <span>{isPlayerInGame ? 'Return to Table' : blockedByFullTable ? 'Table Full' : 'Join Table'}</span>
+        {!blockedByFullTable && <ArrowRight size={15} className="group-hover:translate-x-0.5 transition-transform" />}
       </Button>
 
       {/* Fill with Bot — only shown for WAITING, non-full games */}
