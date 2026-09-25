@@ -21,9 +21,15 @@ describe('Profile', () => {
   });
 
   it('renders the profile once the user is loaded', () => {
-    renderProfile({ name: 'Alice', username: 'alice', roles: ['USER'], handsPlayed: 3, handsWon: 1, winRate: 33, netProfit: 50 });
+    renderProfile({ name: 'Alice', username: 'google-1', roles: ['USER'], handsPlayed: 3, handsWon: 1, winRate: 33, netProfit: 50 });
 
     expect(screen.getByRole('heading', { name: 'Alice' })).toBeInTheDocument();
-    expect(screen.getByText('alice')).toBeInTheDocument();
+    expect(screen.queryByText('google-1')).not.toBeInTheDocument();
+  });
+
+  it('shows a sign-in prompt for guests and never shows one for signed-in users', () => {
+    renderProfile({ name: 'Guest123', username: 'guest-abc', roles: ['GUEST'], handsPlayed: 0, handsWon: 0, winRate: 0, netProfit: 0 });
+    expect(screen.getByText(/sign in with google to keep your stats/i)).toBeInTheDocument();
+    expect(screen.getByText('Guest')).toBeInTheDocument();
   });
 });

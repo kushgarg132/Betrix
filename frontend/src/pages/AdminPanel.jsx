@@ -35,7 +35,7 @@ function TableRow({ game, onDelete }) {
           {game.playerCount}<span className="text-text-dim">/{game.maxPlayers}</span>
         </div>
       </td>
-      <td className="px-4 py-3 font-mono text-sm text-gold font-semibold">
+      <td className="px-4 py-3 font-mono tabular-nums text-sm text-text font-semibold">
         {formatBlinds(game.smallBlindAmount, game.bigBlindAmount)}
       </td>
       <td className="px-4 py-3 text-xs text-text-dim">
@@ -105,8 +105,8 @@ export default function AdminPanel() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-[var(--radius-lg)] bg-gold-muted border border-border-gold flex items-center justify-center">
-            <Shield size={18} className="text-gold" />
+          <div className="w-9 h-9 rounded-[var(--radius-lg)] bg-neon-cyan/10 border border-neon-cyan/40 flex items-center justify-center">
+            <Shield size={18} className="text-neon-cyan" />
           </div>
           <div>
             <h1 className="font-display text-2xl font-bold text-text">Admin Panel</h1>

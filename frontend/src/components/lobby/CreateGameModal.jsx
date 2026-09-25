@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 const BLIND_PRESETS = [
   { small: 5,   big: 10  },
@@ -58,12 +59,12 @@ function CreateGameForm({ onSubmit, loading, error }) {
               className={cn(
                 'py-3 px-4 rounded-[var(--radius-lg)] border text-sm font-semibold transition-all duration-150 text-center',
                 isSelected
-                  ? 'border-gold bg-gold-muted text-gold shadow-[0_0_12px_rgba(212,168,67,0.2)]'
-                  : 'border-border bg-surface-elevated text-text-muted hover:border-border-gold hover:text-text'
+                  ? 'border-neon-cyan bg-neon-cyan/10 text-neon-cyan shadow-[var(--glow-sm)]'
+                  : 'border-border bg-surface-elevated text-text-muted hover:border-neon-cyan/40 hover:text-text'
               )}
             >
-              <span className="font-mono">${p.small} / ${p.big}</span>
-              <span className="block text-[10px] font-normal text-text-dim mt-0.5">
+              <span className="font-mono tabular-nums">{p.small}/{p.big}</span>
+              <span className="block text-xs font-normal text-text-dim mt-0.5">
                 {p.small === 5 ? 'Micro' : p.small === 25 ? 'Low' : p.small === 50 ? 'Mid' : 'High'}
               </span>
             </button>
@@ -76,8 +77,8 @@ function CreateGameForm({ onSubmit, loading, error }) {
           className={cn(
             'col-span-2 py-3 px-4 rounded-[var(--radius-lg)] border text-sm font-semibold transition-all duration-150',
             custom
-              ? 'border-gold bg-gold-muted text-gold'
-              : 'border-dashed border-border text-text-dim hover:border-border-gold hover:text-text'
+              ? 'border-neon-cyan bg-neon-cyan/10 text-neon-cyan'
+              : 'border-dashed border-border text-text-dim hover:border-neon-cyan/40 hover:text-text'
           )}
         >
           Custom blinds
@@ -88,11 +89,11 @@ function CreateGameForm({ onSubmit, loading, error }) {
       {custom && (
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label htmlFor="sb">Small Blind ($)</Label>
+            <Label htmlFor="sb">Small Blind</Label>
             <Input id="sb" type="number" min="1" max="100000" placeholder="e.g. 10" value={smallBlind} onChange={e => setSmallBlind(e.target.value)} />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="bb">Big Blind ($)</Label>
+            <Label htmlFor="bb">Big Blind</Label>
             <Input id="bb" type="number" min="1" max="200000" placeholder="e.g. 20" value={bigBlind} onChange={e => setBigBlind(e.target.value)} />
           </div>
         </div>
@@ -107,8 +108,10 @@ function CreateGameForm({ onSubmit, loading, error }) {
   );
 }
 
-export default function CreateGameModal({ open, onClose, onSubmit, loading, error, isMobile }) {
-  if (isMobile) {
+export default function CreateGameModal({ open, onClose, onSubmit, loading, error }) {
+  const isDesktop = useMediaQuery('(min-width: 768px)');
+
+  if (!isDesktop) {
     return (
       <BottomSheet open={open} onClose={onClose} title="Create New Table">
         <CreateGameForm onSubmit={onSubmit} loading={loading} error={error} />
