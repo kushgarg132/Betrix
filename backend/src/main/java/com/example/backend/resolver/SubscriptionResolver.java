@@ -1,6 +1,7 @@
 package com.example.backend.resolver;
 
 import com.example.backend.config.WebSocketAuthInterceptor;
+import com.example.backend.entity.Game;
 import com.example.backend.model.GameUpdate;
 import com.example.backend.security.CurrentUser;
 import com.example.backend.service.GameValidatorService;
@@ -33,11 +34,13 @@ public class SubscriptionResolver {
     }
 
     @SubscriptionMapping
-    public Flux<GameUpdate> playerUpdated(@Argument String gameId, @Argument String playerId,
+    public Flux<GameUpdate> playerUpdated(@Argument String gameId,
             @ContextValue(name = WebSocketAuthInterceptor.USERNAME, required = false) String wsUsername) {
-        // private stream (hole cards): only the seat's owner may listen
+        // private stream (hole cards): only the seat's own owner may listen, identified from
+        // whichever side actually carries auth for this transport (see WebSocketAuthInterceptor)
         String caller = wsUsername != null ? wsUsername : CurrentUser.username();
-        gameValidatorService.validatePlayerOwnedBy(gameValidatorService.validateGameExists(gameId), playerId, caller);
+        Game game = gameValidatorService.validateGameExists(gameId);
+        String playerId = gameValidatorService.requireOwnPlayer(game, caller).getId();
         String key = gameId + ":" + playerId;
         return getOrCreatePlayerSink(key).asFlux();
     }

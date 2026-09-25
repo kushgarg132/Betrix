@@ -2,7 +2,7 @@ package com.example.backend.resolver;
 
 import com.example.backend.entity.Game;
 import com.example.backend.entity.User;
-import com.example.backend.model.ActionPayload;
+import com.example.backend.model.ActionType;
 import com.example.backend.model.BlindPayload;
 import com.example.backend.model.ChatMessagePayload;
 import com.example.backend.model.GameUpdate;
@@ -121,20 +121,45 @@ public class MutationResolver {
     @MutationMapping
     @PreAuthorize("isAuthenticated()")
     public boolean playerAction(@Argument String gameId, @Argument Map<String, Object> input) {
-        String playerId = (String) input.get("playerId");
-        gameValidatorService.validatePlayerOwnedBy(
-                gameValidatorService.validateGameExists(gameId), playerId, CurrentUser.username());
+        Game game = gameValidatorService.validateGameExists(gameId);
+        String playerId = gameValidatorService.requireOwnPlayer(game, CurrentUser.username()).getId();
         String actionType = (String) input.get("actionType");
         Number amount = (Number) input.get("amount");
 
-        switch (ActionPayload.ActionType.valueOf(actionType)) {
+        switch (ActionType.valueOf(actionType)) {
             case CHECK -> gameService.check(gameId, playerId);
             case BET -> gameService.placeBet(gameId, playerId, amount != null ? amount.longValue() : 0);
             case FOLD -> gameService.fold(gameId, playerId);
-            case LEAVE -> gameService.leaveGame(gameId, playerId);
-            case SIT_OUT -> gameService.sitOut(gameId, playerId);
-            case SIT_IN -> gameService.sitIn(gameId, playerId);
         }
+        return true;
+    }
+
+    /** Leaving, sitting out and sitting in are not turn actions -- they are not routed through
+     * playerAction, and can happen any time, not just on the caller's turn. */
+    @MutationMapping
+    @PreAuthorize("isAuthenticated()")
+    public boolean leaveGame(@Argument String gameId) {
+        Game game = gameValidatorService.validateGameExists(gameId);
+        String playerId = gameValidatorService.requireOwnPlayer(game, CurrentUser.username()).getId();
+        gameService.leaveGame(gameId, playerId);
+        return true;
+    }
+
+    @MutationMapping
+    @PreAuthorize("isAuthenticated()")
+    public boolean sitOut(@Argument String gameId) {
+        Game game = gameValidatorService.validateGameExists(gameId);
+        String playerId = gameValidatorService.requireOwnPlayer(game, CurrentUser.username()).getId();
+        gameService.sitOut(gameId, playerId);
+        return true;
+    }
+
+    @MutationMapping
+    @PreAuthorize("isAuthenticated()")
+    public boolean sitIn(@Argument String gameId) {
+        Game game = gameValidatorService.validateGameExists(gameId);
+        String playerId = gameValidatorService.requireOwnPlayer(game, CurrentUser.username()).getId();
+        gameService.sitIn(gameId, playerId);
         return true;
     }
 
@@ -168,17 +193,14 @@ public class MutationResolver {
 
     @MutationMapping
     @PreAuthorize("isAuthenticated()")
-    public ChatMessagePayload sendChat(
-            @Argument String gameId,
-            @Argument String message,
-            @Argument String playerId) {
-        Player sender = gameValidatorService.validatePlayerOwnedBy(
-                gameValidatorService.validateGameExists(gameId), playerId, CurrentUser.username());
+    public ChatMessagePayload sendChat(@Argument String gameId, @Argument String message) {
+        Player sender = gameValidatorService.requireOwnPlayer(
+                gameValidatorService.validateGameExists(gameId), CurrentUser.username());
         if (message == null || message.isBlank() || message.length() > MAX_CHAT_LENGTH) {
             throw new IllegalArgumentException("Message must be 1-" + MAX_CHAT_LENGTH + " characters");
         }
         ChatMessagePayload chat = new ChatMessagePayload();
-        chat.setSenderId(playerId);
+        chat.setSenderId(sender.getId());
         chat.setSenderName(sender.getName());
         chat.setMessage(message.strip());
         chat.setTimestamp(OffsetDateTime.now());

@@ -65,9 +65,9 @@ public class QueryResolver {
 
     @QueryMapping
     @PreAuthorize("isAuthenticated()")
-    public Game gameForPlayer(@Argument String gameId, @Argument String playerId) {
-        gameValidatorService.validatePlayerOwnedBy(
-                gameValidatorService.validateGameExists(gameId), playerId, CurrentUser.username());
+    public Game gameForPlayer(@Argument String gameId) {
+        Game game = gameValidatorService.validateGameExists(gameId);
+        String playerId = gameValidatorService.requireOwnPlayer(game, CurrentUser.username()).getId();
         return gameService.getGameForPlayer(gameId, playerId);
     }
 

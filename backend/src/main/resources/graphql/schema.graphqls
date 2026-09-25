@@ -38,25 +38,12 @@ enum GameStatus {
   FINISHED
 }
 
-enum PlayerActionType {
-  NONE
-  FOLD
-  CHECK
-  SMALL_BLIND
-  BIG_BLIND
-  CALL
-  RAISE
-  ALL_IN
-  AUTO_FOLD
-}
-
+"""A betting action on the caller's own turn. Leaving, sitting out and sitting in are not turn
+actions -- see the leaveGame/sitOut/sitIn mutations."""
 enum ActionType {
   BET
   CHECK
   FOLD
-  LEAVE
-  SIT_OUT
-  SIT_IN
 }
 
 enum HandRank {
@@ -172,8 +159,6 @@ type GameSummary {
   bigBlindAmount: Int!
   pot: Int!
   createdAt: DateTime
-  """Usernames of players currently in the game."""
-  playerUsernames: [String!]!
 }
 
 type User {
@@ -238,7 +223,6 @@ input BlindInput {
 }
 
 input PlayerActionInput {
-  playerId: ID!
   actionType: ActionType!
   amount: Int
 }
@@ -255,8 +239,8 @@ type Query {
   """Get a single game (spectator view — hands hidden)."""
   game(id: ID!): Game
 
-  """Get a game from a specific player's perspective (their hand visible)."""
-  gameForPlayer(gameId: ID!, playerId: ID!): Game
+  """Get the game from the caller's own seat's perspective (their own hand visible)."""
+  gameForPlayer(gameId: ID!): Game
 
   """Get event history for a game."""
   gameEvents(gameId: ID!): [GameEvent!]!
@@ -295,14 +279,23 @@ type Mutation {
   """Add balance to the current user's account."""
   addBalance(amount: Int!): User! @deprecated(reason: "Play money: there is no account balance. Will be removed.")
 
-  """Perform a player action (bet, check, fold, leave, sit out/in)."""
+  """Perform a betting action (bet, check, fold) on the caller's own turn."""
   playerAction(gameId: ID!, input: PlayerActionInput!): Boolean!
+
+  """Leave a game. If a hand is in progress, folds first and the seat clears once the hand ends."""
+  leaveGame(gameId: ID!): Boolean!
+
+  """Sit out: skip future hands without leaving the table."""
+  sitOut(gameId: ID!): Boolean!
+
+  """Sit back in after sitting out."""
+  sitIn(gameId: ID!): Boolean!
 
   """Start a new hand in a game."""
   startHand(gameId: ID!): Boolean!
 
-  """Send a chat message to a game."""
-  sendChat(gameId: ID!, message: String!, playerId: ID!): ChatMessage!
+  """Send a chat message to a game, as the caller's own seat."""
+  sendChat(gameId: ID!, message: String!): ChatMessage!
 
   """Add an AI bot player to a game."""
   addBot(gameId: ID!, difficulty: BotDifficulty): Player!
@@ -317,6 +310,6 @@ type Subscription {
   """Subscribe to all updates for a game (broadcast to all players/spectators)."""
   gameUpdated(gameId: ID!): GameUpdate!
 
-  """Subscribe to player-specific updates (private hand info)."""
-  playerUpdated(gameId: ID!, playerId: ID!): GameUpdate!
+  """Subscribe to the caller's own private updates (their own hand info) for a game."""
+  playerUpdated(gameId: ID!): GameUpdate!
 }

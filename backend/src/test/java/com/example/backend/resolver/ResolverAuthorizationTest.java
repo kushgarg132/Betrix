@@ -33,7 +33,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -41,7 +40,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-/** Every table action must be tied to the caller's own seat; the client-supplied playerId is not trusted. */
+/**
+ * Nothing in these mutations, this query, or this subscription takes a client-supplied playerId
+ * any more: the acting player is always the caller's own seat at the table, looked up from the
+ * authenticated username. There is no "wrong playerId" to send any more, only "not seated here".
+ */
 class ResolverAuthorizationTest {
 
     private GameService gameService;
@@ -85,33 +88,26 @@ class ResolverAuthorizationTest {
                 new UsernamePasswordAuthenticationToken(username, "x", List.of()));
     }
 
-    private Map<String, Object> foldAs(String playerId) {
-        return Map.of("playerId", playerId, "actionType", "FOLD");
+    private static Map<String, Object> fold() {
+        return Map.of("actionType", "FOLD");
     }
 
     @Test
-    void cannotActAsAnotherPlayersSeat() {
+    void aCallerWithNoSeatAtTheTableCannotAct() {
         loginAs("mallory");
 
-        assertThrows(AccessDeniedException.class, () -> mutations.playerAction(game.getId(), foldAs(alice.getId())));
+        assertThrows(AccessDeniedException.class, () -> mutations.playerAction(game.getId(), fold()));
 
         verifyNoInteractions(gameService);
     }
 
     @Test
-    void canActAsYourOwnSeat() {
+    void actingResolvesToTheCallersOwnSeatNeverAnyoneElses() {
         loginAs("alice");
 
-        mutations.playerAction(game.getId(), foldAs(alice.getId()));
+        mutations.playerAction(game.getId(), fold());
 
         verify(gameService).fold(game.getId(), alice.getId());
-    }
-
-    @Test
-    void unknownSeatIsDeniedNotAnInternalError() {
-        loginAs("alice");
-
-        assertThrows(AccessDeniedException.class, () -> mutations.playerAction(game.getId(), foldAs("nope")));
     }
 
     @Test
@@ -140,14 +136,33 @@ class ResolverAuthorizationTest {
     }
 
     @Test
+    void leaveSitOutSitInAllResolveToTheCallersOwnSeat() {
+        loginAs("mallory");
+        assertThrows(AccessDeniedException.class, () -> mutations.leaveGame(game.getId()));
+        assertThrows(AccessDeniedException.class, () -> mutations.sitOut(game.getId()));
+        assertThrows(AccessDeniedException.class, () -> mutations.sitIn(game.getId()));
+        verifyNoInteractions(gameService);
+
+        loginAs("alice");
+        mutations.leaveGame(game.getId());
+        mutations.sitOut(game.getId());
+        mutations.sitIn(game.getId());
+
+        verify(gameService).leaveGame(game.getId(), alice.getId());
+        verify(gameService).sitOut(game.getId(), alice.getId());
+        verify(gameService).sitIn(game.getId(), alice.getId());
+    }
+
+    @Test
     void chatMustComeFromYourOwnSeatAndCarriesYourName() {
         loginAs("mallory");
-        assertThrows(AccessDeniedException.class, () -> mutations.sendChat(game.getId(), "hi", alice.getId()));
+        assertThrows(AccessDeniedException.class, () -> mutations.sendChat(game.getId(), "hi"));
         verifyNoInteractions(notifications);
 
         loginAs("alice");
-        ChatMessagePayload sent = mutations.sendChat(game.getId(), "  hi  ", alice.getId());
+        ChatMessagePayload sent = mutations.sendChat(game.getId(), "  hi  ");
         assertEquals("Alice", sent.getSenderName());
+        assertEquals(alice.getId(), sent.getSenderId());
         assertEquals("hi", sent.getMessage());
     }
 
@@ -155,30 +170,32 @@ class ResolverAuthorizationTest {
     void chatRejectsEmptyAndOversizedMessages() {
         loginAs("alice");
 
-        assertThrows(IllegalArgumentException.class, () -> mutations.sendChat(game.getId(), "   ", alice.getId()));
-        assertThrows(IllegalArgumentException.class,
-                () -> mutations.sendChat(game.getId(), "x".repeat(501), alice.getId()));
+        assertThrows(IllegalArgumentException.class, () -> mutations.sendChat(game.getId(), "   "));
+        assertThrows(IllegalArgumentException.class, () -> mutations.sendChat(game.getId(), "x".repeat(501)));
     }
 
     @Test
     void cannotReadAnotherPlayersHoleCards() {
         loginAs("mallory");
-        assertThrows(AccessDeniedException.class, () -> queries.gameForPlayer(game.getId(), alice.getId()));
+        assertThrows(AccessDeniedException.class, () -> queries.gameForPlayer(game.getId()));
         verify(gameService, never()).getGameForPlayer(anyString(), anyString());
 
         loginAs("alice");
-        queries.gameForPlayer(game.getId(), alice.getId());
+        queries.gameForPlayer(game.getId());
         verify(gameService).getGameForPlayer(game.getId(), alice.getId());
     }
 
     @Test
     void privatePlayerStreamIsOwnerOnly() {
-        // anonymous
-        assertThrows(AccessDeniedException.class, () -> subscriptions.playerUpdated(game.getId(), alice.getId(), null));
-        // another authenticated websocket user
-        assertThrows(AccessDeniedException.class, () -> subscriptions.playerUpdated(game.getId(), alice.getId(), "mallory"));
-        // the owner
-        assertNotNull(subscriptions.playerUpdated(game.getId(), alice.getId(), "alice"));
+        // anonymous (no HTTP auth, no websocket-context username either)
+        SecurityContextHolder.clearContext();
+        assertThrows(AccessDeniedException.class, () -> subscriptions.playerUpdated(game.getId(), null));
+
+        // another authenticated websocket user, not seated at this table
+        assertThrows(AccessDeniedException.class, () -> subscriptions.playerUpdated(game.getId(), "mallory"));
+
+        // the owner, identified from the websocket connection's own username
+        assertNotNull(subscriptions.playerUpdated(game.getId(), "alice"));
     }
 
     @Test
