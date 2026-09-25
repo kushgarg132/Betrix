@@ -64,8 +64,8 @@ public class DataSeeder implements ApplicationRunner {
     private void ensureUserIndexes() {
         try {
             var indexes = mongoTemplate.indexOps(User.class);
-            indexes.ensureIndex(new Index().on("username", Sort.Direction.ASC).unique());
-            indexes.ensureIndex(new Index().on("email", Sort.Direction.ASC).unique().sparse());
+            indexes.createIndex(new Index().on("username", Sort.Direction.ASC).unique());
+            indexes.createIndex(new Index().on("email", Sort.Direction.ASC).unique().sparse());
         } catch (Exception e) {
             logger.error("Could not create unique indexes on users (duplicate usernames or emails?): {}", e.getMessage());
         }

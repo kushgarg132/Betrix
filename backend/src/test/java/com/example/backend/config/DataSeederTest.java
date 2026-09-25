@@ -75,13 +75,13 @@ class DataSeederTest {
 
         seeder.run(null);
 
-        verify(indexes, times(2)).ensureIndex(any(Index.class));
+        verify(indexes, times(2)).createIndex(any(Index.class));
     }
 
     @Test
     void indexFailureFromExistingDuplicateDataDoesNotStopStartup() {
         when(users.findByUsername("admin")).thenReturn(Optional.of(new User()));
-        when(indexes.ensureIndex(any(Index.class))).thenThrow(new RuntimeException("E11000 duplicate key"));
+        when(indexes.createIndex(any(Index.class))).thenThrow(new RuntimeException("E11000 duplicate key"));
 
         assertDoesNotThrow(() -> seeder.run(null));
     }
