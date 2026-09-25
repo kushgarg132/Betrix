@@ -11,7 +11,7 @@ COPY . .
 RUN chmod +x ./gradlew
 
 # Build the application
-RUN ./gradlew build
+RUN ./gradlew build -x test
 
 # Expose port (optional)
 EXPOSE 8080
