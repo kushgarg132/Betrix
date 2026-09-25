@@ -15,7 +15,7 @@ public interface GameService {
 
     void startNewHand(String gameId);
 
-    void placeBet(String gameId, String playerId, double amount);
+    void placeBet(String gameId, String playerId, long amount);
 
     void check(String gameId, String playerId);
 

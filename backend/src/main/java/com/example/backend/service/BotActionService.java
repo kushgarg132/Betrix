@@ -153,7 +153,7 @@ public class BotActionService {
         try {
             switch (action.action()) {
                 case "CHECK" -> {
-                    double toCall = callAmount(game, bot);
+                    long toCall = callAmount(game, bot);
                     if (toCall <= 0) {
                         gameService.check(gameId, bot.getId());
                     } else {
@@ -163,7 +163,7 @@ public class BotActionService {
                 }
                 case "CALL"  -> gameService.placeBet(gameId, bot.getId(), callAmount(game, bot));
                 case "RAISE" -> {
-                    double raiseAmount = Math.min(action.amount(), bot.getChips());
+                    long raiseAmount = Math.min(action.amount(), bot.getChips());
                     if (raiseAmount > game.getCurrentBet()) {
                         gameService.placeBet(gameId, bot.getId(), raiseAmount);
                     } else {
@@ -178,10 +178,10 @@ public class BotActionService {
         }
     }
 
-    private double callAmount(Game game, Player bot) {
-        double alreadyBet = game.getCurrentBettingRound() != null
-                ? game.getCurrentBettingRound().getBets().getOrDefault(bot.getId(), 0.0)
-                : 0.0;
+    private long callAmount(Game game, Player bot) {
+        long alreadyBet = game.getCurrentBettingRound() != null
+                ? game.getCurrentBettingRound().getBets().getOrDefault(bot.getId(), 0L)
+                : 0L;
         return Math.min(game.getCurrentBet() - alreadyBet, bot.getChips());
     }
 

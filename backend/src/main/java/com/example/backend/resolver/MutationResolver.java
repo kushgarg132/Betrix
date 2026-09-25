@@ -129,7 +129,7 @@ public class MutationResolver {
 
         switch (ActionPayload.ActionType.valueOf(actionType)) {
             case CHECK -> gameService.check(gameId, playerId);
-            case BET -> gameService.placeBet(gameId, playerId, amount != null ? amount.doubleValue() : 0);
+            case BET -> gameService.placeBet(gameId, playerId, amount != null ? amount.longValue() : 0);
             case FOLD -> gameService.fold(gameId, playerId);
             case LEAVE -> gameService.leaveGame(gameId, playerId);
             case SIT_OUT -> gameService.sitOut(gameId, playerId);

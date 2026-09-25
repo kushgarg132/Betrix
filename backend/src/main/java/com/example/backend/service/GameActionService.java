@@ -27,7 +27,7 @@ public class GameActionService {
     private final GameScheduler gameScheduler;
 
     @Transactional
-    public void placeBet(String gameId, String playerId, double amount) {
+    public void placeBet(String gameId, String playerId, long amount) {
         logger.info("Player '{}' is placing a bet of {} in game '{}'", playerId, amount, gameId);
         try {
             Game game = gameValidatorService.validateGameExists(gameId);
@@ -84,7 +84,7 @@ public class GameActionService {
             gameScheduler.schedulePlayerTimeout(game.getId(), currentPlayerId);
 
             eventPublisher.publishEvent(new PlayerActionEvent(
-                    gameId, player, PlayerActionEvent.ActionType.CHECK, 0.0, new Game(game)));
+                    gameId, player, PlayerActionEvent.ActionType.CHECK, 0L, new Game(game)));
 
             bettingManager.handleCurrentBettingRound(game, playerId);
 

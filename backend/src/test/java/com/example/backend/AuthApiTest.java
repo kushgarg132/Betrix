@@ -95,4 +95,13 @@ class AuthApiTest {
             assertTrue(status == 401 || status == 403 || status == 404, path + " -> " + status);
         }
     }
+
+    /** Chips are whole numbers; a fractional amount must be refused by the schema before any resolver runs. */
+    @Test
+    void fractionalChipAmountsAreRejectedBySchemaValidation() throws Exception {
+        String body = graphql("mutation { playerAction(gameId: \"g\", input: {playerId: \"p\", actionType: BET, amount: 10.5}) }");
+
+        assertTrue(body.contains("ValidationError") || body.contains("WrongType") || body.contains("10.5"), body);
+        assertFalse(body.contains("FORBIDDEN"), body); // never got as far as authorization
+    }
 }

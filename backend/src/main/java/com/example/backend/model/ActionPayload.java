@@ -6,7 +6,7 @@ import lombok.Data;
 public class ActionPayload {
     private String playerId;
     private ActionType actionType;
-    private double amount;
+    private long amount;
 
     public enum ActionType {
         BET("BET"), CHECK("CHECK"), FOLD("FOLD"), LEAVE("LEAVE"), SIT_OUT("SIT_OUT"), SIT_IN("SIT_IN");

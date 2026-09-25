@@ -159,11 +159,11 @@ public class BettingManager {
         }
     }
 
-    public void placeBet(Game game, Player player, double amount, Game.PlayerAction action) {
+    public void placeBet(Game game, Player player, long amount, Game.PlayerAction action) {
         logger.info("Player '{}' is placing a bet of {} in game with ID: {}", player.getUsername(), amount,
                 game.getId());
-        double betPlacedAmount = game.getCurrentBettingRound().getBets().getOrDefault(player.getId(), 0.0);
-        double betPlacedTotal = betPlacedAmount + amount;
+        long betPlacedAmount = game.getCurrentBettingRound().getBets().getOrDefault(player.getId(), 0L);
+        long betPlacedTotal = betPlacedAmount + amount;
         boolean isAllIn = false;
 
         // Check for Blinds or All-in
@@ -223,7 +223,7 @@ public class BettingManager {
      * Simplified: Now explicitly delegates to updatePotAmounts at end of round.
      * This method simply adds to main pot temporarily.
      */
-    private void handleAllInBet(Game game, Player allInPlayer, double amount) {
+    private void handleAllInBet(Game game, Player allInPlayer, long amount) {
         logger.info("Player '{}' is all-in with {} chips", allInPlayer.getUsername(), amount);
         // Just add to main pot for now; will be redistributed correctly in
         // updatePotAmounts
@@ -262,12 +262,12 @@ public class BettingManager {
         }
 
         // Check if all active players have acted and bet the same amount
-        double targetBet = game.getCurrentBet();
+        long targetBet = game.getCurrentBet();
         for (Player player : game.getPlayers()) {
             if (!player.isActive() || player.isHasFolded())
                 continue;
 
-            Double playerBet = game.getCurrentBettingRound().getBets().getOrDefault(player.getId(), 0.0);
+            long playerBet = game.getCurrentBettingRound().getBets().getOrDefault(player.getId(), 0L);
             Game.PlayerAction lastAction = game.getLastActions().get(player.getUsername());
 
             if (lastAction == null || notAllowedStatus.contains(lastAction) ||
@@ -342,11 +342,11 @@ public class BettingManager {
             // Process each pot separately
             List<Pot> allPots = new ArrayList<>(game.getPots());
             List<Player> allWinners = new ArrayList<>();
-            Map<Player, Double> winningsMap = new HashMap<>();
+            Map<Player, Long> winningsMap = new HashMap<>();
 
             for (int potIndex = 0; potIndex < allPots.size(); potIndex++) {
                 Pot pot = allPots.get(potIndex);
-                double potAmount = pot.getAmount();
+                long potAmount = pot.getAmount();
 
                 if (potAmount <= 0) {
                     logger.debug("Skipping pot {} with zero amount", potIndex);
@@ -384,11 +384,15 @@ public class BettingManager {
                     }
                 }
 
-                // Split pot among winners
-                double winAmount = potAmount / potWinners.size();
-                for (Player winner : potWinners) {
+                // Split pot among winners; chips are whole numbers, so the odd chips go one each
+                // to the first winners clockwise from the dealer
+                long share = potAmount / potWinners.size();
+                long oddChips = potAmount % potWinners.size();
+                List<Player> paidInOrder = fromLeftOfDealer(game, potWinners);
+                for (int i = 0; i < paidInOrder.size(); i++) {
+                    Player winner = paidInOrder.get(i);
                     // Track winnings before awarding to avoid modifying player state
-                    winningsMap.merge(winner, winAmount, Double::sum);
+                    winningsMap.merge(winner, share + (i < oddChips ? 1 : 0), Long::sum);
 
                     if (!allWinners.contains(winner)) {
                         allWinners.add(winner);
@@ -403,9 +407,9 @@ public class BettingManager {
             }
 
             // Now award all accumulated winnings to players
-            for (Map.Entry<Player, Double> entry : winningsMap.entrySet()) {
+            for (Map.Entry<Player, Long> entry : winningsMap.entrySet()) {
                 Player winner = entry.getKey();
-                double winAmount = entry.getValue();
+                long winAmount = entry.getValue();
                 winner.awardPot(winAmount);
 
                 // Set the amount won in the player object for UI display
@@ -444,6 +448,19 @@ public class BettingManager {
             game.setPot(0);
             game.setStatus(Game.GameStatus.WAITING);
         }
+    }
+
+    /** The winners in payout order: clockwise starting with the seat left of the dealer. */
+    private List<Player> fromLeftOfDealer(Game game, List<Player> winners) {
+        List<Player> seats = game.getPlayers();
+        List<Player> ordered = new ArrayList<>();
+        for (int i = 1; i <= seats.size(); i++) {
+            Player seat = seats.get((game.getDealerPosition() + i) % seats.size());
+            if (winners.contains(seat)) {
+                ordered.add(seat);
+            }
+        }
+        return ordered;
     }
 
     // Compare two hand results
@@ -498,12 +515,12 @@ public class BettingManager {
         logger.info("Updating pot amounts for game with ID: {}", game.getId());
 
         // 1. Snapshot current round bets
-        Map<String, Double> currentRoundBets = new HashMap<>(game.getCurrentBettingRound().getBets());
+        Map<String, Long> currentRoundBets = new HashMap<>(game.getCurrentBettingRound().getBets());
 
         // 2. Identify active players for this calculation (anyone who bet > 0 this
         // round)
         List<Player> contributingPlayers = game.getPlayers().stream()
-                .filter(p -> currentRoundBets.getOrDefault(p.getId(), 0.0) > 0)
+                .filter(p -> currentRoundBets.getOrDefault(p.getId(), 0L) > 0)
                 .collect(Collectors.toList());
 
         if (contributingPlayers.isEmpty()) {
@@ -513,20 +530,20 @@ public class BettingManager {
         // --- Standard Side Pot Distribution ---
 
         // distinct positive bet amounts sorted
-        List<Double> betLevels = currentRoundBets.values().stream()
+        List<Long> betLevels = currentRoundBets.values().stream()
                 .filter(b -> b > 0)
                 .distinct()
                 .sorted()
                 .collect(Collectors.toList());
 
-        double prevLevel = 0.0;
-        for (Double level : betLevels) {
-            double contribution = level - prevLevel;
-            double levelTotal = 0;
+        long prevLevel = 0;
+        for (Long level : betLevels) {
+            long contribution = level - prevLevel;
+            long levelTotal = 0;
             Set<String> levelEligible = new HashSet<>();
 
             for (Player p : game.getPlayers()) {
-                double pBet = currentRoundBets.getOrDefault(p.getId(), 0.0);
+                long pBet = currentRoundBets.getOrDefault(p.getId(), 0L);
                 if (pBet >= level) {
                     levelTotal += contribution;
                     // Player is eligible if they are in the pot (not folded)
@@ -549,7 +566,7 @@ public class BettingManager {
         }
     }
 
-    private void addToCorrectPot(Game game, double amount, Set<String> eligiblePlayers) {
+    private void addToCorrectPot(Game game, long amount, Set<String> eligiblePlayers) {
         if (game.getPots().isEmpty()) {
             game.getPots().add(new Pot(0));
         }

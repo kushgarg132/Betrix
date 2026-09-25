@@ -12,6 +12,7 @@ import com.example.backend.resolver.SubscriptionResolver;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +31,12 @@ public class GameLifecycleService {
     private final GameEventPublisher eventPublisher;
     private final GameActionService gameActionService;
 
+    private static final int MAX_BLIND = 1_000_000;
+
+    /** Play money: every player, guest or registered, sits down with the same stack. */
+    @Value("${game.buy-in:10000}")
+    private long buyIn;
+
     public List<Game> getAllGames() {
         List<Game> games = gameRepository.findAll();
         games.forEach(game -> {
@@ -41,6 +48,11 @@ public class GameLifecycleService {
 
     @Transactional
     public void createGame(BlindPayload payload) {
+        int small = payload.getSmallBlindAmount();
+        int big = payload.getBigBlindAmount();
+        if (small < 1 || big < small || big > MAX_BLIND) {
+            throw new IllegalArgumentException("Blinds must satisfy 1 <= small blind <= big blind <= " + MAX_BLIND);
+        }
         Game game = new Game(payload.getSmallBlindAmount(), payload.getBigBlindAmount());
         gameRepository.save(game);
         logger.debug("Game created with ID: {}", game.getId());
@@ -82,8 +94,8 @@ public class GameLifecycleService {
 
             String displayName = username.startsWith("bot-") ? "Bot" : "Guest";
             Player player = isGuest
-                    ? new Player(displayName, username, 10000)
-                    : new Player(user.getName(), user.getUsername(), user.getBalance());
+                    ? new Player(displayName, username, buyIn)
+                    : new Player(user.getName(), user.getUsername(), buyIn);
 
             if (game.getStatus() != Game.GameStatus.WAITING) {
                 player.setActive(false);

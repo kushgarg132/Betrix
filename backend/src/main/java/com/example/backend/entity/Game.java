@@ -40,7 +40,7 @@ public class Game {
     private List<Player> players;
     private Deck deck;
     private List<Card> communityCards;
-    private double pot; // Total pot (sum of all pots)
+    private long pot; // Total pot (sum of all pots)
     private List<Pot> pots; // Multiple pots for side pots
     private GameStatus status;
     private BettingRound currentBettingRound;
@@ -59,9 +59,9 @@ public class Game {
     // Additional fields required by BettingManager
     private String smallBlindUserId;
     private String bigBlindUserId;
-    private double smallBlindAmount;
-    private double bigBlindAmount;
-    private double currentBet;
+    private long smallBlindAmount;
+    private long bigBlindAmount;
+    private long currentBet;
     private Map<String, PlayerAction> lastActions;
 
     public enum GameStatus {
@@ -113,7 +113,7 @@ public class Game {
         this.currentPlayerIndex = game.getCurrentPlayerIndex() != -1 ? game.getCurrentPlayerIndex() : 0;
         this.createdAt = game.getCreatedAt() != null ? game.getCreatedAt() : OffsetDateTime.now(ZoneOffset.UTC);
         this.updatedAt = game.getUpdatedAt() != null ? game.getUpdatedAt() : OffsetDateTime.now(ZoneOffset.UTC);
-        this.currentBet = game.getCurrentBet() != -1 ? game.getCurrentBet() : 0.0;
+        this.currentBet = game.getCurrentBet() != -1 ? game.getCurrentBet() : 0;
         this.lastActions = game.getLastActions() != null ? new HashMap<>(game.getLastActions()) : new HashMap<>();
         this.smallBlindAmount = game.getSmallBlindAmount();
         this.bigBlindAmount = game.getBigBlindAmount();
@@ -130,7 +130,7 @@ public class Game {
 
     // Running total only. The per-pot split (main/side pots) is built once per betting round
     // in BettingManager.updatePotAmounts; adding to pots here as well double-counted every bet.
-    public void addToPot(double amount) {
+    public void addToPot(long amount) {
         if (amount <= 0) {
             return; // Ignore zero or negative amounts
         }
@@ -138,7 +138,7 @@ public class Game {
     }
 
     // Create a side pot when a player goes all-in
-    public void createSidePot(double amount, List<Player> eligiblePlayers) {
+    public void createSidePot(long amount, List<Player> eligiblePlayers) {
         Pot sidePot = new Pot(amount);
         eligiblePlayers.forEach(p -> sidePot.addEligiblePlayer(p.getId()));
         pots.add(sidePot);

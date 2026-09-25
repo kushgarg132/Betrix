@@ -56,9 +56,4 @@ public class UserService implements UserDetailsService {
             throw new IllegalArgumentException(TAKEN);
         }
     }
-    public User addBalance(String username, int amount) {
-        User user = userRepository.findByUsername(username).get();
-        user.setBalance(user.getBalance() + amount);
-        return userRepository.save(user);
-    }
 }

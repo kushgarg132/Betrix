@@ -71,7 +71,7 @@ public class GameServiceImpl implements GameService {
     }
 
     @Override
-    public void placeBet(String gameId, String playerId, double amount) {
+    public void placeBet(String gameId, String playerId, long amount) {
         actionService.placeBet(gameId, playerId, amount);
     }
 

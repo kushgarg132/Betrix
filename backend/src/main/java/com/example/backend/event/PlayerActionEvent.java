@@ -15,14 +15,14 @@ import lombok.RequiredArgsConstructor;
 public class PlayerActionEvent extends GameEvent {
     private Player player;
     private ActionType actionType;
-    private Double amount;
+    private Long amount;
     private Game gameState;
     
     public enum ActionType {
         BET, FOLD, CHECK, LEAVE , SIT_IN , SIT_OUT
     }
     
-    public PlayerActionEvent(String gameId, Player player, ActionType actionType, Double amount, Game gameState) {
+    public PlayerActionEvent(String gameId, Player player, ActionType actionType, Long amount, Game gameState) {
         super(gameId);
         this.player = player;
         this.actionType = actionType;

@@ -9,20 +9,20 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 public class Pot {
-    private double amount;
+    private long amount;
     private Set<String> eligiblePlayerIds;
     
-    public Pot(double amount) {
+    public Pot(long amount) {
         this.amount = amount;
         this.eligiblePlayerIds = new HashSet<>();
     }
     
-    public Pot(double amount, Set<String> eligiblePlayerIds) {
+    public Pot(long amount, Set<String> eligiblePlayerIds) {
         this.amount = amount;
         this.eligiblePlayerIds = new HashSet<>(eligiblePlayerIds);
     }
     
-    public void addAmount(double amount) {
+    public void addAmount(long amount) {
         if (amount < 0) {
             throw new IllegalArgumentException("Cannot add negative amount to pot");
         }

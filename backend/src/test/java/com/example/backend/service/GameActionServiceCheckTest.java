@@ -45,7 +45,7 @@ class GameActionServiceCheckTest {
     @Test
     void checkFacingABetIsRejectedAndLeavesTurnUnchanged() {
         game.setCurrentBet(100);
-        game.getCurrentBettingRound().getBets().put(b.getId(), 100.0);
+        game.getCurrentBettingRound().getBets().put(b.getId(), 100L);
 
         assertThrows(RuntimeException.class, () -> service.check(game.getId(), a.getId()));
 

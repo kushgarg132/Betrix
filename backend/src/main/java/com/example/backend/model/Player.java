@@ -14,18 +14,18 @@ public class Player {
     private String name;
     private String username;
     private List<Card> hand;
-    private double chips;
+    private long chips;
     private boolean isActive;
-    private double currentBet;
+    private long currentBet;
     private boolean hasFolded;
-    private double lastWinAmount; // Amount won in the last hand
+    private long lastWinAmount; // Amount won in the last hand
     private boolean isSittingOut;
     private HandResult bestHand; // Best hand for the player
     private long timeBankMs;
     private boolean isBot = false;
     private String botDifficulty;
 
-    public Player(String name, String username, double initialChips) {
+    public Player(String name, String username, long initialChips) {
         this.id = UUID.randomUUID().toString();
         this.name = name;
         this.username = username;
@@ -76,7 +76,7 @@ public class Player {
         hand.add(card);
     }
 
-    public void placeBet(double amount) {
+    public void placeBet(long amount) {
         if (amount < 0) {
             throw new IllegalArgumentException("Bet amount must be positive");
         }
@@ -87,7 +87,7 @@ public class Player {
         currentBet += amount;
     }
 
-    public void awardPot(double amount) {
+    public void awardPot(long amount) {
         if (amount < 0) {
             throw new IllegalArgumentException("Award amount cannot be negative");
         }
