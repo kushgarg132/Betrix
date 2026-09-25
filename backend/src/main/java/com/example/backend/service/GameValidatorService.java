@@ -72,6 +72,14 @@ public class GameValidatorService {
         }
     }
 
+    public void validateCanCheck(Game game, Player player) {
+        double betPlaced = game.getCurrentBettingRound().getBets().getOrDefault(player.getId(), 0.0);
+        if (betPlaced < game.getCurrentBet()) {
+            logger.error("Cannot check while facing a bet");
+            throw new IllegalArgumentException("Cannot check, you must call or fold");
+        }
+    }
+
     public void validatePlayerBetAmount(Game game, Player player, double amount) {
         double betPlacedAmount = game.getCurrentBettingRound().getBets().getOrDefault(player.getId(), 0.0);
         double betPlacedTotal = betPlacedAmount + amount;

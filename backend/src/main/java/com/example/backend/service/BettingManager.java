@@ -270,7 +270,7 @@ public class BettingManager {
             Double playerBet = game.getCurrentBettingRound().getBets().getOrDefault(player.getId(), 0.0);
             Game.PlayerAction lastAction = game.getLastActions().get(player.getUsername());
 
-            if (notAllowedStatus.contains(lastAction) ||
+            if (lastAction == null || notAllowedStatus.contains(lastAction) ||
                     (playerBet < targetBet && player.getChips() > 0 && lastAction != Game.PlayerAction.ALL_IN)) {
                 logger.debug("Betting round complete status: false");
                 return false;

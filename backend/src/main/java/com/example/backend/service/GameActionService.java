@@ -71,6 +71,7 @@ public class GameActionService {
             Player player = gameValidatorService.validatePlayerExists(game, playerId);
 
             gameValidatorService.validatePlayerTurn(game, playerId);
+            gameValidatorService.validateCanCheck(game, player);
 
             long usedTimeBankMs = gameScheduler.cancelPlayerTimeout(gameId, playerId);
             if (usedTimeBankMs > 0) {
