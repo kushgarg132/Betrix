@@ -20,9 +20,12 @@ import static org.mockito.Mockito.when;
 
 class GameLifecycleServiceLeaveTest {
 
-    /** Leaving on your own turn folds first; the fold reloads a different game object, so removal must go by id. */
+    /**
+     * Leaving on your own turn folds first, and the fold reloads a different game object. The leaving flag
+     * must end up on the reloaded game's player (found by id), not on a stale object.
+     */
     @Test
-    void leavingOnYourTurnRemovesYouEvenAfterFoldReloadsTheGame() {
+    void leavingOnYourTurnMarksYouLeavingOnTheReloadedGame() {
         GameRepository repo = mock(GameRepository.class);
         GameActionService actions = mock(GameActionService.class);
         GameValidatorService validator = new GameValidatorService(repo, mock(UserRepository.class));
@@ -48,10 +51,12 @@ class GameLifecycleServiceLeaveTest {
 
         service.leaveGame(game.getId(), a.getId());
 
-        ArgumentCaptor<Game> saved = ArgumentCaptor.forClass(Game.class);
-        verify(repo).save(saved.capture());
-        assertEquals(1, saved.getValue().getPlayers().size());
-        assertEquals(b.getId(), saved.getValue().getPlayers().get(0).getId());
+        // mid-hand the seat stays (folded) until the hand ends; nothing is removed yet
+        Game after = stored[0];
+        assertEquals(2, after.getPlayers().size());
+        assertTrue(after.getPlayerById(a.getId()).isHasFolded());
+        assertTrue(after.getPlayerById(a.getId()).isLeaving());
+        verify(actions).fold(game.getId(), a.getId());
     }
 
     @Test

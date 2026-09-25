@@ -201,6 +201,17 @@ public class BettingManager {
         logger.debug("Bet placed. Updated game state: {}", game);
     }
 
+    /**
+     * Fold a player whose turn it is not (they are leaving the table). Unlike fold(), the turn stays
+     * with whoever is to act.
+     */
+    public void foldWithoutTurn(Game game, Player player) {
+        logger.info("Player '{}' is folding out of turn in game with ID: {}", player.getUsername(), game.getId());
+        player.setHasFolded(true);
+        player.setActive(false);
+        game.getLastActions().put(player.getUsername(), Game.PlayerAction.FOLD);
+    }
+
     public void fold(Game game, Player player) {
         logger.info("Player '{}' is folding in game with ID: {}", player.getUsername(), game.getId());
 
@@ -323,6 +334,7 @@ public class BettingManager {
             game.setPot(0);
             game.getPots().clear();
             game.getPots().add(new Pot(0));
+            game.removeLeavingPlayers();
             game.setStatus(Game.GameStatus.WAITING);
             gameScheduler.scheduleNextHand(game.getId());
 
@@ -440,6 +452,7 @@ public class BettingManager {
             game.setPot(0);
             game.getPots().clear();
             game.getPots().add(new Pot(0));
+            game.removeLeavingPlayers();
             game.setStatus(Game.GameStatus.WAITING);
             gameScheduler.scheduleNextHand(game.getId());
 

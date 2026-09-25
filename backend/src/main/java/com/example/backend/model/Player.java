@@ -24,6 +24,9 @@ public class Player {
     private long timeBankMs;
     private boolean isBot = false;
     private String botDifficulty;
+    // Left the table mid-hand: stays seated (folded) until the hand ends, because the chips they put in
+    // this round are still part of the pot calculation. Removed by Game.removeLeavingPlayers().
+    private boolean leaving;
 
     public Player(String name, String username, long initialChips) {
         this.id = UUID.randomUUID().toString();
@@ -54,6 +57,7 @@ public class Player {
         this.timeBankMs = player.getTimeBankMs();
         this.isBot = player.isBot();
         this.botDifficulty = player.getBotDifficulty();
+        this.leaving = player.isLeaving();
     }
 
     public void hideDetails() {

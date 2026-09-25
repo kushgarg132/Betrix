@@ -121,13 +121,23 @@ public class GameLifecycleService {
             Game game = gameValidatorService.validateGameExists(gameId);
             Player player = gameValidatorService.validatePlayerExists(game, playerId);
 
-            if (game.isPlayersTurn(playerId)) {
-                gameActionService.fold(game.getId(), playerId);
-                // Re-load game after fold since state changed
+            if (handInProgress(game)) {
+                // What this player has put in this round is still part of the pot calculation, so they
+                // stay seated (folded) until the hand ends; BettingManager removes leaving players then.
+                player.setLeaving(true);
+                gameRepository.save(game);
+                if (!player.isHasFolded() && player.isActive()) {
+                    if (game.isPlayersTurn(playerId)) {
+                        gameActionService.fold(gameId, playerId);
+                    } else {
+                        gameActionService.foldOutOfTurn(gameId, playerId);
+                    }
+                }
+                // Re-load: the fold may have ended the hand, which removes leaving players
                 game = gameValidatorService.validateGameExists(gameId);
+            } else {
+                game.removePlayer(playerId);
             }
-
-            game.removePlayer(playerId);
 
             eventPublisher.publishEvent(new PlayerActionEvent(
                     gameId, player, PlayerActionEvent.ActionType.LEAVE, null, new Game(game)));
@@ -141,11 +151,17 @@ public class GameLifecycleService {
                 return;
             }
 
-            gameRepository.save(game);
+            if (!handInProgress(game)) {
+                gameRepository.save(game);
+            }
         } catch (Exception e) {
             logger.error("Error leaving game: {}", e.getMessage());
             throw new RuntimeException("Failed to leave game", e);
         }
+    }
+
+    private static boolean handInProgress(Game game) {
+        return game.getStatus() != Game.GameStatus.WAITING && game.getStatus() != Game.GameStatus.FINISHED;
     }
 
     @Transactional

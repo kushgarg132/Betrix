@@ -169,6 +169,11 @@ public class Game {
         return players.get(currentPlayerIndex).getId().equals(playerId);
     }
 
+    /** Called when a hand is over: seats that were left mid-hand are cleared. */
+    public void removeLeavingPlayers() {
+        players.stream().filter(Player::isLeaving).map(Player::getId).toList().forEach(this::removePlayer);
+    }
+
     /** Removes a player by id, keeping the turn and dealer pointers on the same people. */
     public void removePlayer(String playerId) {
         int idx = -1;

@@ -100,6 +100,29 @@ public class GameActionService {
         }
     }
 
+    /** Fold for a player who is leaving mid-hand and is not the one to act. */
+    @Transactional
+    public void foldOutOfTurn(String gameId, String playerId) {
+        logger.info("Player '{}' is folding out of turn in game '{}'", playerId, gameId);
+        try {
+            Game game = gameValidatorService.validateGameExists(gameId);
+            Player player = gameValidatorService.validatePlayerExists(game, playerId);
+
+            bettingManager.foldWithoutTurn(game, player);
+
+            eventPublisher.publishEvent(new PlayerActionEvent(
+                    gameId, player, PlayerActionEvent.ActionType.FOLD, null, new Game(game)));
+
+            bettingManager.handleCurrentBettingRound(game, playerId);
+
+            game.setUpdatedAt(OffsetDateTime.now(ZoneOffset.UTC));
+            gameRepository.save(game);
+        } catch (Exception e) {
+            logger.error("Error folding out of turn: {}", e.getMessage());
+            throw new RuntimeException("Failed to fold", e);
+        }
+    }
+
     @Transactional
     public void fold(String gameId, String playerId) {
         logger.info("Player '{}' is folding in game '{}'", playerId, gameId);
