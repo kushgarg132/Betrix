@@ -1,31 +1,38 @@
 # ♠️ Betrix Poker
 
-Betrix is a premium, full-stack Texas Hold'em poker platform designed for a high-stakes, immersive gaming experience. Featuring AI-powered bots, real-time GraphQL updates, and a stunning modern UI, Betrix brings the casino experience directly to your browser.
+Betrix is a full-stack Texas Hold'em poker platform with AI-powered bots and real-time GraphQL
+updates. Chips are play money — every player sits down with the same fixed buy-in; there is no
+real-money path.
 
 ![Betrix Logo](frontend/public/favicon.png)
 
 ## 🌐 Live Demo
 - **Platform:** [betrix-b3c24.web.app](https://betrix-b3c24.web.app/)
-- **API Docs:** [Swagger UI](https://betrix-backend.onrender.com/swagger-ui/index.html)
+- **Backend:** `https://betrix.161.118.167.148.nip.io` (Docker Compose on a VM; GraphQL at `/graphql`)
+
+API docs (`/swagger-ui`, `/graphiql`) and schema introspection are disabled by default in
+production — see `SWAGGER_ENABLED` / `GRAPHIQL_ENABLED` / `GRAPHQL_INTROSPECTION_ENABLED` below.
 
 ## ✨ Features
-- **🤖 AI Opponents:** Play against intelligent bots powered by **Google Gemini AI**.
-- **📡 Real-time Gameplay:** Seamless updates using **GraphQL Subscriptions** and WebSockets.
-- **💎 Premium UI/UX:** A high-end interface built with **Tailwind CSS 4**, **Framer Motion**, and **Radix UI**.
-- **🛡️ Secure Auth:** Robust user authentication system with support for guest logins.
-- **📊 API Documentation:** Fully documented REST endpoints via **Swagger/OpenAPI**.
-- **🔄 Game Replay:** Analyze your gameplay with event logging and replay capabilities.
-- **📱 Responsive Design:** Optimized for all devices, from desktops to mobile phones.
+- **🤖 AI Opponents:** Bots powered by Google Gemini, with a local random fallback if the API is
+  unavailable, disabled, or past its per-minute call budget.
+- **📡 Real-time Gameplay:** GraphQL subscriptions over WebSocket.
+- **🛡️ Auth:** JWT-based, with guest logins (guest-/bot- usernames are reserved and cannot be
+  registered).
+- **🔄 Game Replay:** Event log + replay, admin-only (`gameEvents`, `replayGame`).
+- **📱 Responsive Design:** Built with Tailwind CSS 4, Framer Motion, and Radix UI.
+
+The API is GraphQL only — there are no REST endpoints beyond the framework's own actuator health
+check and, when enabled, Swagger's own UI.
 
 ## 🛠️ Tech Stack
 
 ### Backend
-- **Core:** Java 21, Spring Boot 3.4
-- **API Layer:** GraphQL, REST
-- **Database:** MongoDB
-- **AI Integration:** Google Gemini AI (Flash 1.5 & Pro)
-- **Security:** Spring Security, JWT
-- **Documentation:** SpringDoc OpenAPI (Swagger)
+- **Core:** Java 21, Spring Boot 3.5
+- **API Layer:** GraphQL (Spring for GraphQL) over HTTP and WebSocket
+- **Database:** MongoDB (Atlas in production; no local DB container)
+- **AI Integration:** Google Gemini (model ids configurable, see `.env.example`)
+- **Security:** Spring Security, JWT (jjwt)
 - **Build Tool:** Gradle
 
 ### Frontend
@@ -41,26 +48,23 @@ Betrix is a premium, full-stack Texas Hold'em poker platform designed for a high
 ### Prerequisites
 - **Java 21+**
 - **Node.js 18+**
-- **MongoDB** (Local or Atlas)
-- **Gemini API Key** (Optional, for AI bots)
+- **MongoDB** (Atlas connection string, or a local instance)
+- **Gemini API Key** (optional — bots fall back to random play without one)
 
 ### Backend Setup
-1. Navigate to the backend directory:
+1. From the **repo root** (docker-compose.yml and the shared `.env` live here, not in `backend/`),
+   copy `.env.example` to `.env` and fill it in. `APP_JWT_SECRET` and `ADMIN_PASSWORD` must meet
+   the minimums noted in `.env.example` or the app refuses to start.
+2. Run with Docker Compose (this is what actually ships):
+   ```sh
+   docker compose up -d --build backend
+   ```
+   Or, for local iteration without Docker, from `backend/`:
    ```sh
    cd backend
+   ./gradlew bootRun --args='--spring.profiles.active=local'
    ```
-2. Create a `.env` file based on the environment configuration:
-   ```env
-   SERVER_PORT=8080
-   APP_JWT_SECRET=your_secret_key
-   SPRING_DATA_MONGODB_URI=your_mongodb_uri
-   GEMINI_API_KEY=your_gemini_key
-   GEMINI_ENABLED=true
-   ```
-3. Build and run:
-   ```sh
-   ./gradlew bootRun
-   ```
+   The `local` profile turns GraphiQL, introspection and Swagger UI on.
 
 ### Frontend Setup
 1. Navigate to the frontend directory:
@@ -73,7 +77,7 @@ Betrix is a premium, full-stack Texas Hold'em poker platform designed for a high
    ```
 3. Start the development server:
    ```sh
-   npm run dev
+   npm start
    ```
    The frontend will start on [http://localhost:3000](http://localhost:3000).
 
@@ -86,7 +90,8 @@ Betrix/
 ├── frontend/           # Vite + React Application
 │   ├── src/            # Components, Hooks, & Logic
 │   └── public/         # Static Assets
-└── README.md           # Documentation
+├── docker-compose.yml  # Backend + how it's actually deployed
+└── .env.example        # Every env var the backend reads, with defaults noted
 ```
 
 ## 🤝 Contributing
@@ -95,6 +100,3 @@ Betrix/
 3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
-
----
-Built with ❤️ by the Betrix Team.
