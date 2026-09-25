@@ -8,13 +8,14 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  Wallet, TrendingUp, Hash, Percent, LogOut,
+  TrendingUp, Hash, Percent, LogOut,
   Clock, Mail, AtSign,
 } from 'lucide-react';
 import { formatChips, getPlayerInitials } from '@/lib/utils';
 
+// No account balance: chips are play money scoped to a table, not the account (see AuthContext /
+// backend User.balance, deprecated). Table chips show on the table itself, not here.
 const STAT_CARDS = (user) => [
-  { label: 'Balance', value: formatChips(user?.balance ?? 0), icon: Wallet, color: 'text-gold', bg: 'bg-gold-muted' },
   { label: 'Hands Played', value: (user?.handsPlayed ?? 0).toLocaleString(), icon: Hash, color: 'text-info', bg: 'bg-blue-900/20' },
   { label: 'Win Rate', value: `${user?.winRate ?? 0}%`, icon: Percent, color: 'text-success', bg: 'bg-success-muted' },
   { label: 'Net Profit', value: formatChips(user?.netProfit ?? 0), icon: TrendingUp, color: 'text-warning', bg: 'bg-amber-900/20' },
@@ -34,8 +35,8 @@ export default function Profile() {
       <PageWrapper>
         <div className="max-w-2xl mx-auto space-y-4 py-8">
           <Skeleton className="h-32 w-full rounded-[var(--radius-xl)]" />
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-24" />)}
+          <div className="grid grid-cols-3 gap-4">
+            {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-24" />)}
           </div>
         </div>
       </PageWrapper>
@@ -87,7 +88,7 @@ export default function Profile() {
         </motion.div>
 
         {/* Stats grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           {stats.map((s, i) => (
             <motion.div
               key={s.label}

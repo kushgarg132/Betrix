@@ -10,7 +10,7 @@ const FEATURES = [
   {
     icon: Zap,
     title: 'Real-Time Action',
-    desc: 'Fast updates via live polling. Every bet, fold, and raise lands quickly.',
+    desc: 'Live updates over WebSocket. Every bet, fold, and raise lands instantly.',
     color: 'text-gold',
     bg: 'bg-gold-muted',
   },
@@ -35,13 +35,6 @@ const FEATURES = [
     color: 'text-warning',
     bg: 'bg-amber-900/20',
   },
-];
-
-const STATS = [
-  { label: 'Active Tables', value: '12+' },
-  { label: 'Hands Dealt Today', value: '4.2K' },
-  { label: 'Players Online', value: '87' },
-  { label: 'Biggest Pot', value: '$12K' },
 ];
 
 function TablePreview() {
@@ -138,15 +131,15 @@ export default function Home() {
             >
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gold-muted border border-border-gold text-gold text-xs font-semibold">
                 <Star size={12} fill="currentColor" />
-                Premium Texas Hold'em
+                Texas Hold'em, Play Money
               </div>
               <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-text leading-[1.1] text-balance">
-                Real Money Poker,{' '}
-                <span className="gold-text">Real Stakes</span>
+                Real Poker,{' '}
+                <span className="gold-text">No Money on the Line</span>
               </h1>
               <p className="text-text-muted text-lg leading-relaxed max-w-lg">
-                Jump into a live table in seconds. Play Texas Hold'em with real players,
-                real chips, and real-time action — from micro to high-roller stakes.
+                Jump into a live table in seconds. Play Texas Hold'em with real players
+                and real-time action — every table starts you with the same free stack.
               </p>
               <div className="flex flex-wrap gap-3 pt-2">
                 {isLoggedIn ? (
@@ -173,26 +166,6 @@ export default function Home() {
             >
               <TablePreview />
             </motion.div>
-          </div>
-        </PageWrapper>
-      </section>
-
-      {/* Stats strip */}
-      <section className="border-y border-border bg-surface/60">
-        <PageWrapper>
-          <div className="py-5 grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {STATS.map((s, i) => (
-              <motion.div
-                key={s.label}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 + i * 0.05 }}
-                className="text-center"
-              >
-                <div className="text-2xl font-bold font-mono gold-text">{s.value}</div>
-                <div className="text-text-dim text-xs mt-0.5">{s.label}</div>
-              </motion.div>
-            ))}
           </div>
         </PageWrapper>
       </section>
@@ -244,7 +217,7 @@ export default function Home() {
       <footer className="border-t border-border py-6 mt-auto">
         <PageWrapper>
           <p className="text-center text-text-dim text-xs">
-            © {new Date().getFullYear()} Betrix · Premium Texas Hold'em · Play responsibly
+            © {new Date().getFullYear()} Betrix · Texas Hold'em · Play money, just for fun
           </p>
         </PageWrapper>
       </footer>

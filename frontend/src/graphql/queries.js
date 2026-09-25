@@ -82,7 +82,6 @@ export const GET_ME = gql`
       name
       username
       email
-      balance
       roles
       handsPlayed
       handsWon

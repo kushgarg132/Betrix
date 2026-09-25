@@ -2,7 +2,6 @@ import React, { useContext, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AuthContext } from '@/context/AuthContext';
-import { formatChips } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
@@ -11,7 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
   User, LogOut, Settings, ChevronDown, Menu, X,
-  Layers, Shield, Wallet,
+  Layers, Shield,
 } from 'lucide-react';
 
 const NAV_LINKS = [
@@ -97,10 +96,6 @@ export default function Navbar() {
                   <span className="text-sm text-text-muted group-hover:text-text transition-colors">
                     {user.username}
                   </span>
-                  <div className="flex items-center gap-1 text-gold text-xs font-semibold bg-gold-muted px-1.5 py-0.5 rounded-full">
-                    <Wallet size={11} />
-                    {formatChips(user.balance)}
-                  </div>
                   <ChevronDown size={14} className="text-text-dim group-data-[state=open]:rotate-180 transition-transform" />
                 </button>
               </DropdownMenuTrigger>
@@ -179,10 +174,7 @@ export default function Navbar() {
                     <Avatar className="h-8 w-8">
                       <AvatarFallback className="bg-gold/20 text-gold text-xs font-bold">{getInitials(user)}</AvatarFallback>
                     </Avatar>
-                    <div>
-                      <p className="text-sm font-medium text-text">{user.username}</p>
-                      <p className="text-xs text-gold font-semibold">{formatChips(user.balance)}</p>
-                    </div>
+                    <p className="text-sm font-medium text-text">{user.username}</p>
                   </div>
                   <button
                     onClick={handleLogout}
