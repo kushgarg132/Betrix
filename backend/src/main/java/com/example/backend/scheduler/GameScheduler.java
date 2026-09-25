@@ -74,9 +74,7 @@ public class GameScheduler {
     @PostConstruct
     public void initMetrics() {
         // Initialize metrics for each task
-        for (String task : List.of("startWaitingGames", "handlePlayerTimeouts",
-                "cleanupIdleGames", "updateActionDeadlines",
-                "scheduleNextHand", "schedulePlayerTimeout")) {
+        for (String task : List.of("startWaitingGames", "scheduleNextHand", "schedulePlayerTimeout")) {
             taskExecutionCounts.put(task, new AtomicLong(0));
             taskExecutionTimes.put(task, new AtomicLong(0));
             taskErrorCounts.put(task, new AtomicLong(0));

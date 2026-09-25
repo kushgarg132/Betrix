@@ -33,7 +33,6 @@ public class Game {
 
     // Default timeout values
     public static final int DEFAULT_PLAYER_ACTION_TIMEOUT_SECONDS = 30;
-    public static final int DEFAULT_GAME_IDLE_TIMEOUT_MINUTES = 10;
 
     @Id
     private String id;
@@ -53,7 +52,6 @@ public class Game {
     private OffsetDateTime currentPlayerActionDeadline;
     private OffsetDateTime lastActivityTime;
     private int playerActionTimeoutSeconds = DEFAULT_PLAYER_ACTION_TIMEOUT_SECONDS;
-    private int gameIdleTimeoutMinutes = DEFAULT_GAME_IDLE_TIMEOUT_MINUTES;
     private boolean autoStart = true;
 
     // Additional fields required by BettingManager
@@ -128,7 +126,6 @@ public class Game {
         this.lastActivityTime = game.getLastActivityTime() != null ? game.getLastActivityTime()
                 : OffsetDateTime.now(ZoneOffset.UTC);
         this.playerActionTimeoutSeconds = game.getPlayerActionTimeoutSeconds();
-        this.gameIdleTimeoutMinutes = game.getGameIdleTimeoutMinutes();
         this.autoStart = game.isAutoStart();
     }
 
@@ -303,16 +300,6 @@ public class Game {
         }
         OffsetDateTime warningThreshold = this.currentPlayerActionDeadline.minusSeconds(warningSeconds);
         return OffsetDateTime.now(ZoneOffset.UTC).isAfter(warningThreshold) && !isCurrentPlayerActionTimedOut();
-    }
-
-    /**
-     * Checks if the game has been idle for too long
-     */
-    public boolean isGameIdle() {
-        if (this.lastActivityTime == null) {
-            return false;
-        }
-        return OffsetDateTime.now(ZoneOffset.UTC).isAfter(this.lastActivityTime.plusMinutes(gameIdleTimeoutMinutes));
     }
 
     /**
