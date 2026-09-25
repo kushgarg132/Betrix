@@ -1,5 +1,5 @@
 # ---- build stage: compile the jar. Tests run in CI (Backend CI gates the deploy), not on the VM.
-FROM eclipse-temurin:21-jdk AS build
+FROM eclipse-temurin:25-jdk AS build
 WORKDIR /app
 
 # wrapper + build scripts first so the dependency download is cached until they change
@@ -11,7 +11,7 @@ COPY src src
 RUN ./gradlew bootJar --no-daemon -x test
 
 # ---- runtime stage: JRE only, non-root
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:25-jre
 RUN useradd --system --no-create-home app
 WORKDIR /app
 COPY --from=build /app/build/libs/*.jar app.jar
