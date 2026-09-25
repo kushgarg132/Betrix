@@ -77,6 +77,12 @@ public class BotService {
         return actual;
     }
 
+    /** After a restart the registry is empty; bots are the persisted players flagged isBot. */
+    public void registerExistingBots(Game game) {
+        game.getPlayers().stream().filter(Player::isBot).forEach(bot ->
+                activeBots.computeIfAbsent(game.getId(), k -> ConcurrentHashMap.newKeySet()).add(bot.getId()));
+    }
+
     public void removeBot(String gameId, String botPlayerId) {
         try {
             locks.run(gameId, () -> lifecycleService.leaveGame(gameId, botPlayerId));
