@@ -42,20 +42,34 @@ public class SubscriptionResolver {
         return getOrCreatePlayerSink(key).asFlux();
     }
 
+    // directBestEffort: unlike onBackpressureBuffer() it is not cancelled when the last subscriber leaves
+    // (a page refresh did that, and the game's stream then stayed dead), and it does not hold early
+    // updates to replay to whoever subscribes next.
+    private static Sinks.Many<GameUpdate> newSink() {
+        return Sinks.many().multicast().directBestEffort();
+    }
+
+    // Emitting from two threads at once fails with FAIL_NON_SERIALIZED and drops the update.
+    private static void emit(Sinks.Many<GameUpdate> sink, GameUpdate update) {
+        synchronized (sink) {
+            sink.tryEmitNext(update);
+        }
+    }
+
     public static Sinks.Many<GameUpdate> getOrCreateGameSink(String gameId) {
         return gameSinks.computeIfAbsent(gameId,
-                k -> Sinks.many().multicast().onBackpressureBuffer());
+                k -> newSink());
     }
 
     public static Sinks.Many<GameUpdate> getOrCreatePlayerSink(String key) {
         return playerSinks.computeIfAbsent(key,
-                k -> Sinks.many().multicast().onBackpressureBuffer());
+                k -> newSink());
     }
 
     public static void publishGameUpdate(String gameId, GameUpdate update) {
         Sinks.Many<GameUpdate> sink = gameSinks.get(gameId);
         if (sink != null) {
-            sink.tryEmitNext(update);
+            emit(sink, update);
         }
     }
 
@@ -63,7 +77,7 @@ public class SubscriptionResolver {
         String key = gameId + ":" + playerId;
         Sinks.Many<GameUpdate> sink = playerSinks.get(key);
         if (sink != null) {
-            sink.tryEmitNext(update);
+            emit(sink, update);
         }
     }
 
