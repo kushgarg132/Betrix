@@ -28,6 +28,9 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
+      - name: Test frontend
+        run: npm test
+
       - name: Build frontend
         env:
           VITE_SERVER_HOST: 'https://betrix.161.118.167.148.nip.io'
@@ -35,7 +38,7 @@ jobs:
         run: npm run build
 
       - name: Install Firebase CLI
-        run: npm install -g firebase-tools
+        run: npm install -g firebase-tools@14
 
       - name: Deploy to Firebase Hosting
         env:
