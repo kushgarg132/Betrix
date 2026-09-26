@@ -7,6 +7,8 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import graphql.GraphqlErrorBuilder;
 import graphql.schema.DataFetchingEnvironment;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.graphql.execution.DataFetcherExceptionResolverAdapter;
 import org.springframework.graphql.execution.ErrorType;
 import org.springframework.security.access.AccessDeniedException;
@@ -16,6 +18,8 @@ import java.util.stream.Collectors;
 
 @Component
 public class GraphQLExceptionHandler extends DataFetcherExceptionResolverAdapter {
+
+    private static final Logger logger = LoggerFactory.getLogger(GraphQLExceptionHandler.class);
 
     /** "username may only contain ..." from the property name (last path segment) and the violation message. */
     private static String describe(ConstraintViolation<?> v) {
@@ -70,6 +74,7 @@ public class GraphQLExceptionHandler extends DataFetcherExceptionResolverAdapter
                     .message(cause.getMessage())
                     .build();
         }
+        logger.error("Unhandled exception in {}", env.getExecutionStepInfo().getPath(), ex);
         return GraphqlErrorBuilder.newError(env)
                 .errorType(ErrorType.INTERNAL_ERROR)
                 .message("Internal server error")

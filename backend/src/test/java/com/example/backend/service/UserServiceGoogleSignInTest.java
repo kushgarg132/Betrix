@@ -89,7 +89,7 @@ class UserServiceGoogleSignInTest {
         orphan.setUsername("old-password-user");
         orphan.setEmail("Shared@Example.com");
         orphan.setRoles(List.of("USER"));
-        when(repo.findByEmailIgnoreCaseAndGoogleSubIsNull("shared@example.com")).thenReturn(Optional.of(orphan));
+        when(repo.findByEmailIgnoreCaseAndGoogleSubIsNull("shared@example.com")).thenReturn(List.of(orphan));
 
         User u = service.signInWithGoogle(new GoogleIdentity("sub-4", "shared@example.com", "New Person", null));
 
@@ -99,13 +99,34 @@ class UserServiceGoogleSignInTest {
         assertEquals("shared@example.com", u.getEmail());
     }
 
+    /** Two leftover password-era accounts share the email: both are released, sign-in succeeds. */
+    @Test
+    void everyOrphanAccountWithTheSameEmailIsReleased() {
+        when(repo.findByGoogleSub("sub-7")).thenReturn(Optional.empty());
+        User a = new User();
+        a.setId("orphan-a");
+        a.setEmail("two@example.com");
+        User b = new User();
+        b.setId("orphan-b");
+        b.setEmail("two@example.com");
+        when(repo.findByEmailIgnoreCaseAndGoogleSubIsNull("two@example.com")).thenReturn(List.of(a, b));
+
+        User u = service.signInWithGoogle(new GoogleIdentity("sub-7", "two@example.com", "Person", null));
+
+        assertNull(a.getEmail());
+        assertNull(b.getEmail());
+        verify(repo).save(a);
+        verify(repo).save(b);
+        assertEquals("sub-7", u.getGoogleSub());
+    }
+
     /** C1(b): an existing Google user (has a googleSub) with the same email is never touched by the release. */
     @Test
     void anExistingGoogleUserWithTheSameEmailIsNotTouchedAndTheCollisionPropagates() {
         when(repo.findByGoogleSub("sub-5")).thenReturn(Optional.empty());
         // No orphan found: the lookup only matches accounts without a googleSub, so the other
         // Google account (which has one) is excluded by construction.
-        when(repo.findByEmailIgnoreCaseAndGoogleSubIsNull("dup@example.com")).thenReturn(Optional.empty());
+        when(repo.findByEmailIgnoreCaseAndGoogleSubIsNull("dup@example.com")).thenReturn(List.of());
         DuplicateKeyException collision = new DuplicateKeyException("email index");
         when(repo.save(any(User.class))).thenThrow(collision);
 

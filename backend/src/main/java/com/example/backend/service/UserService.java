@@ -70,9 +70,10 @@ public class UserService implements UserDetailsService {
         if (email == null) {
             return;
         }
-        userRepository.findByEmailIgnoreCaseAndGoogleSubIsNull(email).ifPresent(orphan -> {
+        // several old accounts can share one email (the old index was not always unique in practice)
+        for (User orphan : userRepository.findByEmailIgnoreCaseAndGoogleSubIsNull(email)) {
             orphan.setEmail(null);
             userRepository.save(orphan);
-        });
+        }
     }
 }
