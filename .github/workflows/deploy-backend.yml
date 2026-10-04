@@ -1,24 +1,22 @@
-name: Deploy Backend to VM
+name: Deploy backend
 
-# Runs on the self-hosted runner living on the same Oracle Cloud VM that hosts the backend, so
-# these jobs never check the repo out themselves -- they operate on the persistent deploy clone
-# at /home/ubuntu/deploys/Betrix (which already has the real .env in place, since it's
-# gitignored). Previously checked out straight into the runner's own _work workspace; moved to a
-# dedicated deploy clone so the runner workspace is never at risk of being reset mid-edit.
-#
-# Gated on "Backend CI" via workflow_run rather than a shared `needs:` in one file -- CI's own
-# concurrency group cancels a stale run the moment a newer push lands, and merging this job into
-# that workflow would let a new push cancel a deploy mid-`docker compose build`, leaving the
-# backend container in a broken half-built state. Kept as its own workflow so its
-# `cancel-in-progress: false` below still holds: a deploy, once started, always runs to
-# completion. workflow_dispatch stays as the manual fallback when CI or GitHub is misbehaving.
+# Thin caller: the steps live in kushgarg132/ci-workflows (deploy-backend.yml),
+# shared by every backend on the VM. It operates on the deploy clone at
+# /home/ubuntu/deploys/Betrix (real .env there, gitignored) and skips when
+# nothing matching `paths` changed. Run manually with force=true to rebuild
+# regardless.
 on:
   workflow_run:
     workflows: ["Backend CI"]
     types: [completed]
     branches: [master]
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      force:
+        type: boolean
+        default: false
 
+# Never cancel a deploy mid-`docker compose build`.
 concurrency:
   group: deploy-backend
   cancel-in-progress: false
@@ -28,28 +26,12 @@ jobs:
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
-    runs-on: [self-hosted, betrix-vm]
-    steps:
-      - name: Fast-forward deploy clone
-        run: |
-          set -euo pipefail
-          cd /home/ubuntu/deploys/Betrix
-          git fetch origin master
-          git reset --hard "${{ github.event.workflow_run.head_sha || github.sha }}"
-
-      - name: Rebuild and restart backend
-        run: |
-          set -euo pipefail
-          cd /home/ubuntu/deploys/Betrix
-          docker compose up -d --build backend
-          docker image prune -f
-
-      # /actuator/health includes the Mongo check, so a bad Atlas URI or IP allowlist fails here
-      - name: Health check
-        run: |
-          for i in $(seq 1 30); do
-            if curl -fsS --max-time 10 -o /dev/null http://127.0.0.1:8083/actuator/health; then echo healthy; exit 0; fi
-            sleep 3
-          done
-          docker logs --tail 50 betrix-backend
-          exit 1
+    uses: kushgarg132/ci-workflows/.github/workflows/deploy-backend.yml@main
+    with:
+      runner: betrix-vm
+      deploy_dir: /home/ubuntu/deploys/Betrix
+      branch: master
+      sha: ${{ github.event.workflow_run.head_sha || github.sha }}
+      force: ${{ inputs.force == true }}
+      health_url: http://127.0.0.1:8083/actuator/health
+      container: betrix-backend
